@@ -47,30 +47,25 @@
         </header>
 
         <nav id="main-nav">
-            <a href="#" class="nav-link active">Health & Finance</a>
-            <a href="#" class="nav-link">Analytics</a>
-            <a href="#" class="nav-link">Developers</a>
-            <a href="#" class="nav-link">API Docs</a>
-            <a href="#" class="nav-link">System Status</a>
+            <a href="#" class="nav-link active">INDEX</a>
+            <a href="#" class="nav-link">DOMAINS</a>
+            <a href="#" class="nav-link">INSIGHTS</a>
+            <a href="#" class="nav-link">BUILD</a>
+            <a href="#" class="nav-link">STATUS</a>
         </nav>
 
         <div class="toolbar">
             <div class="search-wrapper">
                 <i data-lucide="search" class="search-icon" size="18"></i>
-                <input type="text" class="search-input" placeholder="SEARCH REPOSITORIES BY NAME, KEYWORD OR DOMAIN...">
+                <input type="text" class="search-input" id="repo-search" placeholder="SEARCH REPOSITORIES...">
             </div>
-            <button class="filter-btn active">
-                <i data-lucide="filter" size="16"></i>
-                Domain: All
-            </button>
-            <button class="filter-btn">
-                <i data-lucide="layers" size="16"></i>
-                Infrastructure
-            </button>
-            <button class="filter-btn">
-                <i data-lucide="globe" size="16"></i>
-                Global
-            </button>
+            <div class="toolbar-actions">
+                <button class="filter-btn active" onclick="filterByDomain('all', this)">All</button>
+                <button class="filter-btn" onclick="filterByDomain('finance', this)">Finance</button>
+                <button class="filter-btn" onclick="filterByDomain('health', this)">Health</button>
+                <button class="filter-btn" onclick="filterByDomain('hybrid', this)">Hybrid</button>
+                <button class="filter-btn" onclick="filterByDomain('infrastructure', this)">Infrastructure</button>
+            </div>
         </div>
 
         <div class="data-table-container">
@@ -182,6 +177,30 @@
                 </td></tr>`;
             }
         }
+
+        function filterByDomain(domain, btn) {
+            // Update UI
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            if (domain === 'all') {
+                renderRecords(currentRecords);
+            } else {
+                const filtered = currentRecords.filter(r => r._derived.domain.toLowerCase() === domain);
+                renderRecords(filtered);
+            }
+        }
+
+        // Search Implementation
+        document.getElementById('repo-search').addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const filtered = currentRecords.filter(r =>
+                (r.project_name || '').toLowerCase().includes(term) ||
+                (r.summary || '').toLowerCase().includes(term) ||
+                (r.openindex_id || '').toLowerCase().includes(term)
+            );
+            renderRecords(filtered);
+        });
 
         function renderRecords(records) {
             const tbody = document.querySelector('tbody');
