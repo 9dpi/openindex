@@ -27,37 +27,76 @@ function doGet() {
 }
 
 /**
- * PIPELINE JOB – SCAN DRIVE
+ * TOTAL DEBUG – Run this to see EXACTLY what is in your Drive
+ */
+function debugEverything() {
+  try {
+    const root = DriveApp.getFolderById(DRIVE_FOLDER_ID);
+    console.log("Target folder name: " + root.getName());
+    
+    console.log("--- SUB-FOLDERS ---");
+    const folders = root.getFolders();
+    let fCount = 0;
+    while (folders.hasNext()) {
+      console.log("Found Folder: " + folders.next().getName());
+      fCount++;
+    }
+    if(fCount === 0) console.log("NO SUB-FOLDERS FOUND.");
+
+    console.log("--- FILES ---");
+    const files = root.getFiles();
+    let fileCount = 0;
+    while (files.hasNext()) {
+      const f = files.next();
+      console.log("Found File: " + f.getName() + " | Type: " + f.getMimeType());
+      fileCount++;
+    }
+    if(fileCount === 0) console.log("NO FILES FOUND IN ROOT.");
+  } catch (e) {
+    console.error("Critical Error: " + e.toString());
+  }
+}
+
+/**
+ * PIPELINE JOB v1.5 – ROBUST SCAN
+ * Recursive search + Root-fallback domain detection
  */
 function scanOpenIndex() {
-  console.log("[OpenIndex] Starting scan...");
+  console.log("[OpenIndex] Starting v1.5 Robust Scan...");
   const rootFolder = DriveApp.getFolderById(DRIVE_FOLDER_ID);
   let allRecords = [];
 
-  DOMAINS.forEach(domain => {
-    console.log("Scanning domain:", domain);
-    const subFolderIterator = rootFolder.getFoldersByName(domain);
-    if (!subFolderIterator.hasNext()) {
-      console.warn("Domain folder not found:", domain);
-      return;
+  const query = 'title contains ".yaml" and trashed = false';
+  const fileIterator = rootFolder.searchFiles(query);
+
+  while (fileIterator.hasNext()) {
+    const file = fileIterator.next();
+    const fileName = file.getName();
+    if (!fileName.toLowerCase().endsWith(".yaml")) continue;
+
+    // Get immediate parent name
+    const parents = file.getParents();
+    let parentFolder = "unknown";
+    if (parents.hasNext()) {
+      parentFolder = parents.next().getName().toLowerCase();
+    }
+    
+    // Domain Detection Logic
+    let domain = "unknown";
+    if (DOMAINS.includes(parentFolder)) {
+      domain = parentFolder;
+    } else if (parentFolder === rootFolder.getName().toLowerCase() || parentFolder === "openindex") {
+      // Fallback: If file is in root, assign to first available domain or hybrid
+      domain = "hybrid"; 
+      console.log(`[Note] File "${fileName}" in root. Defaulting domain to: ${domain}`);
+    } else {
+      console.log(`[Skip] "${fileName}" is in an unrelated folder: "${parentFolder}"`);
+      continue;
     }
 
-    const subFolder = subFolderIterator.next();
-    // V1.3 FIX: Remove MIME type filter as Drive misidentifies YAML files frequently
-    const files = subFolder.getFiles(); 
-
-    while (files.hasNext()) {
-      const file = files.next();
-      const fileName = file.getName();
-      
-      // Case-insensitive check for .yaml
-      if (!fileName.toLowerCase().endsWith(".yaml")) {
-        console.log("Skipping non-yaml file:", fileName);
-        continue;
-      }
-
-      console.log("Processing file:", fileName, "| MIME:", file.getMimeType());
-
+    console.log(`[Indexing] Domain: ${domain} | File: ${fileName}`);
+    
+    try {
       const content = file.getBlob().getDataAsString();
       const derived = deriveStatusAndSignal({ domain, content });
 
@@ -71,8 +110,10 @@ function scanOpenIndex() {
         signal: derived.signal,
         content: content
       });
+    } catch (err) {
+      console.error("Error reading file:", fileName);
     }
-  });
+  }
 
   const payload = {
     status: "success",

@@ -210,10 +210,27 @@
                 const response = await fetch(WEB_APP_URL);
                 const result = await response.json();
 
-                if (result.status === "success") {
-                    renderRecords(result.data.map(item => jsyaml.load(item.content)));
+                console.log("Dữ liệu nhận được:", result);
+
+                if (result.status === "success" || result.status === "stable") {
+                    const records = result.records || result.data;
+                    if (records && records.length > 0) {
+                        // Parse YAML từ content và gộp với metadata
+                        const parsedRecords = records.map(item => {
+                            const yamlData = jsyaml.load(item.content);
+                            return {
+                                ...yamlData,
+                                derived_status: item.status,
+                                derived_signal: item.signal,
+                                domain: item.domain // Force domain từ folder
+                            };
+                        });
+                        renderRecords(parsedRecords);
+                    } else {
+                        tbody.innerHTML = '<tr><td colspan="11" style="text-align:center; padding: 3rem;">NO RECORDS FOUND IN REGISTRY.</td></tr>';
+                    }
                 } else {
-                    throw new Error(result.message);
+                    throw new Error(result.message || "Unknown error");
                 }
             } catch (error) {
                 console.error("Fetch error:", error);
@@ -228,40 +245,49 @@
             const tbody = document.querySelector('tbody');
             tbody.innerHTML = '';
 
-            // Sort by ID
-            records.sort((a, b) => a.openindex_id.localeCompare(b.openindex_id));
+            // Sắp xếp theo stars
+            records.sort((a, b) => (b.metrics?.stars || 0) - (a.metrics?.stars || 0));
 
             records.forEach((record, i) => {
-                const stars24h = record.metrics.stars_24h || 0;
-                const stars7d = record.metrics.stars_7d || 0;
+                const metrics = record.metrics || {};
+                const stars24h = metrics.stars_24h || 0;
+                const stars7d = metrics.stars_7d || 0;
 
                 const change24hClass = stars24h >= 0 ? "change-pos" : "change-neg";
                 const change7dClass = stars7d >= 0 ? "change-pos" : "change-neg";
 
+                // Quy định màu sắc dựa trên derived_status hoặc index_status
                 let statusIcon = "check-circle", statusColor = "#10b981";
-                if (record.status.index_status === 'under_review') { statusIcon = "activity"; statusColor = "#ff9d00"; }
-                else if (record.status.index_status === 'flagged') { statusIcon = "alert-triangle"; statusColor = "#ef4444"; }
+                const status = record.derived_status || record.status?.index_status;
 
-                const domainClass = `tag-${record.domain.toLowerCase()}`;
-                const categoryClass = `tag-${record.category.toLowerCase().substring(0, 4)}`;
+                if (status === 'under_review' || status === 'stale') {
+                    statusIcon = "activity";
+                    statusColor = "#ff9d00";
+                } else if (status === 'flagged' || status === 'inactive' || status === 'invalid') {
+                    statusIcon = "alert-triangle";
+                    statusColor = "#ef4444";
+                }
+
+                const domainClass = `tag-${(record.domain || 'hybrid').toLowerCase()}`;
+                const categoryClass = `tag-${(record.category || 'app').toLowerCase().substring(0, 4)}`;
 
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td data-label="#">${(i + 1).toString().padStart(2, '0')}</td>
                     <td data-label="Repository">
                         <div class="repo-info">
-                            <a href="${record.repo_url}" target="_blank" class="repo-name">${record.project_name}</a>
-                            <span class="repo-sub">${record.owner} / ${record.project_name.toLowerCase()}</span>
+                            <a href="${record.repo_url || '#'}" target="_blank" class="repo-name">${record.project_name || 'Unnamed Project'}</a>
+                            <span class="repo-sub">${record.owner || 'unknown'} / ${(record.project_name || 'core').toLowerCase()}</span>
                         </div>
                     </td>
-                    <td data-label="Stars" class="mono-font">${record.metrics.stars.toLocaleString()}</td>
+                    <td data-label="Stars" class="mono-font">${(metrics.stars || 0).toLocaleString()}</td>
                     <td data-label="24H ∆" class="mono-font ${change24hClass}">${stars24h > 0 ? '+' : ''}${stars24h.toLocaleString()}</td>
                     <td data-label="7D ∆" class="mono-font ${change7dClass}">${stars7d > 0 ? '+' : ''}${stars7d.toLocaleString()}</td>
-                    <td data-label="Forks" class="mono-font">${record.metrics.forks.toLocaleString()}</td>
-                    <td data-label="Description" style="font-size: 0.85rem;">${record.summary}</td>
-                    <td data-label="Domain"><span class="tag ${domainClass}">${record.domain}</span></td>
-                    <td data-label="Category"><span class="tag ${categoryClass}">${record.category}</span></td>
-                    <td data-label="Updated" class="mono-font text-muted">${record.timestamps.last_verified}</td>
+                    <td data-label="Forks" class="mono-font">${(metrics.forks || 0).toLocaleString()}</td>
+                    <td data-label="Description" style="font-size: 0.85rem;">${record.summary || 'No summary provided.'}</td>
+                    <td data-label="Domain"><span class="tag ${domainClass}">${record.domain || 'Hybrid'}</span></td>
+                    <td data-label="Category"><span class="tag ${categoryClass}">${record.category || 'Analytics'}</span></td>
+                    <td data-label="Updated" class="mono-font text-muted">${record.timestamps?.last_verified || '2026-02-02'}</td>
                     <td data-label="Status"><i data-lucide="${statusIcon}" color="${statusColor}" size="16"></i></td>
                 `;
                 tbody.appendChild(row);
