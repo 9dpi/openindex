@@ -156,8 +156,17 @@ header {
 /* Navigation */
 nav {
     display: flex;
-    gap: 1.5rem;
-    margin-bottom: 2rem;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2.5rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0px;
+    /* link border-bottom will handle visual line */
+}
+
+.nav-links {
+    display: flex;
+    gap: 2rem;
 }
 
 .nav-link {
@@ -167,9 +176,12 @@ nav {
     font-size: 0.85rem;
     text-transform: uppercase;
     font-weight: 600;
-    padding-bottom: 0.5rem;
+    padding-bottom: 0.75rem;
     border-bottom: 2px solid transparent;
     transition: var(--transition-fast);
+    position: relative;
+    top: 2px;
+    /* Alignment with border-bottom */
 }
 
 .nav-link:hover,
@@ -178,54 +190,43 @@ nav {
     border-bottom-color: var(--accent-color);
 }
 
-/* Search & Filters */
-.toolbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2rem;
-    gap: 1.5rem;
-}
-
-.header-search-wrapper {
+.nav-search {
     display: flex;
     align-items: center;
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid var(--border-color);
     padding: 0 0.75rem;
-    height: 32px;
+    height: 36px;
+    width: 240px;
     transition: var(--transition-fast);
-    margin-right: 0.5rem;
+    backdrop-filter: blur(5px);
+    margin-bottom: 0.75rem;
+    /* Align with nav links bottom gap */
 }
 
-.header-search-wrapper:focus-within {
+.nav-search:focus-within {
     border-color: var(--accent-color);
-    background: rgba(255, 255, 255, 0.07);
-    width: 200px;
-    /* Expands slightly when focused */
+    background: rgba(255, 255, 255, 0.06);
+    box-shadow: 0 0 15px var(--accent-glow);
 }
 
-.header-search-wrapper i {
+.nav-search i {
     color: var(--accent-color);
-    opacity: 0.6;
+    opacity: 0.5;
     margin-right: 0.5rem;
 }
 
-.header-search-wrapper input {
+.nav-search input {
     background: none;
     border: none;
     color: var(--text-primary);
-    font-size: 0.7rem;
+    font-size: 0.75rem;
     font-family: var(--font-header);
-    width: 80px;
-    /* Minimal width normally */
+    width: 100%;
     outline: none;
-    transition: width 0.3s ease;
 }
 
-.header-search-wrapper input:focus {
-    width: 160px;
-}
+/* Sidebar/Overlay styles carry on... */
 
 .toolbar-actions {
     display: flex;

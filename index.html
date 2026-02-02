@@ -35,11 +35,6 @@
                     <span class="stat-value">543</span>
                     <span class="stat-label">New This Week</span>
                 </div>
-                <!-- Search Utility -->
-                <div class="header-search-wrapper">
-                    <i data-lucide="search" size="14"></i>
-                    <input type="text" id="repo-search" placeholder="QUICK SEARCH...">
-                </div>
                 <!-- Theme Toggle Button -->
                 <button class="theme-switch" id="theme-toggle" title="Toggle Theme">
                     <i data-lucide="moon" id="theme-icon"></i>
@@ -52,89 +47,74 @@
         </header>
 
         <nav id="main-nav">
-            <a href="#" class="nav-link active">INDEX</a>
-            <a href="#" class="nav-link">DOMAINS</a>
-            <a href="#" class="nav-link">INSIGHTS</a>
-            <a href="#" class="nav-link">BUILD</a>
-            <a href="#" class="nav-link">STATUS</a>
+            <div class="nav-links">
+                <a href="#" class="nav-link active" onclick="filterMenu('all', this)">ALL</a>
+                <a href="#" class="nav-link" onclick="filterMenu('finance', this)">FINANCE</a>
+                <a href="#" class="nav-link" onclick="filterMenu('health', this)">MEDICAL</a>
+            </div>
+            <div class="nav-search">
+                <i data-lucide="search" size="14"></i>
+                <input type="text" id="repo-search" placeholder="SEARCH...">
+            </div>
         </nav>
 
-        <div class="toolbar">
-            <div class="toolbar-actions">
-                <select class="filter-select" id="domain-filter" onchange="runFilters()">
-                    <option value="all">ALL DOMAINS</option>
-                    <option value="finance">FINANCE</option>
-                    <option value="health">HEALTH</option>
-                    <option value="hybrid">HYBRID</option>
-                    <option value="infrastructure">INFRASTRUCTURE</option>
-                </select>
-                <select class="filter-select" id="status-filter" onchange="runFilters()">
-                    <option value="all">ALL STATUS</option>
-                    <option value="healthy">HEALTHY</option>
-                    <option value="stale">STALE</option>
-                    <option value="inactive">INACTIVE</option>
-                    <option value="invalid">INVALID</option>
-                </select>
-            </div>
-        </div>
-    </div>
 
-    <div class="data-table-container">
-        <table>
-            <thead>
-                <tr>
-                    <th width="40">#</th>
-                    <th>Record</th>
-                    <th>Description</th>
-                    <th width="120">Domain</th>
-                    <th width="120">Category</th>
-                    <th width="120">Updated</th>
-                    <th width="60">Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- REAL DATA INJECTED BY JS -->
-                <tr>
-                    <td colspan="11" style="text-align:center; padding: 3rem;">AUTHENTICATING WITH QUANTIX CLOUD...
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-
-    <!-- RECORD DETAIL OVERLAY -->
-    <div id="recordDetail" class="detail-overlay">
-        <div class="detail-header">
-            <h3><span style="color: var(--accent-color);">[</span> RECORD_AUDIT_LOG <span
-                    style="color: var(--accent-color);">]</span></h3>
-            <button class="btn-close" onclick="closeDetail()"><i data-lucide="x"></i></button>
+        <div class="data-table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th width="40">#</th>
+                        <th>Record</th>
+                        <th>Description</th>
+                        <th width="120">Domain</th>
+                        <th width="120">Category</th>
+                        <th width="120">Updated</th>
+                        <th width="60">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- REAL DATA INJECTED BY JS -->
+                    <tr>
+                        <td colspan="11" style="text-align:center; padding: 3rem;">AUTHENTICATING WITH QUANTIX CLOUD...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
-        <div class="detail-body" id="detailBody">
-            <div class="audit-section">
-                <div class="audit-label">Index ID</div>
-                <div class="audit-value" id="auditId">---</div>
+
+        <!-- RECORD DETAIL OVERLAY -->
+        <div id="recordDetail" class="detail-overlay">
+            <div class="detail-header">
+                <h3><span style="color: var(--accent-color);">[</span> RECORD_AUDIT_LOG <span
+                        style="color: var(--accent-color);">]</span></h3>
+                <button class="btn-close" onclick="closeDetail()"><i data-lucide="x"></i></button>
             </div>
-            <div id="dynamicDetailInfo"></div>
-            <div class="audit-section">
-                <div class="audit-label">Pipeline Source</div>
-                <div class="audit-value">Cloud Drive (Verified Persistence)</div>
-            </div>
-            <div class="audit-section">
-                <div class="audit-label">Verification Timestamp</div>
-                <div class="audit-value" id="auditTimestamp">---</div>
-            </div>
-            <div class="audit-section">
-                <div class="audit-label">Raw Repository Schema (YAML)</div>
-                <div class="audit-value">
-                    <pre class="yaml-raw" id="auditYaml">---</pre>
+            <div class="detail-body" id="detailBody">
+                <div class="audit-section">
+                    <div class="audit-label">Index ID</div>
+                    <div class="audit-value" id="auditId">---</div>
+                </div>
+                <div id="dynamicDetailInfo"></div>
+                <div class="audit-section">
+                    <div class="audit-label">Pipeline Source</div>
+                    <div class="audit-value">Cloud Drive (Verified Persistence)</div>
+                </div>
+                <div class="audit-section">
+                    <div class="audit-label">Verification Timestamp</div>
+                    <div class="audit-value" id="auditTimestamp">---</div>
+                </div>
+                <div class="audit-section">
+                    <div class="audit-label">Raw Repository Schema (YAML)</div>
+                    <div class="audit-value">
+                        <pre class="yaml-raw" id="auditYaml">---</pre>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <footer>
-        <p class="footer-text">Powered by Quantix AI Core - Finance & Medical Analytics @2026</p>
-    </footer>
+        <footer>
+            <p class="footer-text">Powered by Quantix AI Core - Finance & Medical Analytics @2026</p>
+        </footer>
     </div>
 
     <script>
@@ -216,18 +196,21 @@
             }
         }
 
-        function runFilters() {
-            const domain = document.getElementById('domain-filter').value;
-            const status = document.getElementById('status-filter').value;
-            const term = document.getElementById('repo-search').value.toLowerCase();
+        let currentFilter = 'all';
 
+        function filterMenu(domain, btn) {
+            currentFilter = domain;
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            btn.classList.add('active');
+            runFilters();
+        }
+
+        function runFilters() {
+            const term = document.getElementById('repo-search').value.toLowerCase();
             let filtered = currentRecords;
 
-            if (domain !== 'all') {
-                filtered = filtered.filter(r => r._derived.domain.toLowerCase() === domain);
-            }
-            if (status !== 'all') {
-                filtered = filtered.filter(r => r._derived.status === status);
+            if (currentFilter !== 'all') {
+                filtered = filtered.filter(r => r._derived.domain.toLowerCase() === currentFilter);
             }
             if (term) {
                 filtered = filtered.filter(r =>
