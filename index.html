@@ -227,6 +227,8 @@
                 else if (status === 'inactive' || status === 'invalid') { statusIcon = "alert-triangle"; statusColor = "#ef4444"; }
 
                 const row = document.createElement('tr');
+                row.style.cursor = "pointer";
+                row.onclick = () => window.open(record.repo_url, '_blank');
 
                 row.innerHTML = `
                     <td data-label="#">${(i + 1).toString().padStart(2, '0')}</td>

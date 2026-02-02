@@ -440,7 +440,8 @@ td {
 }
 
 tr:hover td {
-    background: rgba(255, 255, 255, 0.02);
+    background: rgba(255, 255, 255, 0.05);
+    transition: background 0.2s ease;
 }
 
 .repo-info {
