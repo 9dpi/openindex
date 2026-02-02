@@ -35,6 +35,11 @@
                     <span class="stat-value">543</span>
                     <span class="stat-label">New This Week</span>
                 </div>
+                <!-- Search Utility -->
+                <div class="header-search-wrapper">
+                    <i data-lucide="search" size="14"></i>
+                    <input type="text" id="repo-search" placeholder="QUICK SEARCH...">
+                </div>
                 <!-- Theme Toggle Button -->
                 <button class="theme-switch" id="theme-toggle" title="Toggle Theme">
                     <i data-lucide="moon" id="theme-icon"></i>
@@ -55,11 +60,6 @@
         </nav>
 
         <div class="toolbar">
-            <div class="search-wrapper">
-                <i data-lucide="search" class="search-icon" size="18"></i>
-                <input type="text" class="search-input" id="repo-search"
-                    placeholder="SEARCH RECORDS BY NAME, ID, DESCRIPTION...">
-            </div>
             <div class="toolbar-actions">
                 <select class="filter-select" id="domain-filter" onchange="runFilters()">
                     <option value="all">Domain: All</option>
@@ -75,6 +75,9 @@
                     <option value="inactive">Inactive</option>
                     <option value="invalid">Invalid</option>
                 </select>
+            </div>
+            <div class="sys-path">
+                PATH://REGISTRY/ROOT
             </div>
         </div>
 
