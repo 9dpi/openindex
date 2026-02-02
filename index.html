@@ -57,14 +57,24 @@
         <div class="toolbar">
             <div class="search-wrapper">
                 <i data-lucide="search" class="search-icon" size="18"></i>
-                <input type="text" class="search-input" id="repo-search" placeholder="SEARCH REPOSITORIES...">
+                <input type="text" class="search-input" id="repo-search"
+                    placeholder="SEARCH RECORDS BY NAME, ID, DESCRIPTION...">
             </div>
             <div class="toolbar-actions">
-                <button class="filter-btn active" onclick="filterByDomain('all', this)">All</button>
-                <button class="filter-btn" onclick="filterByDomain('finance', this)">Finance</button>
-                <button class="filter-btn" onclick="filterByDomain('health', this)">Health</button>
-                <button class="filter-btn" onclick="filterByDomain('hybrid', this)">Hybrid</button>
-                <button class="filter-btn" onclick="filterByDomain('infrastructure', this)">Infrastructure</button>
+                <select class="filter-select" id="domain-filter" onchange="runFilters()">
+                    <option value="all">Domain: All</option>
+                    <option value="finance">Finance</option>
+                    <option value="health">Health</option>
+                    <option value="hybrid">Hybrid</option>
+                    <option value="infrastructure">Infrastructure</option>
+                </select>
+                <select class="filter-select" id="status-filter" onchange="runFilters()">
+                    <option value="all">Status: All</option>
+                    <option value="healthy">Healthy / Active</option>
+                    <option value="stale">Stale</option>
+                    <option value="inactive">Inactive</option>
+                    <option value="invalid">Invalid</option>
+                </select>
             </div>
         </div>
 
@@ -73,16 +83,12 @@
                 <thead>
                     <tr>
                         <th width="40">#</th>
-                        <th>Repository</th>
-                        <th>Stars</th>
-                        <th>24H ∆</th>
-                        <th>7D ∆</th>
-                        <th>Forks</th>
+                        <th>Record</th>
                         <th>Description</th>
-                        <th>Domain</th>
-                        <th>Category</th>
-                        <th>Updated</th>
-                        <th>Status</th>
+                        <th width="120">Domain</th>
+                        <th width="120">Category</th>
+                        <th width="120">Updated</th>
+                        <th width="60">Status</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -95,8 +101,38 @@
             </table>
         </div>
 
+        <!-- RECORD DETAIL OVERLAY -->
+        <div id="recordDetail" class="detail-overlay">
+            <div class="detail-header">
+                <h3><span style="color: var(--accent-color);">[</span> RECORD_AUDIT_LOG <span
+                        style="color: var(--accent-color);">]</span></h3>
+                <button class="btn-close" onclick="closeDetail()"><i data-lucide="x"></i></button>
+            </div>
+            <div class="detail-body" id="detailBody">
+                <div class="audit-section">
+                    <div class="audit-label">Index ID</div>
+                    <div class="audit-value" id="auditId">---</div>
+                </div>
+                <div id="dynamicDetailInfo"></div>
+                <div class="audit-section">
+                    <div class="audit-label">Pipeline Source</div>
+                    <div class="audit-value">Cloud Drive (Verified Persistence)</div>
+                </div>
+                <div class="audit-section">
+                    <div class="audit-label">Verification Timestamp</div>
+                    <div class="audit-value" id="auditTimestamp">---</div>
+                </div>
+                <div class="audit-section">
+                    <div class="audit-label">Raw Repository Schema (YAML)</div>
+                    <div class="audit-value">
+                        <pre class="yaml-raw" id="auditYaml">---</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <footer>
-            <p class="footer-text">Powered by Quantix AI Core - Finance & Medical Analystic @2026</p>
+            <p class="footer-text">Powered by Quantix AI Core - Finance & Medical Analytics @2026</p>
         </footer>
     </div>
 
@@ -133,18 +169,19 @@
         // Dynamic Fetching from Google Drive via Apps Script
         async function fetchRecords() {
             const tbody = document.querySelector('tbody');
-            tbody.innerHTML = '<tr><td colspan="11" style="text-align:center; padding: 3rem;">AUTHENTICATING WITH QUANTIX CLOUD...</td></tr>';
-            tbody.innerHTML = '<tr><td colspan="11" style="text-align:center; padding: 3rem;"><div class="loading-pulse">SYNCING_REGISTRY_CORE...</div></td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 3rem;"><div class="loading-pulse">SYNCING_REGISTRY_CORE...</div></td></tr>';
 
             try {
-                // Since js-yaml is not loaded, we use a simple regex-based parser or require js-yaml
-                // Adding js-yaml dynamically for client-side parsing
-
+                // Pre-load js-yaml if needed (already in head or before script)
+                if (typeof jsyaml === 'undefined') {
+                    const script = document.createElement('script');
+                    script.src = "https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js";
+                    document.head.appendChild(script);
+                    await new Promise(resolve => script.onload = resolve);
+                }
 
                 const response = await fetch(WEB_APP_URL);
                 const result = await response.json();
-
-                console.log("Dữ liệu nhận được:", result);
 
                 if (result.status === "success" || result.status === "stable") {
                     const rawItems = result.records || result.data;
@@ -164,93 +201,74 @@
                         });
                         renderRecords(currentRecords);
                     } else {
-                        tbody.innerHTML = '<tr><td colspan="11" style="text-align:center; padding: 3rem;">NO RECORDS FOUND IN REGISTRY.</td></tr>';
+                        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 3rem;">NO RECORDS FOUND IN REGISTRY.</td></tr>';
                     }
                 } else {
                     throw new Error(result.message || "Unknown error");
                 }
             } catch (error) {
                 console.error("Fetch error:", error);
-                tbody.innerHTML = `<tr><td colspan="11" style="text-align:center; padding: 3rem; color: var(--accent-color);">
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 3rem; color: var(--accent-color);">
                     CONNECTION_ERROR: UNABLE TO REACH QUANTIX_AI_CORE<br>
                     <small>${error.message}</small>
                 </td></tr>`;
             }
         }
 
-        function filterByDomain(domain, btn) {
-            // Update UI
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
+        function runFilters() {
+            const domain = document.getElementById('domain-filter').value;
+            const status = document.getElementById('status-filter').value;
+            const term = document.getElementById('repo-search').value.toLowerCase();
 
-            if (domain === 'all') {
-                renderRecords(currentRecords);
-            } else {
-                const filtered = currentRecords.filter(r => r._derived.domain.toLowerCase() === domain);
-                renderRecords(filtered);
+            let filtered = currentRecords;
+
+            if (domain !== 'all') {
+                filtered = filtered.filter(r => r._derived.domain.toLowerCase() === domain);
             }
+            if (status !== 'all') {
+                filtered = filtered.filter(r => r._derived.status === status);
+            }
+            if (term) {
+                filtered = filtered.filter(r =>
+                    (r.project_name || '').toLowerCase().includes(term) ||
+                    (r.summary || '').toLowerCase().includes(term) ||
+                    (r.openindex_id || '').toLowerCase().includes(term)
+                );
+            }
+            renderRecords(filtered);
         }
 
-        // Search Implementation
-        document.getElementById('repo-search').addEventListener('input', (e) => {
-            const term = e.target.value.toLowerCase();
-            const filtered = currentRecords.filter(r =>
-                (r.project_name || '').toLowerCase().includes(term) ||
-                (r.summary || '').toLowerCase().includes(term) ||
-                (r.openindex_id || '').toLowerCase().includes(term)
-            );
-            renderRecords(filtered);
-        });
+        document.getElementById('repo-search').addEventListener('input', runFilters);
 
         function renderRecords(records) {
             const tbody = document.querySelector('tbody');
             tbody.innerHTML = '';
 
-            // Sắp xếp theo stars
-            records.sort((a, b) => (b.metrics?.stars || 0) - (a.metrics?.stars || 0));
+            // Core logic: Sort by updated date (latest first)
+            records.sort((a, b) => new Date(b.timestamps?.last_verified || 0) - new Date(a.timestamps?.last_verified || 0));
 
             records.forEach((record, i) => {
-                const metrics = record.metrics || {};
-                const stars24h = metrics.stars_24h || 0;
-                const stars7d = metrics.stars_7d || 0;
-
-                const change24hClass = stars24h >= 0 ? "change-pos" : "change-neg";
-                const change7dClass = stars7d >= 0 ? "change-pos" : "change-neg";
-
-                // Quy định màu sắc dựa trên derived_status hoặc index_status
-                let statusIcon = "check-circle", statusColor = "#10b981";
                 const status = record._derived.status;
-
-                if (status === 'stale') {
-                    statusIcon = "activity";
-                    statusColor = "#ff9d00";
-                } else if (status === 'inactive' || status === 'invalid') {
-                    statusIcon = "alert-triangle";
-                    statusColor = "#ef4444";
-                }
-
-                const domainClass = `tag-${(record._derived.domain || 'hybrid').toLowerCase()}`;
-                const categoryClass = `tag-${(record.category || 'app').toLowerCase().substring(0, 4)}`;
+                let statusIcon = "check-circle", statusColor = "#10b981";
+                if (status === 'stale') { statusIcon = "activity"; statusColor = "#ff9d00"; }
+                else if (status === 'inactive' || status === 'invalid') { statusIcon = "alert-triangle"; statusColor = "#ef4444"; }
 
                 const row = document.createElement('tr');
                 row.style.cursor = "pointer";
                 row.onclick = () => showDetail(record);
+
                 row.innerHTML = `
                     <td data-label="#">${(i + 1).toString().padStart(2, '0')}</td>
-                    <td data-label="Repository">
+                    <td data-label="Record">
                         <div class="repo-info">
-                            <span class="repo-name">${record.project_name || 'Unnamed Project'}</span>
-                            <span class="repo-sub">${record.owner || 'unknown'} / ${(record.project_name || 'core').toLowerCase()}</span>
+                            <span class="repo-name">${record.project_name || 'Unnamed'}</span>
+                            <span class="repo-sub">${record.owner || 'unknown'}</span>
                         </div>
                     </td>
-                    <td data-label="Stars" class="mono-font">${(metrics.stars || 0).toLocaleString()}</td>
-                    <td data-label="24H ∆" class="mono-font ${change24hClass}">${stars24h > 0 ? '+' : ''}${stars24h.toLocaleString()}</td>
-                    <td data-label="7D ∆" class="mono-font ${change7dClass}">${stars7d > 0 ? '+' : ''}${stars7d.toLocaleString()}</td>
-                    <td data-label="Forks" class="mono-font">${(metrics.forks || 0).toLocaleString()}</td>
-                    <td data-label="Description" style="font-size: 0.85rem;">${record.summary || 'No summary provided.'}</td>
-                    <td data-label="Domain"><span class="tag ${domainClass}">${record._derived.domain || 'Hybrid'}</span></td>
-                    <td data-label="Category"><span class="tag ${categoryClass}">${record.category || 'Analytics'}</span></td>
-                    <td data-label="Updated" class="mono-font text-muted">${record.timestamps?.last_verified || '2026-02-02'}</td>
+                    <td data-label="Description" style="font-size: 0.85rem;">${record.summary || ''}</td>
+                    <td data-label="Domain"><span class="tag tag-${(record._derived.domain || 'hybrid').toLowerCase()}">${record._derived.domain || 'Hybrid'}</span></td>
+                    <td data-label="Category"><span class="tag tag-analytics">${record.category || 'N/A'}</span></td>
+                    <td data-label="Updated" class="mono-font text-muted">${record.timestamps?.last_verified || '---'}</td>
                     <td data-label="Status"><i data-lucide="${statusIcon}" color="${statusColor}" size="16"></i></td>
                 `;
                 tbody.appendChild(row);
@@ -259,9 +277,29 @@
         }
 
         function showDetail(record) {
+            const metrics = record.metrics || {};
             document.getElementById('auditId').innerText = record.openindex_id || "N/A";
             document.getElementById('auditTimestamp').innerText = record._derived.scanned_at || new Date().toISOString();
             document.getElementById('auditYaml').innerText = record._raw_content;
+
+            const detailInfo = `
+                <div class="audit-section">
+                    <div class="audit-label">Deterministic Evidence</div>
+                    <div class="audit-value">
+                        Metrics: Stars (${metrics.stars || 0}) / Forks (${metrics.forks || 0})<br>
+                        Endpoints: <a href="${record.repo_url}" target="_blank" style="color:var(--accent-color)">Source Protocol</a>
+                    </div>
+                </div>
+                <div class="audit-section">
+                    <div class="audit-label">Compliance Status</div>
+                    <div class="audit-value">
+                        Registry Tier: Schema v1.0<br>
+                        Indexing Signal: ${record._derived.signal.toUpperCase()}<br>
+                        Disclaimer: This record exists as validated evidence.
+                    </div>
+                </div>
+            `;
+            document.getElementById('dynamicDetailInfo').innerHTML = detailInfo;
             document.getElementById('recordDetail').classList.add('active');
         }
 
