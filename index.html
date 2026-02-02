@@ -28,12 +28,16 @@
             </div>
             <div class="stats-bar">
                 <div class="stat-item">
-                    <span class="stat-value accent-glow-text">12.8K</span>
-                    <span class="stat-label">Total Repos</span>
+                    <span class="stat-value accent-glow-text" id="stat-total">--</span>
+                    <span class="stat-label">TOTAL INDEX</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-value">543</span>
-                    <span class="stat-label">New This Week</span>
+                    <span class="stat-value" id="stat-active">--%</span>
+                    <span class="stat-label">SYSTEM HEALTH</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value" id="stat-domains">--</span>
+                    <span class="stat-label">DOMAINS</span>
                 </div>
                 <!-- Theme Toggle Button -->
                 <button class="theme-switch" id="theme-toggle" title="Toggle Theme">
@@ -162,6 +166,7 @@
                             }
                         });
                         console.log("Indexed Records:", currentRecords);
+                        updateStats(currentRecords);
                         renderRecords(currentRecords);
                     } else {
                         tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 3rem;">NO INDEXED RECORDS YET. SCANNING IN PROGRESS.</td></tr>';
@@ -205,6 +210,17 @@
         }
 
         document.getElementById('repo-search').addEventListener('input', runFilters);
+
+        function updateStats(records) {
+            const total = records.length;
+            const activeCount = records.filter(r => r._derived.status === 'active' || r._derived.status === 'healthy').length;
+            const healthPercent = total > 0 ? Math.round((activeCount / total) * 100) : 0;
+            const domains = new Set(records.map(r => r._derived.domain)).size;
+
+            document.getElementById('stat-total').innerText = total;
+            document.getElementById('stat-active').innerText = `${healthPercent}%`;
+            document.getElementById('stat-domains').innerText = domains;
+        }
 
         function timeAgo(dateString) {
             if (!dateString) return '---';
