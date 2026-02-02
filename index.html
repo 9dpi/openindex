@@ -62,81 +62,79 @@
         <div class="toolbar">
             <div class="toolbar-actions">
                 <select class="filter-select" id="domain-filter" onchange="runFilters()">
-                    <option value="all">Domain: All</option>
-                    <option value="finance">Finance</option>
-                    <option value="health">Health</option>
-                    <option value="hybrid">Hybrid</option>
-                    <option value="infrastructure">Infrastructure</option>
+                    <option value="all">ALL DOMAINS</option>
+                    <option value="finance">FINANCE</option>
+                    <option value="health">HEALTH</option>
+                    <option value="hybrid">HYBRID</option>
+                    <option value="infrastructure">INFRASTRUCTURE</option>
                 </select>
                 <select class="filter-select" id="status-filter" onchange="runFilters()">
-                    <option value="all">Status: All</option>
-                    <option value="healthy">Healthy / Active</option>
-                    <option value="stale">Stale</option>
-                    <option value="inactive">Inactive</option>
-                    <option value="invalid">Invalid</option>
+                    <option value="all">ALL STATUS</option>
+                    <option value="healthy">HEALTHY</option>
+                    <option value="stale">STALE</option>
+                    <option value="inactive">INACTIVE</option>
+                    <option value="invalid">INVALID</option>
                 </select>
             </div>
-            <div class="sys-path">
-                PATH://REGISTRY/ROOT
-            </div>
         </div>
+    </div>
 
-        <div class="data-table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th width="40">#</th>
-                        <th>Record</th>
-                        <th>Description</th>
-                        <th width="120">Domain</th>
-                        <th width="120">Category</th>
-                        <th width="120">Updated</th>
-                        <th width="60">Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- REAL DATA INJECTED BY JS -->
-                    <tr>
-                        <td colspan="11" style="text-align:center; padding: 3rem;">AUTHENTICATING WITH QUANTIX CLOUD...
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+    <div class="data-table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th width="40">#</th>
+                    <th>Record</th>
+                    <th>Description</th>
+                    <th width="120">Domain</th>
+                    <th width="120">Category</th>
+                    <th width="120">Updated</th>
+                    <th width="60">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- REAL DATA INJECTED BY JS -->
+                <tr>
+                    <td colspan="11" style="text-align:center; padding: 3rem;">AUTHENTICATING WITH QUANTIX CLOUD...
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- RECORD DETAIL OVERLAY -->
+    <div id="recordDetail" class="detail-overlay">
+        <div class="detail-header">
+            <h3><span style="color: var(--accent-color);">[</span> RECORD_AUDIT_LOG <span
+                    style="color: var(--accent-color);">]</span></h3>
+            <button class="btn-close" onclick="closeDetail()"><i data-lucide="x"></i></button>
         </div>
-
-        <!-- RECORD DETAIL OVERLAY -->
-        <div id="recordDetail" class="detail-overlay">
-            <div class="detail-header">
-                <h3><span style="color: var(--accent-color);">[</span> RECORD_AUDIT_LOG <span
-                        style="color: var(--accent-color);">]</span></h3>
-                <button class="btn-close" onclick="closeDetail()"><i data-lucide="x"></i></button>
+        <div class="detail-body" id="detailBody">
+            <div class="audit-section">
+                <div class="audit-label">Index ID</div>
+                <div class="audit-value" id="auditId">---</div>
             </div>
-            <div class="detail-body" id="detailBody">
-                <div class="audit-section">
-                    <div class="audit-label">Index ID</div>
-                    <div class="audit-value" id="auditId">---</div>
-                </div>
-                <div id="dynamicDetailInfo"></div>
-                <div class="audit-section">
-                    <div class="audit-label">Pipeline Source</div>
-                    <div class="audit-value">Cloud Drive (Verified Persistence)</div>
-                </div>
-                <div class="audit-section">
-                    <div class="audit-label">Verification Timestamp</div>
-                    <div class="audit-value" id="auditTimestamp">---</div>
-                </div>
-                <div class="audit-section">
-                    <div class="audit-label">Raw Repository Schema (YAML)</div>
-                    <div class="audit-value">
-                        <pre class="yaml-raw" id="auditYaml">---</pre>
-                    </div>
+            <div id="dynamicDetailInfo"></div>
+            <div class="audit-section">
+                <div class="audit-label">Pipeline Source</div>
+                <div class="audit-value">Cloud Drive (Verified Persistence)</div>
+            </div>
+            <div class="audit-section">
+                <div class="audit-label">Verification Timestamp</div>
+                <div class="audit-value" id="auditTimestamp">---</div>
+            </div>
+            <div class="audit-section">
+                <div class="audit-label">Raw Repository Schema (YAML)</div>
+                <div class="audit-value">
+                    <pre class="yaml-raw" id="auditYaml">---</pre>
                 </div>
             </div>
         </div>
+    </div>
 
-        <footer>
-            <p class="footer-text">Powered by Quantix AI Core - Finance & Medical Analytics @2026</p>
-        </footer>
+    <footer>
+        <p class="footer-text">Powered by Quantix AI Core - Finance & Medical Analytics @2026</p>
+    </footer>
     </div>
 
     <script>
@@ -243,11 +241,29 @@
 
         document.getElementById('repo-search').addEventListener('input', runFilters);
 
+        function timeAgo(dateString) {
+            if (!dateString) return '---';
+            const date = new Date(dateString);
+            const now = new Date();
+            const seconds = Math.floor((now - date) / 1000);
+
+            let interval = Math.floor(seconds / 31536000);
+            if (interval > 1) return interval + "y ago";
+            interval = Math.floor(seconds / 2592000);
+            if (interval > 1) return interval + "mo ago";
+            interval = Math.floor(seconds / 86400);
+            if (interval >= 1) return interval + "d ago";
+            interval = Math.floor(seconds / 3600);
+            if (interval >= 1) return interval + "h ago";
+            interval = Math.floor(seconds / 60);
+            if (interval >= 1) return interval + "m ago";
+            return Math.floor(seconds) + "s ago";
+        }
+
         function renderRecords(records) {
             const tbody = document.querySelector('tbody');
             tbody.innerHTML = '';
 
-            // Core logic: Sort by updated date (latest first)
             records.sort((a, b) => new Date(b.timestamps?.last_verified || 0) - new Date(a.timestamps?.last_verified || 0));
 
             records.forEach((record, i) => {
@@ -271,7 +287,7 @@
                     <td data-label="Description" style="font-size: 0.85rem;">${record.summary || ''}</td>
                     <td data-label="Domain"><span class="tag tag-${(record._derived.domain || 'hybrid').toLowerCase()}">${record._derived.domain || 'Hybrid'}</span></td>
                     <td data-label="Category"><span class="tag tag-analytics">${record.category || 'N/A'}</span></td>
-                    <td data-label="Updated" class="mono-font text-muted">${record.timestamps?.last_verified || '---'}</td>
+                    <td data-label="Updated" class="mono-font text-muted">${timeAgo(record.timestamps?.last_verified)}</td>
                     <td data-label="Status"><i data-lucide="${statusIcon}" color="${statusColor}" size="16"></i></td>
                 `;
                 tbody.appendChild(row);
