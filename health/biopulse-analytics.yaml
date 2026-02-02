@@ -1,0 +1,51 @@
+openindex_id: OI-HEALTH-0003
+project_name: BioPulse-Analytics
+repo_url: https://github.com/medtech-fnd/biopulse
+owner: medtech-fnd
+
+domain: health
+category: analytics
+
+summary: >
+  Real-time patient monitoring and predictive health analytics.
+
+intended_use:
+  scope: assistive
+  description: Clinical decision support. Not a diagnostic system.
+
+evidence:
+  paper:
+    exists: true
+    link: https://arxiv.org/abs/xxxx.xxxxx
+    peer_reviewed: false
+  dataset:
+    disclosed: true
+    name: ICU Vital Signals Dataset
+  validation:
+    type: external
+    notes: Validated across two hospital systems.
+
+risk:
+  medical_claim: false
+  financial_advice_claim: false
+  regulated_domain: true
+  user_warning: >
+    Outputs must be interpreted by licensed clinicians.
+
+status:
+  index_status: under_review
+  signal: yellow
+
+metrics:
+  stars: 31500
+  forks: 5620
+  stars_24h: 256
+  stars_7d: 2410
+
+timestamps:
+  indexed_at: 2026-02-02
+  last_verified: 2026-02-02
+
+maintainers:
+  - name: OpenIndex Medical Reviewer
+    role: reviewer
