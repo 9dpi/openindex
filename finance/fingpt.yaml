@@ -1,0 +1,18 @@
+schema_version: '1.0'
+record:
+  name: FinGPT
+  repo_url: https://github.com/AI4Finance-Foundation/FinGPT
+domain: finance
+category: infrastructure
+description: Open-source financial Large Language Models (LLMs) to democratize financial
+  AI.
+evidence:
+  github:
+    stars: 18000
+    forks: 2500
+    topics:
+    - finance
+    - ai
+    - llm
+    - fintech
+status: active

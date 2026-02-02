@@ -1,0 +1,18 @@
+schema_version: '1.0'
+record:
+  name: Sci_LLM
+  repo_url: https://github.com/LLMs-in-science/Sci_LLM
+domain: health
+category: infrastructure
+description: Framework for LLM-based knowledge synthesis and scientific reasoning
+  in biomedical discovery.
+evidence:
+  github:
+    stars: 283
+    forks: 40
+    topics:
+    - biomedical
+    - ai
+    - science
+    - knowledge-synthesis
+status: active

@@ -1,0 +1,18 @@
+schema_version: '1.0'
+record:
+  name: DIPY
+  repo_url: https://github.com/dipy/dipy
+domain: health
+category: analytics
+description: Diffusion Imaging in Python (DIPY) is an open-source library for analysis
+  of magnetic resonance imaging.
+evidence:
+  github:
+    stars: 500
+    forks: 350
+    topics:
+    - mri
+    - medical-imaging
+    - neuroscience
+    - python
+status: active

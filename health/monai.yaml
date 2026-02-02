@@ -1,0 +1,18 @@
+schema_version: '1.0'
+record:
+  name: MONAI
+  repo_url: https://github.com/Project-MONAI/MONAI
+domain: health
+category: infrastructure
+description: Medical Open Network for AI (MONAI) is a PyTorch-based framework for
+  deep learning in healthcare imaging.
+evidence:
+  github:
+    stars: 5500
+    forks: 1500
+    topics:
+    - medical-imaging
+    - ai
+    - healthcare
+    - pytorch
+status: active

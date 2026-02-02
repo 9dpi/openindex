@@ -1,0 +1,18 @@
+schema_version: '1.0'
+record:
+  name: Lago
+  repo_url: https://github.com/getlago/lago
+domain: finance
+category: infrastructure
+description: Open-source metering and usage-based billing API, a low-code alternative
+  to Stripe Billing.
+evidence:
+  github:
+    stars: 9000
+    forks: 800
+    topics:
+    - billing
+    - payments
+    - fintech
+    - saas
+status: active

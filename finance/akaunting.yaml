@@ -1,0 +1,18 @@
+schema_version: '1.0'
+record:
+  name: Akaunting
+  repo_url: https://github.com/akaunting/akaunting
+domain: finance
+category: analytics
+description: Free and open-source online accounting software designed for small businesses
+  and freelancers.
+evidence:
+  github:
+    stars: 9500
+    forks: 1500
+    topics:
+    - accounting
+    - finance
+    - php
+    - erp
+status: active

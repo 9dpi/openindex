@@ -1,0 +1,18 @@
+schema_version: '1.0'
+record:
+  name: Ghostfolio
+  repo_url: https://github.com/ghostfolio/ghostfolio
+domain: finance
+category: analytics
+description: Open-source web-based wealth management application to track financial
+  assets like stocks, ETFs or cryptos.
+evidence:
+  github:
+    stars: 7500
+    forks: 1000
+    topics:
+    - wealth-management
+    - finance
+    - analytics
+    - self-hosted
+status: active

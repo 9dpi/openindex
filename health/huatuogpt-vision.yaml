@@ -1,0 +1,18 @@
+schema_version: '1.0'
+record:
+  name: HuatuoGPT-Vision
+  repo_url: https://github.com/FreedomIntelligence/HuatuoGPT-Vision
+domain: health
+category: analytics
+description: A Medical Multimodal LLM capable of processing and understanding medical
+  images and text.
+evidence:
+  github:
+    stars: 372
+    forks: 50
+    topics:
+    - medical-ai
+    - multimodal
+    - healthcare
+    - vision
+status: active

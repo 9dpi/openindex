@@ -1,0 +1,18 @@
+schema_version: '1.0'
+record:
+  name: OpenBB Platform
+  repo_url: https://github.com/OpenBB-finance/OpenBB
+domain: finance
+category: analytics
+description: An open-source financial analysis toolkit that integrates with nearly
+  100 different data providers.
+evidence:
+  github:
+    stars: 30000
+    forks: 3000
+    topics:
+    - finance
+    - trading
+    - investment
+    - analytics
+status: active

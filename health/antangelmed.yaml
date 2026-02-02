@@ -1,0 +1,18 @@
+schema_version: '1.0'
+record:
+  name: AntAngelMed
+  repo_url: https://github.com/MedAIBase/AntAngelMed
+domain: health
+category: analytics
+description: Open-source medical large language model demonstrating deep medical knowledge
+  and safety compliance.
+evidence:
+  github:
+    stars: 117
+    forks: 10
+    topics:
+    - medical-ai
+    - llm
+    - healthcare
+    - safety
+status: active

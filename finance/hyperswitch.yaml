@@ -1,0 +1,18 @@
+schema_version: '1.0'
+record:
+  name: Hyperswitch
+  repo_url: https://github.com/juspay/hyperswitch
+domain: finance
+category: infrastructure
+description: An open-source payment switch written in Rust, designed for fast, reliable,
+  and affordable payments.
+evidence:
+  github:
+    stars: 40000
+    forks: 1500
+    topics:
+    - payments
+    - rust
+    - fintech
+    - infrastructure
+status: active

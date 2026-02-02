@@ -1,0 +1,18 @@
+schema_version: '1.0'
+record:
+  name: SimpleITK
+  repo_url: https://github.com/SimpleITK/SimpleITK
+domain: health
+category: analytics
+description: Simplified interface to the Insight Segmentation and Registration Toolkit
+  (ITK) for medical imaging.
+evidence:
+  github:
+    stars: 1100
+    forks: 450
+    topics:
+    - medical-imaging
+    - image-processing
+    - itk
+    - science
+status: active

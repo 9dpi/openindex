@@ -1,0 +1,18 @@
+schema_version: '1.0'
+record:
+  name: MedAIBench
+  repo_url: https://github.com/FreedomIntelligence/MedAIBench
+domain: health
+category: analytics
+description: A comprehensive benchmark for evaluating Medical AI models across diverse
+  tasks.
+evidence:
+  github:
+    stars: 250
+    forks: 30
+    topics:
+    - medical-ai
+    - benchmark
+    - healthcare
+    - nlp
+status: active

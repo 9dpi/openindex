@@ -1,0 +1,18 @@
+schema_version: '1.0'
+record:
+  name: FinRL
+  repo_url: https://github.com/AI4Finance-Foundation/FinRL
+domain: finance
+category: infrastructure
+description: Deep Reinforcement Learning (DRL) framework for financial trading and
+  wealth management.
+evidence:
+  github:
+    stars: 13000
+    forks: 2000
+    topics:
+    - finance
+    - ai
+    - trading
+    - reinforcement-learning
+status: active

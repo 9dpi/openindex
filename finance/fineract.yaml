@@ -1,0 +1,18 @@
+schema_version: '1.0'
+record:
+  name: Apache Fineract
+  repo_url: https://github.com/apache/fineract
+domain: finance
+category: infrastructure
+description: A secure, multi-tenanted system that provides core banking functions
+  for financial institutions.
+evidence:
+  github:
+    stars: 2000
+    forks: 1400
+    topics:
+    - banking
+    - finance
+    - java
+    - fintech
+status: active

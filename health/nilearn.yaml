@@ -1,0 +1,18 @@
+schema_version: '1.0'
+record:
+  name: Nilearn
+  repo_url: https://github.com/nilearn/nilearn
+domain: health
+category: analytics
+description: Python module for fast and easy statistical learning on NeuroImaging
+  data.
+evidence:
+  github:
+    stars: 1200
+    forks: 600
+    topics:
+    - neuroimaging
+    - medical
+    - science
+    - python
+status: active

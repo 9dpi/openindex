@@ -1,0 +1,17 @@
+schema_version: '1.0'
+record:
+  name: OpenMeter
+  repo_url: https://github.com/openmeterio/openmeter
+domain: finance
+category: infrastructure
+description: Open-source cloud cost and usage metering for AI, API, and DevOps platforms.
+evidence:
+  github:
+    stars: 1800
+    forks: 200
+    topics:
+    - billing
+    - fintech
+    - infrastructure
+    - devops
+status: active

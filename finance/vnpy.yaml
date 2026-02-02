@@ -1,0 +1,17 @@
+schema_version: '1.0'
+record:
+  name: vn.py
+  repo_url: https://github.com/vnpy/vnpy
+domain: finance
+category: analytics
+description: Python-based open-source quantitative trading platform development framework.
+evidence:
+  github:
+    stars: 35000
+    forks: 12000
+    topics:
+    - trading
+    - quant
+    - finance
+    - python
+status: active

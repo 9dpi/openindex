@@ -1,0 +1,18 @@
+schema_version: '1.0'
+record:
+  name: AlphaGenome
+  repo_url: https://github.com/google-deepmind/alphagenome
+domain: health
+category: infrastructure
+description: A unified DNA sequence model for regulatory variant-effect prediction
+  and genome function research.
+evidence:
+  github:
+    stars: 1400
+    forks: 200
+    topics:
+    - genomics
+    - ai
+    - biomedical
+    - google-deepmind
+status: active
