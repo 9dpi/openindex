@@ -91,68 +91,11 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- RECORDS_START -->
+                    <!-- REAL DATA INJECTED BY JS -->
                     <tr>
-                        <td data-label="#">01</td>
-                        <td data-label="Repository">
-                            <div class="repo-info">
-                                <a href="https://github.com/quantum-labs/core" class="repo-name">QuantCore-Finance</a>
-                                <span class="repo-sub">quantum-labs / quantcore-finance</span>
-                            </div>
+                        <td colspan="11" style="text-align:center; padding: 3rem;">AUTHENTICATING WITH QUANTIX CLOUD...
                         </td>
-                        <td data-label="Stars" class="mono-font">42,105</td>
-                        <td data-label="24H ∆" class="mono-font change-pos">+128</td>
-                        <td data-label="7D ∆" class="mono-font change-pos">+1,204</td>
-                        <td data-label="Forks" class="mono-font">8,421</td>
-                        <td data-label="Description" style="font-size: 0.85rem;">High-frequency trading engine with
-                            neural network optimization.
-                        </td>
-                        <td data-label="Domain"><span class="tag tag-finance">Finance</span></td>
-                        <td data-label="Category"><span class="tag tag-infr">Infrastructure</span></td>
-                        <td data-label="Updated" class="mono-font text-muted">2026-02-02</td>
-                        <td data-label="Status"><i data-lucide="check-circle" color="#10b981" size="16"></i></td>
                     </tr>
-                    <tr>
-                        <td data-label="#">02</td>
-                        <td data-label="Repository">
-                            <div class="repo-info">
-                                <a href="https://github.com/medtech-fnd/biopulse"
-                                    class="repo-name">BioPulse-Analytics</a>
-                                <span class="repo-sub">medtech-fnd / biopulse-analytics</span>
-                            </div>
-                        </td>
-                        <td data-label="Stars" class="mono-font">31,500</td>
-                        <td data-label="24H ∆" class="mono-font change-pos">+256</td>
-                        <td data-label="7D ∆" class="mono-font change-pos">+2,410</td>
-                        <td data-label="Forks" class="mono-font">5,620</td>
-                        <td data-label="Description" style="font-size: 0.85rem;">Real-time patient monitoring and
-                            predictive health analytics.
-                        </td>
-                        <td data-label="Domain"><span class="tag tag-health">Health</span></td>
-                        <td data-label="Category"><span class="tag tag-anal">Analytics</span></td>
-                        <td data-label="Updated" class="mono-font text-muted">2026-02-02</td>
-                        <td data-label="Status"><i data-lucide="activity" color="#ff9d00" size="16"></i></td>
-                    </tr>
-                    <tr>
-                        <td data-label="#">03</td>
-                        <td data-label="Repository">
-                            <div class="repo-info">
-                                <a href="https://github.com/insurtech-labs/core" class="repo-name">InsurAI-Core</a>
-                                <span class="repo-sub">insurtech-labs / insurai-core</span>
-                            </div>
-                        </td>
-                        <td data-label="Stars" class="mono-font">8,450</td>
-                        <td data-label="24H ∆" class="mono-font change-pos">+12</td>
-                        <td data-label="7D ∆" class="mono-font change-pos">+95</td>
-                        <td data-label="Forks" class="mono-font">980</td>
-                        <td data-label="Description" style="font-size: 0.85rem;">Risk assessment engine combining health
-                            indicators and financial records.
-                        </td>
-                        <td data-label="Domain"><span class="tag tag-hybrid">Hybrid</span></td>
-                        <td data-label="Category"><span class="tag tag-anal">Analytics</span></td>
-                        <td data-label="Updated" class="mono-font text-muted">2026-02-02</td>
-                        <td data-label="Status"><i data-lucide="check-circle" color="#10b981" size="16"></i></td>
-                    </tr><!-- RECORDS_END -->
                 </tbody>
             </table>
         </div>
@@ -196,16 +139,12 @@
         async function fetchRecords() {
             const tbody = document.querySelector('tbody');
             tbody.innerHTML = '<tr><td colspan="11" style="text-align:center; padding: 3rem;">AUTHENTICATING WITH QUANTIX CLOUD...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="11" style="text-align:center; padding: 3rem;"><div class="loading-pulse">SYNCING_REGISTRY_CORE...</div></td></tr>';
 
             try {
                 // Since js-yaml is not loaded, we use a simple regex-based parser or require js-yaml
                 // Adding js-yaml dynamically for client-side parsing
-                if (typeof jsyaml === 'undefined') {
-                    const script = document.createElement('script');
-                    script.src = "https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js";
-                    document.head.appendChild(script);
-                    await new Promise(resolve => script.onload = resolve);
-                }
+
 
                 const response = await fetch(WEB_APP_URL);
                 const result = await response.json();
@@ -213,19 +152,22 @@
                 console.log("Dữ liệu nhận được:", result);
 
                 if (result.status === "success" || result.status === "stable") {
-                    const records = result.records || result.data;
-                    if (records && records.length > 0) {
-                        // Parse YAML từ content và gộp với metadata
-                        const parsedRecords = records.map(item => {
+                    const rawItems = result.records || result.data;
+                    if (rawItems && rawItems.length > 0) {
+                        currentRecords = rawItems.map(item => {
                             const yamlData = jsyaml.load(item.content);
                             return {
                                 ...yamlData,
-                                derived_status: item.status,
-                                derived_signal: item.signal,
-                                domain: item.domain // Force domain từ folder
+                                _raw_content: item.content,
+                                _derived: {
+                                    status: item.status,
+                                    signal: item.signal,
+                                    scanned_at: item.scanned_at,
+                                    domain: item.domain
+                                }
                             };
                         });
-                        renderRecords(parsedRecords);
+                        renderRecords(currentRecords);
                     } else {
                         tbody.innerHTML = '<tr><td colspan="11" style="text-align:center; padding: 3rem;">NO RECORDS FOUND IN REGISTRY.</td></tr>';
                     }
@@ -258,25 +200,27 @@
 
                 // Quy định màu sắc dựa trên derived_status hoặc index_status
                 let statusIcon = "check-circle", statusColor = "#10b981";
-                const status = record.derived_status || record.status?.index_status;
+                const status = record._derived.status;
 
-                if (status === 'under_review' || status === 'stale') {
+                if (status === 'stale') {
                     statusIcon = "activity";
                     statusColor = "#ff9d00";
-                } else if (status === 'flagged' || status === 'inactive' || status === 'invalid') {
+                } else if (status === 'inactive' || status === 'invalid') {
                     statusIcon = "alert-triangle";
                     statusColor = "#ef4444";
                 }
 
-                const domainClass = `tag-${(record.domain || 'hybrid').toLowerCase()}`;
+                const domainClass = `tag-${(record._derived.domain || 'hybrid').toLowerCase()}`;
                 const categoryClass = `tag-${(record.category || 'app').toLowerCase().substring(0, 4)}`;
 
                 const row = document.createElement('tr');
+                row.style.cursor = "pointer";
+                row.onclick = () => showDetail(record);
                 row.innerHTML = `
                     <td data-label="#">${(i + 1).toString().padStart(2, '0')}</td>
                     <td data-label="Repository">
                         <div class="repo-info">
-                            <a href="${record.repo_url || '#'}" target="_blank" class="repo-name">${record.project_name || 'Unnamed Project'}</a>
+                            <span class="repo-name">${record.project_name || 'Unnamed Project'}</span>
                             <span class="repo-sub">${record.owner || 'unknown'} / ${(record.project_name || 'core').toLowerCase()}</span>
                         </div>
                     </td>
@@ -285,7 +229,7 @@
                     <td data-label="7D ∆" class="mono-font ${change7dClass}">${stars7d > 0 ? '+' : ''}${stars7d.toLocaleString()}</td>
                     <td data-label="Forks" class="mono-font">${(metrics.forks || 0).toLocaleString()}</td>
                     <td data-label="Description" style="font-size: 0.85rem;">${record.summary || 'No summary provided.'}</td>
-                    <td data-label="Domain"><span class="tag ${domainClass}">${record.domain || 'Hybrid'}</span></td>
+                    <td data-label="Domain"><span class="tag ${domainClass}">${record._derived.domain || 'Hybrid'}</span></td>
                     <td data-label="Category"><span class="tag ${categoryClass}">${record.category || 'Analytics'}</span></td>
                     <td data-label="Updated" class="mono-font text-muted">${record.timestamps?.last_verified || '2026-02-02'}</td>
                     <td data-label="Status"><i data-lucide="${statusIcon}" color="${statusColor}" size="16"></i></td>
@@ -293,6 +237,17 @@
                 tbody.appendChild(row);
             });
             lucide.createIcons();
+        }
+
+        function showDetail(record) {
+            document.getElementById('auditId').innerText = record.openindex_id || "N/A";
+            document.getElementById('auditTimestamp').innerText = record._derived.scanned_at || new Date().toISOString();
+            document.getElementById('auditYaml').innerText = record._raw_content;
+            document.getElementById('recordDetail').classList.add('active');
+        }
+
+        function closeDetail() {
+            document.getElementById('recordDetail').classList.remove('active');
         }
 
         fetchRecords();
