@@ -1,0 +1,51 @@
+openindex_id: OI-HYB-0005
+project_name: InsurAI-Core
+repo_url: https://github.com/insurtech-labs/core
+owner: insurtech-labs
+
+domain: hybrid
+category: analytics
+
+summary: >
+  Risk assessment engine combining health indicators and financial records.
+
+intended_use:
+  scope: production
+  description: Enterprise insurance risk modeling only.
+
+evidence:
+  paper:
+    exists: false
+    link: null
+    peer_reviewed: null
+  dataset:
+    disclosed: partial
+    name: Proprietary insurance dataset
+  validation:
+    type: internal
+    notes: Validated on historical insurance claims.
+
+risk:
+  medical_claim: false
+  financial_advice_claim: false
+  regulated_domain: true
+  user_warning: >
+    Not intended for individual medical or financial decision-making.
+
+status:
+  index_status: indexed
+  signal: green
+
+metrics:
+  stars: 8450
+  forks: 980
+  stars_24h: 12
+  stars_7d: 95
+
+timestamps:
+  indexed_at: 2026-02-02
+  last_verified: 2026-02-02
+
+maintainers:
+  - name: OpenIndex Review Board
+    role: reviewer

@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenIndex | Healthcare & Finance Repository</title>
+    <meta name="description" content="A modern technical index for healthcare and finance software projects.">
+    <link rel="stylesheet" href="style.css">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body>
+    <div class="grid-overlay"></div>
+
+    <div class="container">
+        <header>
+            <div class="logo-section">
+                <svg width="40" height="40" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="50" cy="50" r="45" stroke="#ff9d00" stroke-width="2" />
+                    <path d="M50 15V85M15 50H85" stroke="#ff9d00" stroke-width="1" stroke-dasharray="4 4" />
+                    <rect x="35" y="35" width="30" height="30" stroke="#ff9d00" stroke-width="3"
+                        transform="rotate(45 50 50)" />
+                    <circle cx="50" cy="50" r="5" fill="#ff9d00" />
+                </svg>
+                <div class="logo-text">OPEN<span>INDEX</span>.SYS</div>
+            </div>
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <span class="stat-value accent-glow-text">12.8K</span>
+                    <span class="stat-label">Total Repos</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">543</span>
+                    <span class="stat-label">New This Week</span>
+                </div>
+                <!-- Theme Toggle Button -->
+                <button class="theme-switch" id="theme-toggle" title="Toggle Theme">
+                    <i data-lucide="moon" id="theme-icon"></i>
+                </button>
+                <!-- Mobile Menu Toggle -->
+                <button class="menu-toggle" id="menu-toggle" title="Toggle Menu">
+                    <i data-lucide="menu"></i>
+                </button>
+            </div>
+        </header>
+
+        <nav id="main-nav">
+            <a href="#" class="nav-link active">Health & Finance</a>
+            <a href="#" class="nav-link">Analytics</a>
+            <a href="#" class="nav-link">Developers</a>
+            <a href="#" class="nav-link">API Docs</a>
+            <a href="#" class="nav-link">System Status</a>
+        </nav>
+
+        <div class="toolbar">
+            <div class="search-wrapper">
+                <i data-lucide="search" class="search-icon" size="18"></i>
+                <input type="text" class="search-input" placeholder="SEARCH REPOSITORIES BY NAME, KEYWORD OR DOMAIN...">
+            </div>
+            <button class="filter-btn active">
+                <i data-lucide="filter" size="16"></i>
+                Domain: All
+            </button>
+            <button class="filter-btn">
+                <i data-lucide="layers" size="16"></i>
+                Infrastructure
+            </button>
+            <button class="filter-btn">
+                <i data-lucide="globe" size="16"></i>
+                Global
+            </button>
+        </div>
+
+        <div class="data-table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th width="40">#</th>
+                        <th>Repository</th>
+                        <th>Stars</th>
+                        <th>24H ∆</th>
+                        <th>7D ∆</th>
+                        <th>Forks</th>
+                        <th>Description</th>
+                        <th>Domain</th>
+                        <th>Category</th>
+                        <th>Updated</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- RECORDS_START -->
+                    <tr>
+                        <td data-label="#">01</td>
+                        <td data-label="Repository">
+                            <div class="repo-info">
+                                <a href="https://github.com/quantum-labs/core" class="repo-name">QuantCore-Finance</a>
+                                <span class="repo-sub">quantum-labs / quantcore-finance</span>
+                            </div>
+                        </td>
+                        <td data-label="Stars" class="mono-font">42,105</td>
+                        <td data-label="24H ∆" class="mono-font change-pos">+128</td>
+                        <td data-label="7D ∆" class="mono-font change-pos">+1,204</td>
+                        <td data-label="Forks" class="mono-font">8,421</td>
+                        <td data-label="Description" style="font-size: 0.85rem;">High-frequency trading engine with
+                            neural network optimization.
+                        </td>
+                        <td data-label="Domain"><span class="tag tag-finance">Finance</span></td>
+                        <td data-label="Category"><span class="tag tag-infr">Infrastructure</span></td>
+                        <td data-label="Updated" class="mono-font text-muted">2026-02-02</td>
+                        <td data-label="Status"><i data-lucide="check-circle" color="#10b981" size="16"></i></td>
+                    </tr>
+                    <tr>
+                        <td data-label="#">02</td>
+                        <td data-label="Repository">
+                            <div class="repo-info">
+                                <a href="https://github.com/medtech-fnd/biopulse"
+                                    class="repo-name">BioPulse-Analytics</a>
+                                <span class="repo-sub">medtech-fnd / biopulse-analytics</span>
+                            </div>
+                        </td>
+                        <td data-label="Stars" class="mono-font">31,500</td>
+                        <td data-label="24H ∆" class="mono-font change-pos">+256</td>
+                        <td data-label="7D ∆" class="mono-font change-pos">+2,410</td>
+                        <td data-label="Forks" class="mono-font">5,620</td>
+                        <td data-label="Description" style="font-size: 0.85rem;">Real-time patient monitoring and
+                            predictive health analytics.
+                        </td>
+                        <td data-label="Domain"><span class="tag tag-health">Health</span></td>
+                        <td data-label="Category"><span class="tag tag-anal">Analytics</span></td>
+                        <td data-label="Updated" class="mono-font text-muted">2026-02-02</td>
+                        <td data-label="Status"><i data-lucide="activity" color="#ff9d00" size="16"></i></td>
+                    </tr>
+                    <tr>
+                        <td data-label="#">03</td>
+                        <td data-label="Repository">
+                            <div class="repo-info">
+                                <a href="https://github.com/insurtech-labs/core" class="repo-name">InsurAI-Core</a>
+                                <span class="repo-sub">insurtech-labs / insurai-core</span>
+                            </div>
+                        </td>
+                        <td data-label="Stars" class="mono-font">8,450</td>
+                        <td data-label="24H ∆" class="mono-font change-pos">+12</td>
+                        <td data-label="7D ∆" class="mono-font change-pos">+95</td>
+                        <td data-label="Forks" class="mono-font">980</td>
+                        <td data-label="Description" style="font-size: 0.85rem;">Risk assessment engine combining health
+                            indicators and financial records.
+                        </td>
+                        <td data-label="Domain"><span class="tag tag-hybrid">Hybrid</span></td>
+                        <td data-label="Category"><span class="tag tag-anal">Analytics</span></td>
+                        <td data-label="Updated" class="mono-font text-muted">2026-02-02</td>
+                        <td data-label="Status"><i data-lucide="check-circle" color="#10b981" size="16"></i></td>
+                    </tr><!-- RECORDS_END -->
+                </tbody>
+            </table>
+        </div>
+
+        <footer>
+            <p class="footer-text">Powered by Quantix AI Core - Finance & Medical Analystic @2026</p>
+        </footer>
+    </div>
+
+    <script>
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw92AD5kJmwsWc89P5_BkDax-r3AmWIm2W0_RhQRnqyilw_vWA7aPYMHvykUusxUFM7/exec";
+
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // Theme Switching Logic
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeIcon = document.getElementById('theme-icon');
+        const htmlElement = document.documentElement;
+        htmlElement.setAttribute('data-theme', 'light');
+
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = htmlElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            htmlElement.setAttribute('data-theme', newTheme);
+            themeIcon.setAttribute('data-lucide', newTheme === 'dark' ? 'sun' : 'moon');
+            lucide.createIcons();
+        });
+
+        // Mobile Menu Logic
+        const menuToggle = document.getElementById('menu-toggle');
+        const mainNav = document.getElementById('main-nav');
+        menuToggle.addEventListener('click', () => {
+            mainNav.classList.toggle('active');
+            const icon = menuToggle.querySelector('i');
+            icon.setAttribute('data-lucide', mainNav.classList.contains('active') ? 'x' : 'menu');
+            lucide.createIcons();
+        });
+
+        // Dynamic Fetching from Google Drive via Apps Script
+        async function fetchRecords() {
+            const tbody = document.querySelector('tbody');
+            tbody.innerHTML = '<tr><td colspan="11" style="text-align:center; padding: 3rem;">AUTHENTICATING WITH QUANTIX CLOUD...</td></tr>';
+
+            try {
+                // Since js-yaml is not loaded, we use a simple regex-based parser or require js-yaml
+                // Adding js-yaml dynamically for client-side parsing
+                if (typeof jsyaml === 'undefined') {
+                    const script = document.createElement('script');
+                    script.src = "https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js";
+                    document.head.appendChild(script);
+                    await new Promise(resolve => script.onload = resolve);
+                }
+
+                const response = await fetch(WEB_APP_URL);
+                const result = await response.json();
+
+                if (result.status === "success") {
+                    renderRecords(result.data.map(item => jsyaml.load(item.content)));
+                } else {
+                    throw new Error(result.message);
+                }
+            } catch (error) {
+                console.error("Fetch error:", error);
+                tbody.innerHTML = `<tr><td colspan="11" style="text-align:center; padding: 3rem; color: var(--accent-color);">
+                    CONNECTION_ERROR: UNABLE TO REACH QUANTIX_AI_CORE<br>
+                    <small>${error.message}</small>
+                </td></tr>`;
+            }
+        }
+
+        function renderRecords(records) {
+            const tbody = document.querySelector('tbody');
+            tbody.innerHTML = '';
+
+            // Sort by ID
+            records.sort((a, b) => a.openindex_id.localeCompare(b.openindex_id));
+
+            records.forEach((record, i) => {
+                const stars24h = record.metrics.stars_24h || 0;
+                const stars7d = record.metrics.stars_7d || 0;
+
+                const change24hClass = stars24h >= 0 ? "change-pos" : "change-neg";
+                const change7dClass = stars7d >= 0 ? "change-pos" : "change-neg";
+
+                let statusIcon = "check-circle", statusColor = "#10b981";
+                if (record.status.index_status === 'under_review') { statusIcon = "activity"; statusColor = "#ff9d00"; }
+                else if (record.status.index_status === 'flagged') { statusIcon = "alert-triangle"; statusColor = "#ef4444"; }
+
+                const domainClass = `tag-${record.domain.toLowerCase()}`;
+                const categoryClass = `tag-${record.category.toLowerCase().substring(0, 4)}`;
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td data-label="#">${(i + 1).toString().padStart(2, '0')}</td>
+                    <td data-label="Repository">
+                        <div class="repo-info">
+                            <a href="${record.repo_url}" target="_blank" class="repo-name">${record.project_name}</a>
+                            <span class="repo-sub">${record.owner} / ${record.project_name.toLowerCase()}</span>
+                        </div>
+                    </td>
+                    <td data-label="Stars" class="mono-font">${record.metrics.stars.toLocaleString()}</td>
+                    <td data-label="24H ∆" class="mono-font ${change24hClass}">${stars24h > 0 ? '+' : ''}${stars24h.toLocaleString()}</td>
+                    <td data-label="7D ∆" class="mono-font ${change7dClass}">${stars7d > 0 ? '+' : ''}${stars7d.toLocaleString()}</td>
+                    <td data-label="Forks" class="mono-font">${record.metrics.forks.toLocaleString()}</td>
+                    <td data-label="Description" style="font-size: 0.85rem;">${record.summary}</td>
+                    <td data-label="Domain"><span class="tag ${domainClass}">${record.domain}</span></td>
+                    <td data-label="Category"><span class="tag ${categoryClass}">${record.category}</span></td>
+                    <td data-label="Updated" class="mono-font text-muted">${record.timestamps.last_verified}</td>
+                    <td data-label="Status"><i data-lucide="${statusIcon}" color="${statusColor}" size="16"></i></td>
+                `;
+                tbody.appendChild(row);
+            });
+            lucide.createIcons();
+        }
+
+        fetchRecords();
+
+        // Aesthetic flicker
+        setInterval(() => {
+            document.querySelectorAll('.accent-glow-text').forEach(el => {
+                el.style.opacity = Math.random() * 0.2 + 0.8;
+            });
+        }, 100);
+    </script>
+</body>
+
+</html>
