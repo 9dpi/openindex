@@ -158,62 +158,86 @@ nav {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2.5rem;
+    margin-bottom: 3rem;
     border-bottom: 1px solid var(--border-color);
-    padding-bottom: 0px;
-    /* link border-bottom will handle visual line */
 }
 
 .nav-links {
     display: flex;
-    gap: 2rem;
+    gap: 2.5rem;
 }
 
 .nav-link {
     text-decoration: none;
     color: var(--text-secondary);
     font-family: var(--font-header);
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     text-transform: uppercase;
     font-weight: 600;
-    padding-bottom: 0.75rem;
-    border-bottom: 2px solid transparent;
-    transition: var(--transition-fast);
+    padding: 0.5rem 0 1rem 0;
+    letter-spacing: 1.5px;
+    transition: all 0.3s ease;
     position: relative;
-    top: 2px;
-    /* Alignment with border-bottom */
+    opacity: 0.7;
+    top: 1px;
 }
 
-.nav-link:hover,
+.nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--accent-color);
+    transition: width 0.3s ease;
+    box-shadow: 0 0 10px var(--accent-glow);
+}
+
+.nav-link:hover {
+    color: var(--text-primary);
+    opacity: 1;
+}
+
 .nav-link.active {
     color: var(--accent-color);
-    border-bottom-color: var(--accent-color);
+    opacity: 1;
+}
+
+.nav-link.active::after {
+    width: 100%;
 }
 
 .nav-search {
     display: flex;
     align-items: center;
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(255, 255, 255, 0.02);
     border: 1px solid var(--border-color);
-    padding: 0 0.75rem;
-    height: 36px;
+    padding: 0 1rem;
+    height: 38px;
     width: 240px;
-    transition: var(--transition-fast);
-    backdrop-filter: blur(5px);
-    margin-bottom: 0.75rem;
-    /* Align with nav links bottom gap */
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(10px);
+    margin-bottom: 0.8rem;
+    clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
 }
 
 .nav-search:focus-within {
     border-color: var(--accent-color);
-    background: rgba(255, 255, 255, 0.06);
-    box-shadow: 0 0 15px var(--accent-glow);
+    background: rgba(255, 255, 255, 0.05);
+    box-shadow: 0 0 20px rgba(255, 157, 0, 0.15);
+    width: 320px;
 }
 
 .nav-search i {
     color: var(--accent-color);
     opacity: 0.5;
     margin-right: 0.5rem;
+    transition: opacity 0.3s ease;
+}
+
+.nav-search:focus-within i {
+    opacity: 1;
 }
 
 .nav-search input {
@@ -224,6 +248,7 @@ nav {
     font-family: var(--font-header);
     width: 100%;
     outline: none;
+    letter-spacing: 0.5px;
 }
 
 /* Sidebar/Overlay styles carry on... */
