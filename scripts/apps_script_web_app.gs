@@ -30,26 +30,40 @@ function doGet() {
  * PIPELINE JOB – SCAN DRIVE
  */
 function scanOpenIndex() {
+  console.log("[OpenIndex] Starting scan...");
   const rootFolder = DriveApp.getFolderById(DRIVE_FOLDER_ID);
   let allRecords = [];
 
   DOMAINS.forEach(domain => {
+    console.log("Scanning domain:", domain);
     const subFolderIterator = rootFolder.getFoldersByName(domain);
-    if (!subFolderIterator.hasNext()) return;
+    if (!subFolderIterator.hasNext()) {
+      console.warn("Domain folder not found:", domain);
+      return;
+    }
 
     const subFolder = subFolderIterator.next();
-    const files = subFolder.getFilesByType(MimeType.PLAIN_TEXT);
+    // V1.3 FIX: Remove MIME type filter as Drive misidentifies YAML files frequently
+    const files = subFolder.getFiles(); 
 
     while (files.hasNext()) {
       const file = files.next();
-      if (!file.getName().endsWith(".yaml")) continue;
+      const fileName = file.getName();
+      
+      // Case-insensitive check for .yaml
+      if (!fileName.toLowerCase().endsWith(".yaml")) {
+        console.log("Skipping non-yaml file:", fileName);
+        continue;
+      }
+
+      console.log("Processing file:", fileName, "| MIME:", file.getMimeType());
 
       const content = file.getBlob().getDataAsString();
       const derived = deriveStatusAndSignal({ domain, content });
 
       allRecords.push({
-        id: domain + "/" + file.getName(),
-        filename: file.getName(),
+        id: domain + "/" + fileName,
+        filename: fileName,
         domain: domain,
         source: "drive",
         scanned_at: new Date().toISOString(),
@@ -68,7 +82,7 @@ function scanOpenIndex() {
   };
 
   PropertiesService.getScriptProperties().setProperty(CACHE_KEY, JSON.stringify(payload));
-  console.log("[OpenIndex] Scan complete. Total items:", allRecords.length);
+  console.log("[OpenIndex] Scan complete. Total items indexed:", allRecords.length);
 }
 
 /**
