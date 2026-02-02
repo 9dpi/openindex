@@ -1,169 +1,166 @@
 /* 
-  OpenIndex Cloud Connector v1.2
-  - Structure: Cache-first (doGet serves CACHE_KEY)
-  - Pipeline: scanOpenIndex (processes Drive -> Cache)
-  - Logic: Status (90/180 days), Signal (unknown)
+  OpenIndex Registry Engine v3.1
+  - Features: Mock Data Purge, GitHub Scraper with Headers, Schema v1.0
 */
 
 const DRIVE_FOLDER_ID = "1UwSmQ71MR3Lk13-RnlP2pG572AP8vLz1";
-const DOMAINS = ["health", "finance", "hybrid"];
+const DOMAINS = ["health", "finance"];
 const CACHE_KEY = "OPENINDEX_CACHE_JSON";
 
 /**
- * PUBLIC API – READ ONLY
+ * [IMPORTANT] WIPE & RESTART
+ * Chạy hàm này để xóa sạch dữ liệu cũ và bắt đầu mới hoàn toàn
  */
+function wipeAndRestart() {
+  console.log("[System] CAUTION: Wiping all registry records...");
+  const rootFolder = DriveApp.getFolderById(DRIVE_FOLDER_ID);
+  
+  DOMAINS.forEach(domainName => {
+    const folders = rootFolder.getFoldersByName(domainName);
+    while (folders.hasNext()) {
+      const folder = folders.next();
+      const files = folder.getFiles();
+      while (files.hasNext()) {
+        const file = files.next();
+        if (file.getName().endsWith(".yaml")) {
+          file.setTrashed(true);
+          console.log(`   [Trashed] ${file.getName()}`);
+        }
+      }
+    }
+  });
+  
+  console.log("[System] Wipe complete. Starting fresh autonomous update...");
+  runAutonomousUpdate();
+}
+
 function doGet() {
   try {
     const cached = PropertiesService.getScriptProperties().getProperty(CACHE_KEY);
     return ContentService.createTextOutput(cached || JSON.stringify({
-      status: "empty",
-      message: "OpenIndex cache not generated yet. Please run scanOpenIndex()."
+      status: "empty", message: "Run runAutonomousUpdate() to start."
     })).setMimeType(ContentService.MimeType.JSON);
   } catch (e) {
-    return ContentService.createTextOutput(JSON.stringify({
-      status: "error", message: e.toString()
-    })).setMimeType(ContentService.MimeType.JSON);
+    return ContentService.createTextOutput(JSON.stringify({ status: "error", message: e.toString() }))
+      .setMimeType(ContentService.MimeType.JSON);
   }
 }
 
-/**
- * TOTAL DEBUG – Run this to see EXACTLY what is in your Drive
- */
-function debugEverything() {
+function runAutonomousUpdate() {
+  console.log("[Registry] Scouting GitHub API...");
+  // Clear any existing records from metadata cache first
+  
+  harvestGithubToDrive("finance", "topic:finance stars:>1000");
+  harvestGithubToDrive("finance", "topic:fintech stars:>500");
+  harvestGithubToDrive("health", "topic:medical-ai stars:>500");
+  
+  scanOpenIndex();
+}
+
+function harvestGithubToDrive(domainName, query) {
+  const url = `https://api.github.com/search/repositories?q=${encodeURIComponent(query)}&sort=stars&order=desc`;
+  
   try {
-    const root = DriveApp.getFolderById(DRIVE_FOLDER_ID);
-    console.log("Target folder name: " + root.getName());
+    // GitHub API requires a User-Agent header
+    const options = {
+      method: "get",
+      headers: { "User-Agent": "OpenIndex-Registry-Engine" },
+      muteHttpExceptions: true
+    };
     
-    console.log("--- SUB-FOLDERS ---");
-    const folders = root.getFolders();
-    let fCount = 0;
-    while (folders.hasNext()) {
-      console.log("Found Folder: " + folders.next().getName());
-      fCount++;
+    const response = UrlFetchApp.fetch(url, options);
+    if (response.getResponseCode() !== 200) {
+      console.error(`[GitHub Error] ${response.getContentText()}`);
+      return;
     }
-    if(fCount === 0) console.log("NO SUB-FOLDERS FOUND.");
-
-    console.log("--- FILES ---");
-    const files = root.getFiles();
-    let fileCount = 0;
-    while (files.hasNext()) {
-      const f = files.next();
-      console.log("Found File: " + f.getName() + " | Type: " + f.getMimeType());
-      fileCount++;
-    }
-    if(fileCount === 0) console.log("NO FILES FOUND IN ROOT.");
+    
+    const repos = JSON.parse(response.getContentText()).items || [];
+    const rootFolder = DriveApp.getFolderById(DRIVE_FOLDER_ID);
+    const domainFolders = rootFolder.getFoldersByName(domainName);
+    if (!domainFolders.hasNext()) return;
+    const targetFolder = domainFolders.next();
+    
+    repos.slice(0, 15).forEach(repo => {
+      const fileName = repo.name.toLowerCase() + ".yaml";
+      const existing = targetFolder.getFilesByName(fileName);
+      
+      if (!existing.hasNext()) {
+        const yamlBody = generateStandardYaml(repo, domainName);
+        targetFolder.createFile(fileName, yamlBody, "text/yaml");
+        console.log(`   [Live Index] Added: ${fileName}`);
+      }
+    });
   } catch (e) {
-    console.error("Critical Error: " + e.toString());
+    console.error(`[Harvest Error] ${e.message}`);
   }
 }
 
 /**
- * PIPELINE JOB v1.5 – ROBUST SCAN
- * Recursive search + Root-fallback domain detection
+ * SCHEMA ENFORCER: v1.0 Standard
  */
+function generateStandardYaml(repo, domain) {
+  // Simple check for infrastructure vs analytics
+  const isInfra = (repo.topics || []).some(t => t.includes('infra') || t.includes('protocol') || t.includes('engine'));
+  const category = isInfra ? "infrastructure" : "analytics";
+  
+  // Clean values for YAML safety
+  const cleanName = (repo.name || "Unknown").replace(/"/g, "'");
+  const cleanDesc = (repo.description || "Live infrastructure record.").replace(/"/g, "'").replace(/\n/g, " ");
+
+  return [
+    'schema_version: "1.0"',
+    'record:',
+    `  name: "${cleanName}"`,
+    `  repo_url: "${repo.html_url}"`,
+    `domain: "${domain}"`,
+    `category: "${category}"`,
+    `description: >\n  ${cleanDesc}`,
+    'evidence:',
+    '  github:',
+    `    stars: ${repo.stargazers_count}`,
+    `    forks: ${repo.forks_count}`,
+    `    topics: [${(repo.topics || []).map(t => '"' + t + '"').join(', ')}]`,
+    'timestamps:',
+    `  last_verified: "${new Date().toISOString()}"`,
+    'status: "active"'
+  ].join('\n');
+}
+
 function scanOpenIndex() {
-  console.log("[OpenIndex] Starting v1.5 Robust Scan...");
   const rootFolder = DriveApp.getFolderById(DRIVE_FOLDER_ID);
-  let allRecords = [];
+  let records = [];
 
-  const query = 'title contains ".yaml" and trashed = false';
-  const fileIterator = rootFolder.searchFiles(query);
-
-  while (fileIterator.hasNext()) {
-    const file = fileIterator.next();
-    const fileName = file.getName();
-    if (!fileName.toLowerCase().endsWith(".yaml")) continue;
-
-    // Get immediate parent name
-    const parents = file.getParents();
-    let parentFolder = "unknown";
-    if (parents.hasNext()) {
-      parentFolder = parents.next().getName().toLowerCase();
+  DOMAINS.forEach(domainName => {
+    const folders = rootFolder.getFoldersByName(domainName);
+    while (folders.hasNext()) {
+      const folder = folders.next();
+      const files = folder.getFiles();
+      while (files.hasNext()) {
+        const file = files.next();
+        if (!file.getName().endsWith(".yaml")) continue;
+        try {
+          const content = file.getBlob().getDataAsString();
+          records.push({
+            id: `${domainName}/${file.getName()}`,
+            domain: domainName,
+            status: "active",
+            scanned_at: new Date().toISOString(),
+            content: content
+          });
+        } catch (e) {}
+      }
     }
-    
-    // Domain Detection Logic
-    let domain = "unknown";
-    if (DOMAINS.includes(parentFolder)) {
-      domain = parentFolder;
-    } else if (parentFolder === rootFolder.getName().toLowerCase() || parentFolder === "openindex") {
-      // Fallback: If file is in root, assign to first available domain or hybrid
-      domain = "hybrid"; 
-      console.log(`[Note] File "${fileName}" in root. Defaulting domain to: ${domain}`);
-    } else {
-      console.log(`[Skip] "${fileName}" is in an unrelated folder: "${parentFolder}"`);
-      continue;
-    }
-
-    console.log(`[Indexing] Domain: ${domain} | File: ${fileName}`);
-    
-    try {
-      const content = file.getBlob().getDataAsString();
-      const derived = deriveStatusAndSignal({ domain, content });
-
-      allRecords.push({
-        id: domain + "/" + fileName,
-        filename: fileName,
-        domain: domain,
-        source: "drive",
-        scanned_at: new Date().toISOString(),
-        status: derived.status,
-        signal: derived.signal,
-        content: content
-      });
-    } catch (err) {
-      console.error("Error reading file:", fileName);
-    }
-  }
-
-  const payload = {
-    status: "success",
-    generated_at: new Date().toISOString(),
-    total_records: allRecords.length,
-    records: allRecords
-  };
-
-  PropertiesService.getScriptProperties().setProperty(CACHE_KEY, JSON.stringify(payload));
-  console.log("[OpenIndex] Scan complete. Total items indexed:", allRecords.length);
-}
-
-/**
- * AUTOMATION SETUP
- */
-function setupDailyTriggers() {
-  ScriptApp.getProjectTriggers().forEach(t => {
-    if (t.getHandlerFunction() === "scanOpenIndex") ScriptApp.deleteTrigger(t);
   });
 
-  // Morning & Evening scans
-  ScriptApp.newTrigger("scanOpenIndex").timeBased().atHour(7).everyDays(1).create();
-  ScriptApp.newTrigger("scanOpenIndex").timeBased().atHour(19).everyDays(1).create();
+  PropertiesService.getScriptProperties().setProperty(CACHE_KEY, JSON.stringify({
+    status: "success", generated_at: new Date().toISOString(),
+    total_records: records.length, records: records
+  }));
+  console.log(`[Registry] Complete. Cache refreshed: ${records.length} records.`);
 }
 
-/**
- * STATUS & SIGNAL DERIVATION (Locked Logic v1)
- */
-function deriveStatusAndSignal(record) {
-  let status = "healthy";
-  let signal = "unknown";
-
-  if (!record.content || record.content.trim().length === 0) {
-    return { status: "invalid", signal };
-  }
-
-  // Schema v1 uses 'last_verified' or 'updated_at'
-  let updatedAt = null;
-  const match = record.content.match(/(last_verified|updated_at):\s*(.+)/);
-  if (match) {
-    updatedAt = new Date(match[2].trim());
-  }
-
-  if (updatedAt && !isNaN(updatedAt.getTime())) {
-    const days = (Date.now() - updatedAt.getTime()) / (1000 * 60 * 60 * 24);
-    if (days > 180) status = "inactive";
-    else if (days > 90) status = "stale";
-  } else {
-    status = "healthy"; // Default if date is missing but content exists
-  }
-
-  return { status, signal };
+function setupTriggers() {
+  const triggers = ScriptApp.getProjectTriggers();
+  triggers.forEach(t => ScriptApp.deleteTrigger(t));
+  ScriptApp.newTrigger("runAutonomousUpdate").timeBased().everyHours(12).create();
 }

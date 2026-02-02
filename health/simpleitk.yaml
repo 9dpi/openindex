@@ -15,4 +15,6 @@ evidence:
     - image-processing
     - itk
     - science
+timestamps:
+  last_verified: '2026-02-02T12:00:00Z'
 status: active

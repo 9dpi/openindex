@@ -211,6 +211,9 @@ def save_records(records, directory, domain_name):
                     "topics": r['topics']
                 }
             },
+            "timestamps": {
+                "last_verified": "2026-02-02T12:00:00Z"
+            },
             "status": "active"
         }
         

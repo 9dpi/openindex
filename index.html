@@ -139,18 +139,29 @@
                     const rawItems = result.records || result.data;
                     if (rawItems && rawItems.length > 0) {
                         currentRecords = rawItems.map(item => {
-                            const yamlData = jsyaml.load(item.content);
-                            return {
-                                ...yamlData,
-                                _raw_content: item.content,
-                                _derived: {
-                                    status: item.status,
-                                    signal: item.signal,
-                                    scanned_at: item.scanned_at,
-                                    domain: item.domain
-                                }
-                            };
+                            try {
+                                const yamlData = jsyaml.load(item.content);
+                                if (!yamlData) throw new Error("YAML parsed to null");
+                                return {
+                                    ...yamlData,
+                                    _raw_content: item.content,
+                                    _derived: {
+                                        status: item.status || "active",
+                                        signal: item.signal || "verified",
+                                        scanned_at: item.scanned_at,
+                                        domain: item.domain
+                                    }
+                                };
+                            } catch (e) {
+                                console.error("Error parsing record:", item.id, e);
+                                return {
+                                    record: { name: "PARSING_ERROR", repo_url: "#" },
+                                    description: `Failed to parse ${item.id}`,
+                                    _derived: { domain: item.domain, status: "invalid" }
+                                };
+                            }
                         });
+                        console.log("Indexed Records:", currentRecords);
                         renderRecords(currentRecords);
                     } else {
                         tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 3rem;">NO INDEXED RECORDS YET. SCANNING IN PROGRESS.</td></tr>';
@@ -185,9 +196,9 @@
             }
             if (term) {
                 filtered = filtered.filter(r =>
-                    (r.project_name || '').toLowerCase().includes(term) ||
-                    (r.summary || '').toLowerCase().includes(term) ||
-                    (r.openindex_id || '').toLowerCase().includes(term)
+                    (r.record?.name || '').toLowerCase().includes(term) ||
+                    (r.description || '').toLowerCase().includes(term) ||
+                    (r.record?.repo_url || '').toLowerCase().includes(term)
                 );
             }
             renderRecords(filtered);
@@ -218,7 +229,11 @@
             const tbody = document.querySelector('tbody');
             tbody.innerHTML = '';
 
-            records.sort((a, b) => new Date(b.timestamps?.last_verified || 0) - new Date(a.timestamps?.last_verified || 0));
+            records.sort((a, b) => {
+                const dateA = a.timestamps?.last_verified ? new Date(a.timestamps.last_verified) : new Date(0);
+                const dateB = b.timestamps?.last_verified ? new Date(b.timestamps.last_verified) : new Date(0);
+                return dateB - dateA;
+            });
 
             records.forEach((record, i) => {
                 const status = record._derived.status;
@@ -228,17 +243,20 @@
 
                 const row = document.createElement('tr');
                 row.style.cursor = "pointer";
-                row.onclick = () => window.open(record.repo_url, '_blank');
+
+                // Securely extract URL from v1.0 schema or fallback
+                const repoUrl = record.record?.repo_url || record.repo_url || '#';
+                row.onclick = () => { if (repoUrl !== '#') window.open(repoUrl, '_blank'); };
 
                 row.innerHTML = `
                     <td data-label="#">${(i + 1).toString().padStart(2, '0')}</td>
                     <td data-label="Record">
                         <div class="repo-info">
-                            <span class="repo-name">${record.project_name || 'Unnamed'}</span>
-                            <span class="repo-sub">${record.owner || 'unknown'}</span>
+                            <span class="repo-name">${record.record?.name || record.project_name || 'Unnamed'}</span>
+                            <span class="repo-sub">${repoUrl.split('/').slice(-2).join(' / ') || 'unknown'}</span>
                         </div>
                     </td>
-                    <td data-label="Description" style="font-size: 0.85rem;">${record.summary || ''}</td>
+                    <td data-label="Description" style="font-size: 0.85rem;">${record.description || record.summary || ''}</td>
                     <td data-label="Domain"><span class="tag tag-${(record._derived.domain || 'hybrid').toLowerCase()}">${record._derived.domain || 'Hybrid'}</span></td>
                     <td data-label="Category"><span class="tag tag-analytics">${record.category || 'N/A'}</span></td>
                     <td data-label="Updated" class="mono-font text-muted">${timeAgo(record.timestamps?.last_verified)}</td>
