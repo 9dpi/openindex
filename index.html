@@ -98,15 +98,6 @@
             // INITIALIZING_INSIGHT_ENGINE...
         </div>
 
-        <!-- Recently Verified Section -->
-        <div class="recent-verification-section"
-            style="margin-top: 4rem; padding-top: 2rem; border-top: 1px solid var(--border-color);">
-            <h3 style="font-size: 0.9rem; margin-bottom: 1.5rem; letter-spacing: 0.1em; color: var(--text-muted);">
-                RECENTLY_VERIFIED_RECORDS</h3>
-            <div id="recent-list" class="mono-font" style="font-size: 0.8rem; opacity: 0.7; line-height: 1.8;">
-                <!-- Injected via JS -->
-            </div>
-        </div>
 
         <!-- Submission Loop -->
         <div
@@ -313,9 +304,6 @@
         function renderExtraSections(records) {
             const last24h = records.filter(r => (new Date() - new Date(r.up)) < 24 * 3600 * 1000).length;
             document.getElementById('registry-insight').innerText = `Last 24h: ${last24h} infrastructure records verified.`;
-            const recent = records.slice(0, 3);
-            const recentList = document.getElementById('recent-list');
-            recentList.innerHTML = recent.map(r => `• ${r.n} – <span class="text-muted">${timeAgo(r.up)}</span>`).join('<br>');
         }
 
         function openIndexCard(record) {
