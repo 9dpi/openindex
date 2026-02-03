@@ -27,8 +27,8 @@
                 <div class="logo-text">
                     OPEN<span>INDEX</span>.SYS
                     <small
-                        style="display: block; font-size: 0.65rem; color: var(--text-muted); font-weight: 400; letter-spacing: 0;">Open
-                        registry of open-source infrastructure</small>
+                        style="display: block; font-size: 0.65rem; color: var(--text-muted); font-weight: 400; letter-spacing: 0;">A
+                        living registry that explains open-source infrastructure</small>
                 </div>
             </div>
             <div class="header-right">
@@ -71,6 +71,11 @@
                 <input type="text" id="repo-search" placeholder="Search by repo, org, domain...">
             </div>
         </nav>
+
+        <!-- Dynamic Header Hint -->
+        <div id="header-hint" class="header-hint" style="display:none;">
+            💡 Click a record to preview — no GitHub required
+        </div>
 
 
         <div class="data-table-container">
@@ -117,10 +122,6 @@
         </footer>
     </div>
 
-    <!-- Onboarding Tooltip -->
-    <div id="onboarding-tooltip" class="onboarding-tooltip" style="display:none;">
-        Click any item to quickly see what it is before opening the repository.
-    </div>
 
     <script>
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw92AD5kJmwsWc89P5_BkDax-r3AmWIm2W0_RhQRnqyilw_vWA7aPYMHvykUusxUFM7/exec";
@@ -291,7 +292,6 @@
                                 <a href="${record.u}?ref=openindex.sys" target="_blank" class="btn-github-action">
                                     View Repository on GitHub <i data-lucide="external-link" size="14"></i>
                                 </a>
-                                <button onclick="toggleExpand(${i})" class="btn-collapse">Collapse Project Details</button>
                             </div>
                         </div>
                     </td>
@@ -322,15 +322,15 @@
         }
 
         function showOnboarding() {
-            if (!localStorage.getItem('openindex_onboarded')) {
-                const tip = document.getElementById('onboarding-tooltip');
-                if (tip) {
-                    tip.style.display = 'block';
+            if (!localStorage.getItem('openindex_hint_shown')) {
+                const hint = document.getElementById('header-hint');
+                if (hint) {
+                    hint.style.display = 'block';
                     setTimeout(() => {
-                        tip.style.opacity = '0';
-                        setTimeout(() => { tip.style.display = 'none'; }, 600);
-                        localStorage.setItem('openindex_onboarded', 'true');
-                    }, 5000);
+                        hint.style.opacity = '0';
+                        setTimeout(() => { hint.style.display = 'none'; }, 600);
+                        localStorage.setItem('openindex_hint_shown', 'true');
+                    }, 8000);
                 }
             }
         }
