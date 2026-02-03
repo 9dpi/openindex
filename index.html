@@ -76,8 +76,6 @@
                         <th>Record</th>
                         <th>Description</th>
                         <th width="100">Domain</th>
-                        <th width="100">Category</th>
-                        <th width="80">Score</th>
                         <th width="150">Last Verified</th>
                         <th width="60">Status</th>
                     </tr>
@@ -249,14 +247,12 @@
                     <td data-label="#">${(i + 1).toString().padStart(2, '0')}</td>
                     <td data-label="Record">
                         <div class="repo-info">
-                            <span class="repo-name"><span class="expand-icon">▸</span>${record.n || 'Unnamed'}</span>
+                            <span class="repo-name">${record.n || 'Unnamed'}</span>
                             <span class="repo-sub">${record.u?.split('/').slice(-2).join(' / ') || 'unknown'}</span>
                         </div>
                     </td>
                     <td data-label="Description" style="font-size: 0.85rem;">${record.s || ''}</td>
                     <td data-label="Domain"><span class="tag tag-${(record.d || 'hybrid').toLowerCase()}">${record.d || 'Hybrid'}</span></td>
-                    <td data-label="Category"><span class="tag tag-analytics">${record.c || 'N/A'}</span></td>
-                    <td data-label="Score"><span class="mono-font" style="color: ${scoreColor}; font-weight: bold;">${score.toFixed(2)}</span></td>
                     <td data-label="Verified" class="mono-font text-muted" style="font-size: 0.85rem;">${timeAgo(record.up)}</td>
                     <td data-label="Status"><i data-lucide="check-circle" color="#10b981" size="16"></i></td>
                 `;
@@ -266,7 +262,7 @@
                 detailRow.id = `detail-${i}`;
 
                 detailRow.innerHTML = `
-                    <td colspan="8">
+                    <td colspan="6">
                         <div class="index-detail-card">
                             <div class="detail-grid">
                                 <div class="detail-section">

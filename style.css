@@ -14,26 +14,14 @@ tr.main-row {
 }
 
 tr.main-row:hover {
-    background: var(--bg-accent) !important;
+    background: rgba(255, 157, 0, 0.05) !important;
 }
 
 tr.main-row.active {
-    background: var(--bg-accent) !important;
+    background: rgba(255, 157, 0, 0.1) !important;
     font-weight: 500;
 }
 
-.expand-icon {
-    font-size: 0.6rem;
-    margin-right: 0.8rem;
-    transition: transform 0.2s ease;
-    display: inline-block;
-    color: var(--text-muted);
-}
-
-.active .expand-icon {
-    transform: rotate(90deg);
-    color: var(--accent-color);
-}
 
 /* Detail Row (The Index Card) */
 tr.detail-row {
