@@ -126,3 +126,18 @@ function systemReset() {
   PropertiesService.getScriptProperties().deleteProperty(CONFIG.CACHE_KEY);
   masterAutomationPipeline();
 }
+
+/**
+ * Setup recurring trigger: Every 4 hours
+ */
+function setupTrigger() {
+  const triggers = ScriptApp.getProjectTriggers();
+  triggers.forEach(t => ScriptApp.deleteTrigger(t));
+  
+  ScriptApp.newTrigger("masterAutomationPipeline")
+    .timeBased()
+    .everyHours(4)
+    .create();
+    
+  console.log("Trigger established: Pipeline will sync every 4 hours.");
+}
