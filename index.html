@@ -75,6 +75,11 @@
             </div>
         </nav>
 
+        <!-- Domain Statement -->
+        <div id="domain-manifesto" class="mono-font"
+            style="font-size: 0.75rem; color: var(--text-primary); margin-bottom: 2rem; padding: 1rem; background: rgba(0,0,0,0.02); border-left: 2px solid var(--accent-color); display: none;">
+        </div>
+
         <!-- Dynamic Header Hint -->
         <div id="header-hint" class="header-hint" style="display:none;">
             💡 Click a record to preview — no GitHub required
@@ -260,10 +265,28 @@
 
         let currentFilter = 'all';
 
+        const domainManifestos = {
+            all: "",
+            ai_infra: "AI Infrastructure indexes the systems that make AI reliable, reproducible, and deployable in the real world.",
+            gov: "Gov Infrastructure indexes open systems used by public institutions to manage data, identity, and services for citizens.",
+            climate: "Climate Systems index the infrastructure powering energy grids, environmental modeling, and sustainability research.",
+            health: "Medical Infrastructure indexes verified systems used in clinical data, bioinformatics, and healthcare services.",
+            finance: "Finance Systems index the backbone protocols and infrastructure for high-stakes digital economy and risk management."
+        };
+
         function filterMenu(domain, btn) {
             currentFilter = domain;
             document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
             btn.classList.add('active');
+
+            const manifestoEl = document.getElementById('domain-manifesto');
+            if (domainManifestos[domain]) {
+                manifestoEl.innerText = domainManifestos[domain];
+                manifestoEl.style.display = 'block';
+            } else {
+                manifestoEl.style.display = 'none';
+            }
+
             runFilters();
         }
 
@@ -343,7 +366,10 @@
                         </div>
                     </td>
                     <td data-label="Description" style="font-size: 0.85rem;">${record.s || ''}</td>
-                    <td data-label="Domain"><span class="tag tag-${(record.d || 'hybrid').toLowerCase()}">${record.d || 'Hybrid'}</span></td>
+                    <td data-label="Domain">
+                        <span class="tag tag-${(record.d || 'hybrid').toLowerCase()}">${record.d || 'Hybrid'}</span>
+                        ${record.infra_layer ? `<span class="tag-layer">${record.infra_layer}</span>` : ''}
+                    </td>
                     <td data-label="Verified" class="mono-font text-muted" style="font-size: 0.85rem;">${timeAgo(record.up)}</td>
                     <td data-label="Status">
                         ${record.isAnchor ? '<i data-lucide="anchor" color="var(--accent-color)" size="14" style="margin-right:0.5rem"></i>' : ''}
@@ -358,6 +384,7 @@
                 detailRow.innerHTML = `
                     <td colspan="6">
                         <div class="index-detail-card">
+                            ${(record.d || '').toLowerCase() === 'ai_infra' ? '<div class="ai-stack-note">This is part of the AI production stack</div>' : ''}
                             <div class="detail-grid">
                                 <div class="detail-section">
                                     <div class="magic-highlight">
