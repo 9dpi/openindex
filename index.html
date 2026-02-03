@@ -54,16 +54,7 @@
             justify-content: center;
             gap: 1rem;
             padding: 1rem;
-        }
-
-        .sticky-header-container {
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            background: rgba(15, 16, 18, 0.8);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--border-color);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            margin-bottom: 4rem;
         }
 
         .goldmine-tab {
@@ -290,43 +281,41 @@
     <div class="grid-overlay"></div>
 
     <div class="container" style="padding: 0;">
-        <div class="sticky-header-container">
-            <header style="padding: 1rem 2rem; margin-bottom: 0;">
-                <div class="logo-section">
-                    <svg width="32" height="32" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="50" cy="50" r="45" stroke="#ff9d00" stroke-width="2" />
-                        <rect x="35" y="35" width="30" height="30" stroke="#ff9d00" stroke-width="3"
-                            transform="rotate(45 50 50)" />
-                        <circle cx="50" cy="50" r="5" fill="#ff9d00" />
-                    </svg>
-                    <div class="logo-text" style="font-size: 1.2rem;">
-                        OPEN<span>INDEX</span>.V2
-                    </div>
-                </div>
-                <div class="header-right">
-                    <div class="stats-bar">
-                        <div class="stat-item">
-                            <span class="stat-value" id="stat-opps">0</span>
-                            <span class="stat-label">OPPORTUNITIES</span>
-                        </div>
-                    </div>
-                </div>
-            </header>
-
-            <div class="goldmine-switcher">
-                <div class="goldmine-tab active" data-mine="github" onclick="switchMine('github')">
-                    <i data-lucide="github"></i> GITHUB GOLDMINE
-                </div>
-                <div class="goldmine-tab" data-mine="n8n" onclick="switchMine('n8n')">
-                    <i data-lucide="zap"></i> n8n GOLDMINE
+        <header style="padding: 1rem 2rem; border-bottom: 1px solid var(--border-color); margin-bottom: 2rem;">
+            <div class="logo-section">
+                <svg width="32" height="32" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="50" cy="50" r="45" stroke="#ff9d00" stroke-width="2" />
+                    <rect x="35" y="35" width="30" height="30" stroke="#ff9d00" stroke-width="3"
+                        transform="rotate(45 50 50)" />
+                    <circle cx="50" cy="50" r="5" fill="#ff9d00" />
+                </svg>
+                <div class="logo-text" style="font-size: 1.2rem;">
+                    OPEN<span>INDEX</span>.V2
                 </div>
             </div>
-        </div>
+            <div class="header-right">
+                <div class="stats-bar">
+                    <div class="stat-item">
+                        <span class="stat-value" id="stat-opps">0</span>
+                        <span class="stat-label">OPPORTUNITIES</span>
+                    </div>
+                </div>
+            </div>
+        </header>
 
         <section class="v2-header">
             <h1 id="hero-title">Opportunity Explorer</h1>
             <p id="hero-desc">Transforming complex source code and automation logic into clear business outcomes.</p>
         </section>
+
+        <div class="goldmine-switcher">
+            <div class="goldmine-tab active" data-mine="github" onclick="switchMine('github')">
+                <i data-lucide="github"></i> GITHUB GOLDMINE
+            </div>
+            <div class="goldmine-tab" data-mine="n8n" onclick="switchMine('n8n')">
+                <i data-lucide="zap"></i> n8n GOLDMINE
+            </div>
+        </div>
 
         <div id="mpv-container" class="mpv-grid">
             <!-- CARDS INJECTED BY JS -->
