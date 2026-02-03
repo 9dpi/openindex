@@ -26,7 +26,7 @@
                 </svg>
                 <div class="logo-text">
                     OPEN<span>INDEX</span>.SYS
-                    <small
+                    <small id="dynamic-slogan"
                         style="display: block; font-size: 0.65rem; color: var(--text-muted); font-weight: 400; letter-spacing: 0;">A
                         living registry that explains open-source infrastructure</small>
                 </div>
@@ -153,6 +153,74 @@
             lucide.createIcons();
         });
 
+        // --- SOFT MAGIC SYSTEM CORE ---
+        const MagicState = {
+            interest: JSON.parse(localStorage.getItem('oi_interest')) || {},
+            history: JSON.parse(localStorage.getItem('oi_history')) || [],
+            visitCount: parseInt(localStorage.getItem('oi_visits')) || 0,
+            lastVisit: localStorage.getItem('oi_last_visit'),
+            discoverySeed: new Date().toDateString()
+        };
+
+        function initMagic() {
+            const today = new Date().toDateString();
+            if (MagicState.lastVisit !== today) {
+                MagicState.visitCount++;
+                MagicState.lastVisit = today;
+                localStorage.setItem('oi_visits', MagicState.visitCount);
+                localStorage.setItem('oi_last_visit', MagicState.lastVisit);
+            }
+            updateSlogan();
+        }
+
+        function trackSignal(type, domain, recordId) {
+            const d = (domain || 'hybrid').toLowerCase();
+            MagicState.interest[d] = (MagicState.interest[d] || 0) + (type === 'click_repo' ? 5 : 1);
+            if (recordId && !MagicState.history.includes(recordId)) {
+                MagicState.history.push(recordId);
+            }
+            localStorage.setItem('oi_interest', JSON.stringify(MagicState.interest));
+            localStorage.setItem('oi_history', JSON.stringify(MagicState.history));
+            updateSlogan();
+        }
+
+        function updateSlogan() {
+            const el = document.getElementById('dynamic-slogan');
+            if (!el) return;
+            if (MagicState.visitCount > 3) {
+                el.innerText = "Focused on what you explored recently";
+            } else if (MagicState.visitCount > 1) {
+                el.innerText = "A few things you might want to look at today";
+            }
+        }
+
+        function getMagicOrderedRecords(records) {
+            const anchors = ['kubernetes', 'linux', 'docker', 'postgresql', 'nginx', 'redis', 'ansible', 'terraform'];
+
+            const scored = [...records].map(r => {
+                const rName = (r.n || '').toLowerCase();
+                const rDomain = (r.d || 'hybrid').toLowerCase();
+
+                r.isAnchor = anchors.some(a => rName.includes(a));
+
+                let magicScore = 0;
+                magicScore += (MagicState.interest[rDomain] || 0) * 2;
+
+                const seedHash = Array.from(rName).reduce((a, b) => { a = ((a << 5) - a) + b.charCodeAt(0); return a & a }, 0);
+                r.isDiscovery = (Math.abs(seedHash + MagicState.discoverySeed.length) % 15 === 0);
+
+                r.magicScore = magicScore;
+                return r;
+            });
+
+            return scored.sort((a, b) => {
+                if (a.isAnchor && !b.isAnchor) return -1;
+                if (!a.isAnchor && b.isAnchor) return 1;
+                if (b.magicScore !== a.magicScore) return b.magicScore - a.magicScore;
+                return new Date(b.up) - new Date(a.up);
+            });
+        }
+
         // Dynamic Fetching from Google Drive via Apps Script
         async function fetchRecords() {
             const tbody = document.querySelector('tbody');
@@ -165,8 +233,10 @@
                 if (result.status === "success") {
                     currentRecords = result.records || [];
                     if (currentRecords.length > 0) {
+                        initMagic();
                         updateStats(currentRecords);
-                        renderRecords(currentRecords);
+                        const magicRecords = getMagicOrderedRecords(currentRecords);
+                        renderRecords(magicRecords);
                     } else {
                         tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 3rem;">RECORDS_PENDING_APPROVAL. CHECK_BACK_SOON.</td></tr>';
                     }
@@ -237,12 +307,13 @@
         function renderRecords(records) {
             const tbody = document.querySelector('tbody');
             tbody.innerHTML = '';
-            records.sort((a, b) => new Date(b.up) - new Date(a.up));
+            // Sorting is handled by Magic system or filter logic
 
             records.forEach((record, i) => {
                 const mainRow = document.createElement('tr');
                 mainRow.className = 'main-row';
                 mainRow.id = `row-${i}`;
+                mainRow.setAttribute('data-magic-domain', record.d || 'hybrid');
 
                 const score = record.sc || 0;
                 let scoreColor = "#666";
@@ -253,14 +324,20 @@
                     <td data-label="#">${(i + 1).toString().padStart(2, '0')}</td>
                     <td data-label="Record">
                         <div class="repo-info">
-                            <span class="repo-name">${record.n || 'Unnamed'}</span>
+                            <span class="repo-name">
+                                ${record.n || 'Unnamed'}
+                                ${record.isDiscovery ? '<span class="tag tag-discover" style="font-size:0.5rem; margin-left:0.5rem">DISCOVER</span>' : ''}
+                            </span>
                             <span class="repo-sub">${record.u?.split('/').slice(-2).join(' / ') || 'unknown'}</span>
                         </div>
                     </td>
                     <td data-label="Description" style="font-size: 0.85rem;">${record.s || ''}</td>
                     <td data-label="Domain"><span class="tag tag-${(record.d || 'hybrid').toLowerCase()}">${record.d || 'Hybrid'}</span></td>
                     <td data-label="Verified" class="mono-font text-muted" style="font-size: 0.85rem;">${timeAgo(record.up)}</td>
-                    <td data-label="Status"><i data-lucide="check-circle" color="#10b981" size="16"></i></td>
+                    <td data-label="Status">
+                        ${record.isAnchor ? '<i data-lucide="anchor" color="var(--accent-color)" size="14" style="margin-right:0.5rem"></i>' : ''}
+                        <i data-lucide="check-circle" color="#10b981" size="16"></i>
+                    </td>
                 `;
 
                 const detailRow = document.createElement('tr');
@@ -272,14 +349,22 @@
                         <div class="index-detail-card">
                             <div class="detail-grid">
                                 <div class="detail-section">
+                                    <div class="magic-highlight">
+                                        <h4>Why this matters</h4>
+                                        <p>${record.y || 'This infrastructure project forms a critical baseline for modern open-source systems.'}</p>
+                                    </div>
                                     <h4>What is this?</h4>
                                     <p>${record.w || 'A project indexed for its infrastructure importance.'}</p>
-                                    <h4 style="margin-top:2rem">Who is it for?</h4>
-                                    <p>${record.o || 'Developers and technical researchers.'}</p>
                                 </div>
                                 <div class="detail-section">
-                                    <h4>Why indexed?</h4>
-                                    <p>${record.y || 'Verified project presence on GitHub.'}</p>
+                                    <h4>Who is it for?</h4>
+                                    <p>${record.o || 'Developers and technical researchers.'}</p>
+                                    
+                                    <p class="non-tech">
+                                        <strong>If you’re not technical:</strong> 
+                                        ${getNonTechBrief(record)}
+                                    </p>
+
                                     <h4 style="margin-top:2rem">Registry Compliance</h4>
                                     <p style="font-size: 0.8rem; font-family:var(--font-mono); opacity: 0.6;">
                                         • Trusted Entity: Active<br>
@@ -297,28 +382,45 @@
                     </td>
                 `;
 
-                mainRow.onclick = () => toggleExpand(i);
+                mainRow.onclick = () => toggleExpand(i, record.d);
                 tbody.appendChild(mainRow);
                 tbody.appendChild(detailRow);
+
+                // Repo click tracking
+                detailRow.querySelector('.btn-github-action').onclick = () => trackSignal('click_repo', record.d);
             });
             lucide.createIcons();
             renderExtraSections(records);
             showOnboarding();
+            attachMagicTrackers();
         }
 
-        function toggleExpand(index) {
+        function toggleExpand(index, domain) {
             const main = document.getElementById(`row-${index}`);
             const detail = document.getElementById(`detail-${index}`);
             const isActive = main.classList.contains('active');
 
-            // Collapse others
-            document.querySelectorAll('.main-row').forEach(r => r.classList.remove('active'));
-            document.querySelectorAll('.detail-row').forEach(r => r.classList.remove('active'));
-
             if (!isActive) {
+                // Collapse others
+                document.querySelectorAll('.main-row').forEach(r => r.classList.remove('active'));
+                document.querySelectorAll('.detail-row').forEach(r => r.classList.remove('active'));
+
                 main.classList.add('active');
                 detail.classList.add('active');
+                trackSignal('expand', domain, index);
+            } else {
+                main.classList.remove('active');
+                detail.classList.remove('active');
             }
+        }
+
+        function getNonTechBrief(record) {
+            const domain = (record.d || '').toLowerCase();
+            const name = record.n || '';
+            if (domain === 'finance') return `${name} helps manage digital money and transaction security. Imagine the digital plumbing for a bank.`;
+            if (domain === 'health') return `${name} provides technical tools for managing patient data and medical records safely.`;
+            if (domain === 'app') return `${name} is a high-level tool used to build the interface and logic of modern software.`;
+            return `${name} is a backbone component that helps other software run reliably and securely.`;
         }
 
         function showOnboarding() {
@@ -350,6 +452,26 @@
                 el.style.opacity = Math.random() * 0.2 + 0.8;
             });
         }, 100);
+
+        // --- DWELL TIME TRACKING (MAGIC SIGNAL) ---
+        const vObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const domain = entry.target.getAttribute('data-magic-domain');
+                    entry.target.dwellTimer = setTimeout(() => {
+                        trackSignal('dwell', domain);
+                    }, 3000);
+                } else {
+                    clearTimeout(entry.target.dwellTimer);
+                }
+            });
+        }, { threshold: 0.8 });
+
+        function attachMagicTrackers() {
+            document.querySelectorAll('.main-row').forEach(row => {
+                vObserver.observe(row);
+            });
+        }
     </script>
 </body>
 

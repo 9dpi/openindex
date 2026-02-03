@@ -832,3 +832,34 @@ footer {
         justify-content: center;
     }
 }
+.tag-discover {
+    background: var(--accent-color);
+    color: #1a1000;
+    box-shadow: 0 0 10px var(--accent-glow);
+    animation: shimmer 5s infinite linear;
+    background: linear-gradient(90deg, var(--accent-color) 0%, #ffc04d 50%, var(--accent-color) 100%);
+    background-size: 200% auto;
+}
+
+@keyframes shimmer {
+    0% { background-position: 200% center; }
+    100% { background-position: 0% center; }
+}
+
+.magic-highlight {
+    border-left: 2px solid var(--accent-color);
+    padding-left: 1rem;
+    background: rgba(255, 157, 0, 0.03);
+    border-radius: 0 4px 4px 0;
+    margin-bottom: 1.5rem;
+}
+
+.detail-section p.non-tech {
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    font-style: italic;
+    opacity: 0.8;
+    border-top: 1px dashed var(--border-color);
+    padding-top: 1rem;
+    margin-top: 1.5rem;
+}
