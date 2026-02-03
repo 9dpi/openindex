@@ -70,9 +70,10 @@
                         <th width="40">#</th>
                         <th>Record</th>
                         <th>Description</th>
-                        <th width="120">Domain</th>
-                        <th width="120">Category</th>
-                        <th width="120">Updated</th>
+                        <th width="100">Domain</th>
+                        <th width="100">Category</th>
+                        <th width="80">Score</th>
+                        <th width="100">Updated</th>
                         <th width="60">Status</th>
                     </tr>
                 </thead>
@@ -128,58 +129,21 @@
             tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 3rem;"><div class="loading-pulse">SYNCING_REGISTRY_CORE...</div></td></tr>';
 
             try {
-                // Pre-load js-yaml if needed (already in head or before script)
-                if (typeof jsyaml === 'undefined') {
-                    const script = document.createElement('script');
-                    script.src = "https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js";
-                    document.head.appendChild(script);
-                    await new Promise(resolve => script.onload = resolve);
-                }
-
                 const response = await fetch(WEB_APP_URL);
                 const result = await response.json();
 
-                if (result.status === "success" || result.status === "stable") {
-                    const rawItems = result.records || result.data;
-                    if (rawItems && rawItems.length > 0) {
-                        currentRecords = rawItems.map(item => {
-                            try {
-                                const yamlData = jsyaml.load(item.content);
-                                if (!yamlData) throw new Error("YAML parsed to null");
-                                return {
-                                    ...yamlData,
-                                    _raw_content: item.content,
-                                    _derived: {
-                                        status: item.status || "active",
-                                        signal: item.signal || "verified",
-                                        scanned_at: item.scanned_at,
-                                        domain: item.domain
-                                    }
-                                };
-                            } catch (e) {
-                                console.error("Error parsing record:", item.id, e);
-                                return {
-                                    record: { name: "PARSING_ERROR", repo_url: "#" },
-                                    description: `Failed to parse ${item.id}`,
-                                    _derived: { domain: item.domain, status: "invalid" }
-                                };
-                            }
-                        });
-                        console.log("Indexed Records:", currentRecords);
+                if (result.status === "success") {
+                    currentRecords = result.records || [];
+                    if (currentRecords.length > 0) {
                         updateStats(currentRecords);
                         renderRecords(currentRecords);
                     } else {
-                        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 3rem;">NO INDEXED RECORDS YET. SCANNING IN PROGRESS.</td></tr>';
+                        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 3rem;">RECORDS_PENDING_APPROVAL. CHECK_BACK_SOON.</td></tr>';
                     }
-                } else {
-                    throw new Error(result.message || "Unknown error");
                 }
             } catch (error) {
                 console.error("Fetch error:", error);
-                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 3rem; color: var(--accent-color);">
-                    CONNECTION_ERROR: UNABLE TO REACH QUANTIX_AI_CORE<br>
-                    <small>${error.message}</small>
-                </td></tr>`;
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 3rem; color: var(--accent-color);">REGISTRY_ACCESS_DENIED</td></tr>';
             }
         }
 
@@ -197,13 +161,13 @@
             let filtered = currentRecords;
 
             if (currentFilter !== 'all') {
-                filtered = filtered.filter(r => r._derived.domain.toLowerCase() === currentFilter);
+                filtered = filtered.filter(r => (r.domain || '').toLowerCase() === currentFilter);
             }
             if (term) {
                 filtered = filtered.filter(r =>
-                    (r.record?.name || '').toLowerCase().includes(term) ||
-                    (r.description || '').toLowerCase().includes(term) ||
-                    (r.record?.repo_url || '').toLowerCase().includes(term)
+                    (r.name || '').toLowerCase().includes(term) ||
+                    (r.summary || '').toLowerCase().includes(term) ||
+                    (r.repo_url || '').toLowerCase().includes(term)
                 );
             }
             renderRecords(filtered);
@@ -213,9 +177,9 @@
 
         function updateStats(records) {
             const total = records.length;
-            const activeCount = records.filter(r => r._derived.status === 'active' || r._derived.status === 'healthy').length;
-            const healthPercent = total > 0 ? Math.round((activeCount / total) * 100) : 0;
-            const domains = new Set(records.map(r => r._derived.domain)).size;
+            const healthyCount = records.filter(r => r.status === 'active' || r.status === 'healthy').length;
+            const healthPercent = total > 0 ? Math.round((healthyCount / total) * 100) : 0;
+            const domains = new Set(records.map(r => r.domain)).size;
 
             document.getElementById('stat-total').innerText = total;
             document.getElementById('stat-active').innerText = `${healthPercent}%`;
@@ -245,38 +209,33 @@
             const tbody = document.querySelector('tbody');
             tbody.innerHTML = '';
 
-            records.sort((a, b) => {
-                const dateA = a.timestamps?.last_verified ? new Date(a.timestamps.last_verified) : new Date(0);
-                const dateB = b.timestamps?.last_verified ? new Date(b.timestamps.last_verified) : new Date(0);
-                return dateB - dateA;
-            });
+            records.sort((a, b) => new Date(b.last_updated) - new Date(a.last_updated));
 
             records.forEach((record, i) => {
-                const status = record._derived.status;
-                let statusIcon = "check-circle", statusColor = "#10b981";
-                if (status === 'stale') { statusIcon = "activity"; statusColor = "#ff9d00"; }
-                else if (status === 'inactive' || status === 'invalid') { statusIcon = "alert-triangle"; statusColor = "#ef4444"; }
-
                 const row = document.createElement('tr');
                 row.style.cursor = "pointer";
+                row.onclick = () => window.open(record.repo_url, '_blank');
 
-                // Securely extract URL from v1.0 schema or fallback
-                const repoUrl = record.record?.repo_url || record.repo_url || '#';
-                row.onclick = () => { if (repoUrl !== '#') window.open(repoUrl, '_blank'); };
+                // Confidence Score Color Logic
+                const score = record.score || 0;
+                let scoreColor = "#666"; // Low
+                if (score > 0.7) scoreColor = "#10b981"; // High (Green)
+                else if (score > 0.4) scoreColor = "#ff9d00"; // Medium (Orange)
 
                 row.innerHTML = `
                     <td data-label="#">${(i + 1).toString().padStart(2, '0')}</td>
                     <td data-label="Record">
                         <div class="repo-info">
-                            <span class="repo-name">${record.record?.name || record.project_name || 'Unnamed'}</span>
-                            <span class="repo-sub">${repoUrl.split('/').slice(-2).join(' / ') || 'unknown'}</span>
+                            <span class="repo-name">${record.name || 'Unnamed'}</span>
+                            <span class="repo-sub">${record.repo_url?.split('/').slice(-2).join(' / ') || 'unknown'}</span>
                         </div>
                     </td>
-                    <td data-label="Description" style="font-size: 0.85rem;">${record.description || record.summary || ''}</td>
-                    <td data-label="Domain"><span class="tag tag-${(record._derived.domain || 'hybrid').toLowerCase()}">${record._derived.domain || 'Hybrid'}</span></td>
+                    <td data-label="Description" style="font-size: 0.85rem;">${record.summary || ''}</td>
+                    <td data-label="Domain"><span class="tag tag-${(record.domain || 'hybrid').toLowerCase()}">${record.domain || 'Hybrid'}</span></td>
                     <td data-label="Category"><span class="tag tag-analytics">${record.category || 'N/A'}</span></td>
-                    <td data-label="Updated" class="mono-font text-muted">${timeAgo(record.timestamps?.last_verified)}</td>
-                    <td data-label="Status"><i data-lucide="${statusIcon}" color="${statusColor}" size="16"></i></td>
+                    <td data-label="Score"><span class="mono-font" style="color: ${scoreColor}; font-weight: bold;">${score.toFixed(2)}</span></td>
+                    <td data-label="Updated" class="mono-font text-muted">${timeAgo(record.last_updated)}</td>
+                    <td data-label="Status"><i data-lucide="check-circle" color="#10b981" size="16"></i></td>
                 `;
                 tbody.appendChild(row);
             });

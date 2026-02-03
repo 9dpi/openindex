@@ -1,166 +1,227 @@
 /* 
-  OpenIndex Registry Engine v3.1
-  - Features: Mock Data Purge, GitHub Scraper with Headers, Schema v1.0
+  OpenIndex Registry Pipeline v4.3.1 (Robust Edition)
+  - Workflow: Discovery (Fast-Set) -> Gatekeeper -> Registry (v1.1 Schema)
+  - Improvements: Line-by-Line Parser, Absolute Idempotency, Detailed Logging
 */
 
-const DRIVE_FOLDER_ID = "1UwSmQ71MR3Lk13-RnlP2pG572AP8vLz1";
-const DOMAINS = ["health", "finance"];
-const CACHE_KEY = "OPENINDEX_CACHE_JSON";
+const CONFIG = {
+  DRIVE_FOLDER_ID: "1UwSmQ71MR3Lk13-RnlP2pG572AP8vLz1",
+  SPREADSHEET_ID: "1fcY78iMgmF6opG9wGBwUP_euTVDFb1HUB9LKEWxnfHM",
+  DOMAINS: ["health", "finance"],
+  CACHE_KEY: "OPENINDEX_PRO_CACHE",
+  AUTO_APPROVE_STARS: 2000
+};
+
+function getStagingSheet() {
+  return SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID).getSheets()[0];
+}
+
+function masterAutomationPipeline() {
+  console.log("[Master v4.3.1] Pipeline Start...");
+  discoveryAgent();
+  promotionAgent();
+  console.log("[Master] Cycle Finished.");
+}
 
 /**
- * [IMPORTANT] WIPE & RESTART
- * Chạy hàm này để xóa sạch dữ liệu cũ và bắt đầu mới hoàn toàn
+ * PHASE 1: DISCOVERY
  */
-function wipeAndRestart() {
-  console.log("[System] CAUTION: Wiping all registry records...");
-  const rootFolder = DriveApp.getFolderById(DRIVE_FOLDER_ID);
-  
-  DOMAINS.forEach(domainName => {
-    const folders = rootFolder.getFoldersByName(domainName);
-    while (folders.hasNext()) {
-      const folder = folders.next();
-      const files = folder.getFiles();
-      while (files.hasNext()) {
-        const file = files.next();
-        if (file.getName().endsWith(".yaml")) {
-          file.setTrashed(true);
-          console.log(`   [Trashed] ${file.getName()}`);
+function discoveryAgent() {
+  const sheet = getStagingSheet();
+  const lastRow = sheet.getLastRow();
+  const existingUrls = new Set(
+    lastRow > 1 ? sheet.getRange(2, 2, lastRow - 1, 1).getValues().flat().filter(Boolean) : []
+  );
+
+  const queries = [
+    { domain: "finance", q: "topic:finance stars:>1000" },
+    { domain: "finance", q: "topic:fintech stars:>500" },
+    { domain: "health", q: "topic:medical-ai stars:>500" }
+  ];
+
+  queries.forEach(query => {
+    try {
+      const url = `https://api.github.com/search/repositories?q=${encodeURIComponent(query.q)}&sort=stars&order=desc`;
+      const response = UrlFetchApp.fetch(url, { headers: { "User-Agent": "OpenIndex-Agent" }, muteHttpExceptions: true });
+      if (response.getResponseCode() !== 200) return;
+      
+      const repos = JSON.parse(response.getContentText()).items || [];
+      repos.slice(0, 10).forEach(repo => {
+        if (!existingUrls.has(repo.html_url)) {
+          const isHighConfidence = repo.stargazers_count >= CONFIG.AUTO_APPROVE_STARS;
+          sheet.appendRow([
+            repo.name, repo.html_url, repo.description || "", 
+            repo.stargazers_count, (repo.topics || []).join(", "),
+            query.domain, query.q, isHighConfidence, false, 
+            isHighConfidence ? `Auto: >${CONFIG.AUTO_APPROVE_STARS} stars` : "Pending review",
+            new Date(), ""
+          ]);
         }
+      });
+    } catch (e) { console.error(`[Discovery Error] ${e.message}`); }
+  });
+}
+
+/**
+ * PHASE 2: PROMOTION
+ */
+function promotionAgent() {
+  const sheet = getStagingSheet();
+  const data = sheet.getDataRange().getValues();
+  const rootFolder = DriveApp.getFolderById(CONFIG.DRIVE_FOLDER_ID);
+
+  for (let i = 1; i < data.length; i++) {
+    const [name, url, desc, stars, topics, domain, q, approved, indexed] = data[i];
+    
+    if (approved === true && indexed === false) {
+      try {
+        const folders = rootFolder.getFoldersByName(domain);
+        if (!folders.hasNext()) continue;
+        const folder = folders.next();
+        
+        const filename = name.toLowerCase() + ".yaml";
+        if (folder.getFilesByName(filename).hasNext()) {
+          sheet.getRange(i + 1, 9).setValue(true);
+          continue;
+        }
+
+        const yamlBody = generateStandardYaml({
+          name, html_url: url, description: desc, 
+          stargazers_count: stars, topics: String(topics).split(", ")
+        }, domain);
+        
+        folder.createFile(filename, yamlBody, "text/yaml");
+        sheet.getRange(i + 1, 9).setValue(true);
+        sheet.getRange(i + 1, 12).setValue(new Date());
+      } catch(e) { console.error(`[Promotion Error] ${name}: ${e.message}`); }
+    }
+  }
+  indexingAgent();
+}
+
+/**
+ * PHASE 3: INDEXING (Robust Parser)
+ */
+function indexingAgent() {
+  const rootFolder = DriveApp.getFolderById(CONFIG.DRIVE_FOLDER_ID);
+  let summary = [];
+
+  CONFIG.DOMAINS.forEach(domain => {
+    const folders = rootFolder.getFoldersByName(domain);
+    if (!folders.hasNext()) return;
+    const files = folders.next().getFiles();
+    
+    while (files.hasNext()) {
+      const file = files.next();
+      if (!file.getName().endsWith(".yaml")) continue;
+      
+      const content = file.getBlob().getDataAsString();
+      const p = robustYamlParser(content);
+      
+      if (p.name) { // Chỉ đưa vào cache nếu parse thành công ít nhất tên dự án
+        summary.push({
+          id: file.getName(),
+          name: p.name,
+          repo_url: p.repo_url,
+          domain: domain,
+          category: p.category,
+          score: p.score || 0,
+          status: p.status || "active",
+          last_updated: p.last_verified || new Date().toISOString()
+        });
       }
     }
   });
-  
-  console.log("[System] Wipe complete. Starting fresh autonomous update...");
-  runAutonomousUpdate();
-}
 
-function doGet() {
-  try {
-    const cached = PropertiesService.getScriptProperties().getProperty(CACHE_KEY);
-    return ContentService.createTextOutput(cached || JSON.stringify({
-      status: "empty", message: "Run runAutonomousUpdate() to start."
-    })).setMimeType(ContentService.MimeType.JSON);
-  } catch (e) {
-    return ContentService.createTextOutput(JSON.stringify({ status: "error", message: e.toString() }))
-      .setMimeType(ContentService.MimeType.JSON);
-  }
-}
-
-function runAutonomousUpdate() {
-  console.log("[Registry] Scouting GitHub API...");
-  // Clear any existing records from metadata cache first
-  
-  harvestGithubToDrive("finance", "topic:finance stars:>1000");
-  harvestGithubToDrive("finance", "topic:fintech stars:>500");
-  harvestGithubToDrive("health", "topic:medical-ai stars:>500");
-  
-  scanOpenIndex();
-}
-
-function harvestGithubToDrive(domainName, query) {
-  const url = `https://api.github.com/search/repositories?q=${encodeURIComponent(query)}&sort=stars&order=desc`;
-  
-  try {
-    // GitHub API requires a User-Agent header
-    const options = {
-      method: "get",
-      headers: { "User-Agent": "OpenIndex-Registry-Engine" },
-      muteHttpExceptions: true
-    };
-    
-    const response = UrlFetchApp.fetch(url, options);
-    if (response.getResponseCode() !== 200) {
-      console.error(`[GitHub Error] ${response.getContentText()}`);
-      return;
-    }
-    
-    const repos = JSON.parse(response.getContentText()).items || [];
-    const rootFolder = DriveApp.getFolderById(DRIVE_FOLDER_ID);
-    const domainFolders = rootFolder.getFoldersByName(domainName);
-    if (!domainFolders.hasNext()) return;
-    const targetFolder = domainFolders.next();
-    
-    repos.slice(0, 15).forEach(repo => {
-      const fileName = repo.name.toLowerCase() + ".yaml";
-      const existing = targetFolder.getFilesByName(fileName);
-      
-      if (!existing.hasNext()) {
-        const yamlBody = generateStandardYaml(repo, domainName);
-        targetFolder.createFile(fileName, yamlBody, "text/yaml");
-        console.log(`   [Live Index] Added: ${fileName}`);
-      }
-    });
-  } catch (e) {
-    console.error(`[Harvest Error] ${e.message}`);
-  }
+  PropertiesService.getScriptProperties().setProperty(CONFIG.CACHE_KEY, JSON.stringify({
+    status: "success",
+    generated_at: new Date().toISOString(),
+    records: summary
+  }));
+  console.log(`[Indexer] Updated Cache: ${summary.length} records.`);
 }
 
 /**
- * SCHEMA ENFORCER: v1.0 Standard
+ * GIA CỐ PARSER: Line-by-Line để tránh lỗi Regex
  */
-function generateStandardYaml(repo, domain) {
-  // Simple check for infrastructure vs analytics
-  const isInfra = (repo.topics || []).some(t => t.includes('infra') || t.includes('protocol') || t.includes('engine'));
-  const category = isInfra ? "infrastructure" : "analytics";
+function robustYamlParser(content) {
+  const result = {};
+  const lines = content.split('\n');
   
-  // Clean values for YAML safety
-  const cleanName = (repo.name || "Unknown").replace(/"/g, "'");
-  const cleanDesc = (repo.description || "Live infrastructure record.").replace(/"/g, "'").replace(/\n/g, " ");
+  lines.forEach(line => {
+    const parts = line.split(':');
+    if (parts.length < 2) return;
+    
+    const key = parts[0].trim();
+    let value = parts.slice(1).join(':').trim();
+    
+    // Làm sạch quotes
+    value = value.replace(/^["']|["']$/g, '');
+    
+    if (key === 'name') result.name = value;
+    if (key === 'repo_url') result.repo_url = value;
+    if (key === 'category') result.category = value;
+    if (key === 'score') result.score = parseFloat(value);
+    if (key === 'description' || key === '>') result.description = value; // Hỗ trợ cả phím block scalar
+    if (key === 'last_verified') result.last_verified = value;
+    if (key === 'status') result.status = value;
+  });
+  
+  return result;
+}
 
+function generateStandardYaml(repo, domain) {
+  const topics = repo.topics || [];
+  let score = 0;
+  if (repo.stargazers_count > 5000) score += 0.4;
+  else if (repo.stargazers_count > 1000) score += 0.2;
+  if (topics.some(t => /engine|protocol|infra/.test(t))) score += 0.3;
+  if (repo.description) score += 0.1;
+
+  let cat = topics.some(t => /engine|protocol|infra/.test(t)) ? "infrastructure" : "analytics";
+  
   return [
-    'schema_version: "1.0"',
+    'schema_version: "1.1"',
     'record:',
-    `  name: "${cleanName}"`,
+    `  name: "${repo.name}"`,
     `  repo_url: "${repo.html_url}"`,
     `domain: "${domain}"`,
-    `category: "${category}"`,
-    `description: >\n  ${cleanDesc}`,
-    'evidence:',
-    '  github:',
-    `    stars: ${repo.stargazers_count}`,
-    `    forks: ${repo.forks_count}`,
-    `    topics: [${(repo.topics || []).map(t => '"' + t + '"').join(', ')}]`,
+    `category: "${cat}"`,
+    `description: >\n  ${(repo.description || "").replace(/"/g, "'")}`,
+    'confidence:',
+    '  source: github',
+    `  score: ${score.toFixed(2)}`,
     'timestamps:',
     `  last_verified: "${new Date().toISOString()}"`,
-    'status: "active"'
+    'status: active'
   ].join('\n');
 }
 
-function scanOpenIndex() {
-  const rootFolder = DriveApp.getFolderById(DRIVE_FOLDER_ID);
-  let records = [];
-
-  DOMAINS.forEach(domainName => {
-    const folders = rootFolder.getFoldersByName(domainName);
-    while (folders.hasNext()) {
-      const folder = folders.next();
-      const files = folder.getFiles();
-      while (files.hasNext()) {
-        const file = files.next();
-        if (!file.getName().endsWith(".yaml")) continue;
-        try {
-          const content = file.getBlob().getDataAsString();
-          records.push({
-            id: `${domainName}/${file.getName()}`,
-            domain: domainName,
-            status: "active",
-            scanned_at: new Date().toISOString(),
-            content: content
-          });
-        } catch (e) {}
-      }
-    }
-  });
-
-  PropertiesService.getScriptProperties().setProperty(CACHE_KEY, JSON.stringify({
-    status: "success", generated_at: new Date().toISOString(),
-    total_records: records.length, records: records
-  }));
-  console.log(`[Registry] Complete. Cache refreshed: ${records.length} records.`);
+function doGet() {
+  const cached = PropertiesService.getScriptProperties().getProperty(CONFIG.CACHE_KEY);
+  return ContentService.createTextOutput(cached || '{"status":"empty","records":[]}')
+    .setMimeType(ContentService.MimeType.JSON);
 }
 
 function setupTriggers() {
   const triggers = ScriptApp.getProjectTriggers();
   triggers.forEach(t => ScriptApp.deleteTrigger(t));
-  ScriptApp.newTrigger("runAutonomousUpdate").timeBased().everyHours(12).create();
+  ScriptApp.newTrigger("masterAutomationPipeline").timeBased().everyHours(6).create();
+}
+
+function systemReset() {
+  console.log("[System] Full Reset...");
+  const sheet = getStagingSheet();
+  if (sheet.getLastRow() > 1) sheet.deleteRows(2, sheet.getLastRow() - 1);
+  
+  const rootFolder = DriveApp.getFolderById(CONFIG.DRIVE_FOLDER_ID);
+  CONFIG.DOMAINS.forEach(domain => {
+    const folders = rootFolder.getFoldersByName(domain);
+    if (folders.hasNext()) {
+      const files = folders.next().getFiles();
+      while (files.hasNext()) files.next().setTrashed(true);
+    }
+  });
+  PropertiesService.getScriptProperties().deleteProperty(CONFIG.CACHE_KEY);
+  masterAutomationPipeline();
 }
