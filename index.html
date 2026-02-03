@@ -118,7 +118,46 @@
 
         <footer>
             <p class="footer-text">Powered by Quantix AI Core - Finance & Medical Analytics @2026</p>
+            <p style="font-size: 0.7rem; opacity: 0.4; margin-top: 1rem;">OpenIndex does not host code. It records
+                existence.</p>
         </footer>
+    </div>
+
+    <!-- Index Card Modal -->
+    <div class="modal-overlay" id="index-modal">
+        <div class="index-card">
+            <div class="modal-close" id="modal-close"><i data-lucide="x"></i></div>
+            <h2 id="card-name">// REPO_NAME</h2>
+
+            <div class="card-section">
+                <span class="card-label">What is this?</span>
+                <p class="card-content" id="card-desc"></p>
+            </div>
+
+            <div class="card-section">
+                <span class="card-label">Who is this for?</span>
+                <p class="card-content" id="card-audience"></p>
+            </div>
+
+            <div class="card-section">
+                <span class="card-label">Registry Status</span>
+                <div class="card-content" style="font-family: var(--font-mono); font-size: 0.85rem;">
+                    • Status: <span style="color: #10b981;">ACTIVE</span><br>
+                    • <span id="card-reason"></span><br>
+                    • Last verified: <span id="card-verified"></span>
+                </div>
+            </div>
+
+            <div class="similar-records">
+                <span class="card-label">Similar Indexed Records</span>
+                <div id="card-similar"></div>
+            </div>
+
+            <div class="card-footer">
+                <a href="#" class="btn-primary" id="card-github" target="_blank">View Repository on GitHub</a>
+                <a href="#" class="btn-secondary" onclick="closeModal()">Back to OpenIndex</a>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -242,17 +281,13 @@
             records.forEach((record, i) => {
                 const row = document.createElement('tr');
                 row.style.cursor = "pointer";
-                row.onclick = () => window.open(record.repo_url, '_blank');
+                row.onclick = () => openIndexCard(record);
 
                 // Confidence Score Color Logic
                 const score = record.score || 0;
                 let scoreColor = "#666";
                 if (score > 0.7) scoreColor = "#10b981";
                 else if (score > 0.4) scoreColor = "#ff9d00";
-
-                // Tooltip Info
-                const stars = record.stars || '---';
-                const reason = score >= 0.7 ? "Auto-approved (>2000 stars)" : "Manually verified";
 
                 row.innerHTML = `
                     <td data-label="#">${(i + 1).toString().padStart(2, '0')}</td>
@@ -266,8 +301,8 @@
                     <td data-label="Domain"><span class="tag tag-${(record.domain || 'hybrid').toLowerCase()}">${record.domain || 'Hybrid'}</span></td>
                     <td data-label="Category"><span class="tag tag-analytics">${record.category || 'N/A'}</span></td>
                     <td data-label="Score"><span class="mono-font" style="color: ${scoreColor}; font-weight: bold;">${score.toFixed(2)}</span></td>
-                    <td data-label="Verified" class="mono-font text-muted">Verified ${timeAgo(record.last_updated)}</td>
-                    <td data-label="Status" title="Indexed via GitHub\nStars: ${stars}\n${reason}">
+                    <td data-label="Verified" class="mono-font text-muted" style="font-size: 0.85rem;">${timeAgo(record.last_updated)}</td>
+                    <td data-label="Status">
                         <i data-lucide="check-circle" color="#10b981" size="16"></i>
                     </td>
                 `;
@@ -287,13 +322,43 @@
             const insightEl = document.getElementById('registry-insight');
             insightEl.innerText = `Last 24h: ${last24h} infrastructure records verified.`;
 
-            // 2. Recently Verified
-            const recentList = document.getElementById('recent-list');
-            const recent = records.slice(0, 3);
             recentList.innerHTML = recent.map(r =>
-                `• ${r.name} – <span class="text-muted">Verified ${timeAgo(r.last_updated)}</span>`
+                `• ${r.name} – <span class="text-muted">${timeAgo(r.last_updated)}</span>`
             ).join('<br>');
         }
+
+        // --- Index Card Logic ---
+        function openIndexCard(record) {
+            document.getElementById('card-name').innerText = record.name;
+            document.getElementById('card-desc').innerText = record.summary || 'No description available.';
+            document.getElementById('card-audience').innerText = record.audience || 'Infrastructure Teams / Technical Researchers';
+            document.getElementById('card-reason').innerText = record.score > 0.7 ? `Verified via GitHub (Stars: ${record.stars})` : 'Expert Manual Review';
+            document.getElementById('card-verified').innerText = timeAgo(record.last_updated);
+            document.getElementById('card-github').href = `${record.repo_url}?ref=openindex.sys`;
+
+            // Similar Records Logic
+            const similar = currentRecords
+                .filter(r => r.name !== record.name && (r.category === record.category || r.domain === record.domain))
+                .slice(0, 2);
+
+            document.getElementById('card-similar').innerHTML = similar.map(r =>
+                `<a href="#" class="similar-item" onclick="event.preventDefault(); openIndexCard(currentRecords.find(x => x.name === '${r.name}'))">→ ${r.name}</a>`
+            ).join('');
+
+            document.getElementById('index-modal').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+            lucide.createIcons();
+        }
+
+        function closeModal() {
+            document.getElementById('index-modal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        document.getElementById('modal-close').onclick = closeModal;
+        window.onclick = (event) => {
+            if (event.target == document.getElementById('index-modal')) closeModal();
+        };
 
 
         fetchRecords();

@@ -1,7 +1,7 @@
 /* 
-  OpenIndex Registry Pipeline v4.3.1 (Robust Edition)
-  - Workflow: Discovery (Fast-Set) -> Gatekeeper -> Registry (v1.1 Schema)
-  - Improvements: Line-by-Line Parser, Absolute Idempotency, Detailed Logging
+  OpenIndex Registry Pipeline v4.4 (Cognitive Architecture)
+  - Workflow: Discovery -> Gatekeeper -> Registry -> Cognitive Cache
+  - Standards: Schema v1.2 (Target Audience), Idempotency, Score
 */
 
 const CONFIG = {
@@ -17,21 +17,15 @@ function getStagingSheet() {
 }
 
 function masterAutomationPipeline() {
-  console.log("[Master v4.3.1] Pipeline Start...");
+  console.log("[Master v4.4] Cognitive Pipeline Start...");
   discoveryAgent();
   promotionAgent();
-  console.log("[Master] Cycle Finished.");
 }
 
-/**
- * PHASE 1: DISCOVERY
- */
 function discoveryAgent() {
   const sheet = getStagingSheet();
   const lastRow = sheet.getLastRow();
-  const existingUrls = new Set(
-    lastRow > 1 ? sheet.getRange(2, 2, lastRow - 1, 1).getValues().flat().filter(Boolean) : []
-  );
+  const existingUrls = new Set(lastRow > 1 ? sheet.getRange(2, 2, lastRow - 1, 1).getValues().flat().filter(Boolean) : []);
 
   const queries = [
     { domain: "finance", q: "topic:finance stars:>1000" },
@@ -44,17 +38,15 @@ function discoveryAgent() {
       const url = `https://api.github.com/search/repositories?q=${encodeURIComponent(query.q)}&sort=stars&order=desc`;
       const response = UrlFetchApp.fetch(url, { headers: { "User-Agent": "OpenIndex-Agent" }, muteHttpExceptions: true });
       if (response.getResponseCode() !== 200) return;
-      
       const repos = JSON.parse(response.getContentText()).items || [];
       repos.slice(0, 10).forEach(repo => {
         if (!existingUrls.has(repo.html_url)) {
-          const isHighConfidence = repo.stargazers_count >= CONFIG.AUTO_APPROVE_STARS;
+          const isHigh = repo.stargazers_count >= CONFIG.AUTO_APPROVE_STARS;
           sheet.appendRow([
             repo.name, repo.html_url, repo.description || "", 
             repo.stargazers_count, (repo.topics || []).join(", "),
-            query.domain, query.q, isHighConfidence, false, 
-            isHighConfidence ? `Auto: >${CONFIG.AUTO_APPROVE_STARS} stars` : "Pending review",
-            new Date(), ""
+            query.domain, query.q, isHigh, false, 
+            isHigh ? `Auto: >${CONFIG.AUTO_APPROVE_STARS} stars` : "Pending", new Date(), ""
           ]);
         }
       });
@@ -62,9 +54,6 @@ function discoveryAgent() {
   });
 }
 
-/**
- * PHASE 2: PROMOTION
- */
 function promotionAgent() {
   const sheet = getStagingSheet();
   const data = sheet.getDataRange().getValues();
@@ -72,13 +61,11 @@ function promotionAgent() {
 
   for (let i = 1; i < data.length; i++) {
     const [name, url, desc, stars, topics, domain, q, approved, indexed] = data[i];
-    
     if (approved === true && indexed === false) {
       try {
         const folders = rootFolder.getFoldersByName(domain);
         if (!folders.hasNext()) continue;
         const folder = folders.next();
-        
         const filename = name.toLowerCase() + ".yaml";
         if (folder.getFilesByName(filename).hasNext()) {
           sheet.getRange(i + 1, 9).setValue(true);
@@ -99,9 +86,6 @@ function promotionAgent() {
   indexingAgent();
 }
 
-/**
- * PHASE 3: INDEXING (Robust Parser)
- */
 function indexingAgent() {
   const rootFolder = DriveApp.getFolderById(CONFIG.DRIVE_FOLDER_ID);
   let summary = [];
@@ -110,15 +94,11 @@ function indexingAgent() {
     const folders = rootFolder.getFoldersByName(domain);
     if (!folders.hasNext()) return;
     const files = folders.next().getFiles();
-    
     while (files.hasNext()) {
       const file = files.next();
       if (!file.getName().endsWith(".yaml")) continue;
-      
-      const content = file.getBlob().getDataAsString();
-      const p = robustYamlParser(content);
-      
-      if (p.name) { // Chỉ đưa vào cache nếu parse thành công ít nhất tên dự án
+      const p = robustYamlParser(file.getBlob().getDataAsString());
+      if (p.name) {
         summary.push({
           id: file.getName(),
           name: p.name,
@@ -126,8 +106,9 @@ function indexingAgent() {
           domain: domain,
           category: p.category,
           summary: p.description,
+          audience: p.audience || "Infrastructure Teams / Researchers",
           score: p.score || 0,
-          stars: p.stars || 0, // Bổ sung số sao
+          stars: p.stars || 0,
           status: p.status || "active",
           last_updated: p.last_verified || new Date().toISOString()
         });
@@ -136,42 +117,29 @@ function indexingAgent() {
   });
 
   PropertiesService.getScriptProperties().setProperty(CONFIG.CACHE_KEY, JSON.stringify({
-    status: "success",
-    generated_at: new Date().toISOString(),
-    records: summary
+    status: "success", generated_at: new Date().toISOString(), records: summary
   }));
-  console.log(`[Indexer] Updated Cache: ${summary.length} records.`);
+  console.log(`[Indexer] UI Cache Ready: ${summary.length} records.`);
 }
 
-/**
- * GIA CỐ PARSER: Line-by-Line để tránh lỗi Regex
- */
 function robustYamlParser(content) {
   const result = {};
   const lines = content.split('\n');
-  
   for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    const parts = line.split(':');
-    
+    const parts = lines[i].split(':');
     if (parts.length >= 2) {
       const key = parts[0].trim();
       let value = parts.slice(1).join(':').trim().replace(/^["']|["']$/g, '');
-      
       if (key === 'name') result.name = value;
       else if (key === 'repo_url') result.repo_url = value;
       else if (key === 'category') result.category = value;
       else if (key === 'score') result.score = parseFloat(value);
-      else if (key === 'stars') result.stars = parseInt(value); // Parse số sao
+      else if (key === 'stars') result.stars = parseInt(value);
+      else if (key === 'target_audience') result.audience = value;
       else if (key === 'last_verified') result.last_verified = value;
       else if (key === 'status') result.status = value;
-      else if (key === 'description') {
-        // Nếu giá trị là ">", lấy dòng tiếp theo làm mô tả
-        if (value === '>' && i + 1 < lines.length) {
-          result.description = lines[i + 1].trim();
-        } else {
-          result.description = value;
-        }
+      else if (key === 'description' && value === '>' && i + 1 < lines.length) {
+        result.description = lines[i + 1].trim();
       }
     }
   }
@@ -186,15 +154,20 @@ function generateStandardYaml(repo, domain) {
   if (topics.some(t => /engine|protocol|infra/.test(t))) score += 0.3;
   if (repo.description) score += 0.1;
 
+  let audience = "Technical Teams / Infrastructure Engineers";
+  if (topics.some(t => /analytics|research|data/.test(t))) audience = "Quant Researchers / Data Scientists";
+  if (domain === "health") audience = "Biomedical Engineers / Health Informatics";
+
   let cat = topics.some(t => /engine|protocol|infra/.test(t)) ? "infrastructure" : "analytics";
   
   return [
-    'schema_version: "1.1"',
+    'schema_version: "1.2"',
     'record:',
     `  name: "${repo.name}"`,
     `  repo_url: "${repo.html_url}"`,
     `domain: "${domain}"`,
     `category: "${cat}"`,
+    `target_audience: "${audience}"`,
     `description: >\n  ${(repo.description || "").replace(/"/g, "'")}`,
     'confidence:',
     '  source: github',
@@ -211,23 +184,16 @@ function doGet() {
     .setMimeType(ContentService.MimeType.JSON);
 }
 
-function setupTriggers() {
-  const triggers = ScriptApp.getProjectTriggers();
-  triggers.forEach(t => ScriptApp.deleteTrigger(t));
-  ScriptApp.newTrigger("masterAutomationPipeline").timeBased().everyHours(6).create();
-}
-
 function systemReset() {
-  console.log("[System] Full Reset...");
-  const sheet = getStagingSheet();
+  const ss = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
+  const sheet = ss.getSheets()[0];
   if (sheet.getLastRow() > 1) sheet.deleteRows(2, sheet.getLastRow() - 1);
-  
-  const rootFolder = DriveApp.getFolderById(CONFIG.DRIVE_FOLDER_ID);
-  CONFIG.DOMAINS.forEach(domain => {
-    const folders = rootFolder.getFoldersByName(domain);
-    if (folders.hasNext()) {
-      const files = folders.next().getFiles();
-      while (files.hasNext()) files.next().setTrashed(true);
+  const root = DriveApp.getFolderById(CONFIG.DRIVE_FOLDER_ID);
+  CONFIG.DOMAINS.forEach(d => {
+    const f = root.getFoldersByName(d);
+    if (f.hasNext()) {
+      const fs = f.next().getFiles();
+      while (fs.hasNext()) fs.next().setTrashed(true);
     }
   });
   PropertiesService.getScriptProperties().deleteProperty(CONFIG.CACHE_KEY);
