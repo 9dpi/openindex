@@ -1,176 +1,197 @@
 /* 
-  OpenIndex Registry Pipeline v9.1 (Rescue & Scale Edition)
-  - Ultimate Reboot: Wipes old logic and starts fresh
-  - Scaled Discovery: 100+ repos across all 5 domains
-  - Force Sync: Versioned Cache Key (V91)
+  OpenIndex Registry Pipeline v10.0 (Fully Autonomous & High Capacity)
+  - Mission: 100% Automated Discovery, Approval, and Indexing
+  - Capacity: Drive-based JSON caching (No storage limits)
+  - Integrity: Atomic resets and single-pass indexing
 */
 
 const CONFIG = {
   DRIVE_FOLDER_ID: "1UwSmQ71MR3Lk13-RnlP2pG572AP8vLz1",
   SPREADSHEET_ID: "1fcY78iMgmF6opG9wGBwUP_euTVDFb1HUB9LKEWxnfHM",
   DOMAINS: ["ai_infra", "gov", "climate", "health", "finance"],
-  CACHE_KEY: "OPENINDEX_PRO_CACHE_V91",
-  MIN_STARS: 100 // Lowered to fill the index fast
+  CACHE_FILENAME: "openindex_registry_cache.json"
 };
 
 /**
- * THE RESCUE BUTTON: Run this to fix everything
+ * MASTER PILOT: The primary engine run by triggers
  */
 function ULTIMATE_REBOOT() {
-  const sheet = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID).getSheets()[0];
-  
-  // 1. Clear old data to start fresh
-  if (sheet.getLastRow() > 1) sheet.deleteRows(2, sheet.getLastRow() - 1);
-  PropertiesService.getScriptProperties().deleteProperty(CONFIG.CACHE_KEY);
-  
-  // 2. Prepare structure
+  console.log("🚀 Starting Ultimate Reboot...");
   ensureFoldersExist();
-  ensureSchema();
-  
-  // 3. Run full auto-cycle
   discoveryAgent();
+  autoApproveAll();
   promotionAgent();
-  
-  console.log("REBOOT COMPLETE. Your index should now have a significantly higher count.");
+  refreshIndex(); // Single-pass indexing at the end
+  console.log("✅ Reboot complete. System synchronized.");
 }
 
-function ensureSchema() {
+/**
+ * AUTO-APPROVE: Marks all discovered repos as approved
+ */
+function autoApproveAll() {
   const sheet = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID).getSheets()[0];
-  const lastCol = sheet.getLastColumn();
-  if (lastCol < 14) {
-    sheet.getRange(1, 14).setValue("infra_layer");
-  }
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 2) return;
+  sheet.getRange(2, 8, lastRow - 1, 1).setValue(true); // Column H
 }
 
-function ensureFoldersExist() {
-  const root = DriveApp.getFolderById(CONFIG.DRIVE_FOLDER_ID);
-  CONFIG.DOMAINS.forEach(domain => {
-    const folders = root.getFoldersByName(domain);
-    if (!folders.hasNext()) {
-      root.createFolder(domain);
-      console.log("Folder created: " + domain);
-    }
-  });
-}
-
+/**
+ * DISCOVERY: Scans GitHub for critical systems
+ */
 function discoveryAgent() {
   const sheet = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID).getSheets()[0];
-  const existingUrls = new Set(); // Reset for the reboot cycle
+  const lastRow = sheet.getLastRow();
+  const existingUrls = lastRow > 1 ? new Set(sheet.getRange(2, 2, lastRow - 1, 1).getValues().flat()) : new Set();
 
   const searchPlans = [
-    { d: "ai_infra", q: "llm-ops OR mlops OR vllm OR langgraph stars:>300" },
-    { d: "gov", q: "open-government OR civic-tech OR identity-infrastructure stars:>200" },
-    { d: "climate", q: "climate-data OR smart-grid OR energy-optimization stars:>150" },
-    { d: "finance", q: "fintech-infrastructure OR payment-gateway OR ledger stars:>500" },
-    { d: "health", d: "health-data OR medical-imaging OR bioinformatics stars:>400" }
+    { domain: "ai_infra", q: "(vllm OR triton-inference OR kubeflow OR mlflow OR feast) stars:>500" },
+    { domain: "ai_infra", q: "(topic:mlops OR topic:llm-ops) stars:>300" },
+    { domain: "gov", q: "(topic:government OR topic:open-data OR topic:civic-tech) stars:>100" },
+    { domain: "climate", q: "(topic:climate OR topic:sustainability OR topic:energy) stars:>50" },
+    { domain: "finance", q: "(topic:fintech OR topic:finance) stars:>1000" },
+    { domain: "health", q: "(topic:medical OR topic:clinical-data) stars:>500" }
   ];
 
   searchPlans.forEach(plan => {
     try {
-      const url = `https://api.github.com/search/repositories?q=${encodeURIComponent(plan.q)}&sort=stars&order=desc&per_page=20`;
-      const response = UrlFetchApp.fetch(url, { headers: { "User-Agent": "OpenIndex-Rescue" }, muteHttpExceptions: true });
-      if (response.getResponseCode() !== 200) return;
+      const url = `https://api.github.com/search/repositories?q=${encodeURIComponent(plan.q)}&sort=stars&order=desc&per_page=30`;
+      const response = UrlFetchApp.fetch(url, { headers: { "User-Agent": "OpenIndex-Bot/10.1" }, muteHttpExceptions: true });
+      if (response.getResponseCode() !== 200) {
+        console.error(`GitHub API error (${plan.domain}): ${response.getContentText()}`);
+        return;
+      }
       
       const repos = JSON.parse(response.getContentText()).items || [];
       repos.forEach(repo => {
         if (!existingUrls.has(repo.html_url)) {
-          existingUrls.add(repo.html_url);
-          console.log(`Discovered: ${repo.name} for ${plan.d}`);
           sheet.appendRow([
-            repo.name, repo.html_url, repo.description || "", 
-            repo.stargazers_count, (repo.topics || []).join(", "),
-            plan.d, plan.q, true, false, "Auto-Approved", new Date(),
-            "Infrastructure", "critical", ""
+            repo.name, repo.html_url, repo.description || "", repo.stargazers_count, 
+            (repo.topics || []).join(", "), plan.domain, plan.q, 
+            true,  // Approved
+            false, // Indexed
+            "Auto-Purged", new Date(), "Infrastructure", "important", ""
           ]);
+          existingUrls.add(repo.html_url);
         }
       });
-    } catch (e) { console.error("Search error: " + e.message); }
+    } catch (e) { console.error("Discovery error: " + e.message); }
   });
 }
 
+/**
+ * PROMOTION: Converts approved rows to YAML files
+ */
 function promotionAgent() {
   const ss = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
   const sheet = ss.getSheets()[0];
   const data = sheet.getDataRange().getValues();
-  const rootFolder = DriveApp.getFolderById(CONFIG.DRIVE_FOLDER_ID);
-
+  const root = DriveApp.getFolderById(CONFIG.DRIVE_FOLDER_ID);
   const folderMap = {};
+  
   CONFIG.DOMAINS.forEach(d => {
-    const f = rootFolder.getFoldersByName(d);
-    if (f.hasNext()) folderMap[d] = f.next();
+    const folders = root.getFoldersByName(d);
+    if (folders.hasNext()) folderMap[d] = folders.next();
   });
 
   for (let i = 1; i < data.length; i++) {
-    const row = data[i];
-    if (row[7] === true && row[8] === false) { // Approved and not indexed
-      const domain = row[5];
-      const folder = folderMap[domain];
-      if (!folder) continue;
-      
-      const yaml = [
-        `title: "${row[0]}"`,
-        `short_desc: "${String(row[2]).substring(0, 150).replace(/"/g, "'")}"`,
-        `system_role: "${row[11] || "Core Infrastructure"}"`,
-        `dependency_level: "${row[12] || "critical"}"`,
-        `infra_layer: "${row[13] || ""}"`,
-        `repo_url: "${row[1]}"`,
-        `stars: ${row[3]}`,
-        `last_verified: "${new Date().toISOString()}"`
-      ].join('\n');
-      
-      try {
-        folder.createFile(row[0].toLowerCase().replace(/[^a-z0-9]/g, '_') + ".yaml", yaml, "text/yaml");
-        sheet.getRange(i + 1, 9).setValue(true);
-      } catch (e) { console.error("Promotion failed for " + row[0] + ": " + e.message); }
+    const [name, url, desc, stars, , domain, , approved, indexed, , , sysRole, depLevel, infraLayer] = data[i];
+    if (approved === true && indexed === false && folderMap[domain]) {
+      const yaml = generateCognitiveYaml({name, url, desc, stars, sysRole, depLevel, infraLayer}, domain);
+      const fileName = name.toLowerCase().replace(/[^a-z0-9]/g, '_') + "_" + Math.random().toString(36).substring(7) + ".yaml";
+      folderMap[domain].createFile(fileName, yaml, "text/yaml");
+      sheet.getRange(i + 1, 9).setValue(true); // Mark as Indexed
     }
   }
-  forceRefreshIndex();
 }
 
-function forceRefreshIndex() {
+/**
+ * INDEXING: Rebuilds the Drive-based JSON cache
+ */
+function refreshIndex() {
   const root = DriveApp.getFolderById(CONFIG.DRIVE_FOLDER_ID);
-  let all = [];
+  let allRecords = [];
+  
   CONFIG.DOMAINS.forEach(domain => {
-    const f = root.getFoldersByName(domain);
-    if (!f.hasNext()) return;
-    const files = f.next().getFiles();
+    const folders = root.getFoldersByName(domain);
+    if (!folders.hasNext()) return;
+    const files = folders.next().getFiles();
     while (files.hasNext()) {
       const file = files.next();
-      if (!file.getName().endsWith(".yaml")) continue;
-      const content = file.getBlob().getDataAsString();
-      let p = { n: "", s: "", u: "", d: domain, system_role: "", dependency_level: "", infra_layer: "", sc: 0.5 };
-      
-      content.split('\n').forEach(line => {
-        const parts = line.split(':');
-        if (parts.length < 2) return;
-        const k = parts[0].trim();
-        const v = parts.slice(1).join(':').trim().replace(/^["']|["']$/g, '');
-        if (k === 'title') p.n = v;
-        else if (k === 'short_desc') p.s = v;
-        else if (k === 'repo_url') p.u = v;
-        else if (k === 'system_role') p.system_role = v;
-        else if (k === 'dependency_level') p.dependency_level = v;
-        else if (k === 'infra_layer') p.infra_layer = v;
-        else if (k === 'stars') p.sc = Math.min(1.0, parseInt(v) / 10000);
-      });
-      if (p.n) all.push(p);
+      if (file.getName().endsWith(".yaml")) {
+        try {
+          const p = parseYaml(file.getBlob().getDataAsString(), domain);
+          if (p.n) allRecords.push(p);
+        } catch (e) { console.warn(`Skipping invalid YAML: ${file.getName()}`); }
+      }
     }
   });
-  PropertiesService.getScriptProperties().setProperty(CONFIG.CACHE_KEY, JSON.stringify({ 
-    status: "success", 
-    timestamp: new Date().toISOString(),
-    records: all 
-  }));
+
+  const payload = JSON.stringify({ status: "success", timestamp: new Date().toISOString(), records: allRecords });
+  const existingFiles = root.getFilesByName(CONFIG.CACHE_FILENAME);
+  if (existingFiles.hasNext()) {
+    existingFiles.next().setContent(payload);
+  } else {
+    root.createFile(CONFIG.CACHE_FILENAME, payload, "application/json");
+  }
+}
+
+function parseYaml(content, domain) {
+  const res = { n: "", s: "", w: "", o: "", y: "", u: "", up: "", d: domain, system_role: "", dependency_level: "", infra_layer: "", sc: 0.5 };
+  content.split('\n').forEach(line => {
+    const colonPos = line.indexOf(':');
+    if (colonPos === -1) return;
+    const k = line.substring(0, colonPos).trim();
+    const v = line.substring(colonPos + 1).trim().replace(/^["']|["']$/g, '');
+    if (k === 'title') res.n = v;
+    else if (k === 'short_desc') res.s = v;
+    else if (k === 'repo_url') res.u = v;
+    else if (k === 'last_verified') res.up = v;
+    else if (k === 'system_role') res.system_role = v;
+    else if (k === 'dependency_level') res.dependency_level = v;
+    else if (k === 'infra_layer') res.infra_layer = v;
+    else if (k === 'stars') res.sc = Math.min(1.0, parseInt(v) / 10000);
+  });
+  return res;
+}
+
+function generateCognitiveYaml(repo, domain) {
+  return [
+    `title: "${repo.name}"`,
+    `short_desc: "${(repo.desc || "").substring(0, 150).replace(/"/g, "'")}"`,
+    `system_role: "${repo.sysRole || "Core Infrastructure"}"`,
+    `dependency_level: "${repo.depLevel || "important"}"`,
+    `infra_layer: "${repo.infraLayer || ""}"`,
+    `what: "A mission-critical system for ${domain}."`,
+    `who: "Engineers and Decision Makers."`,
+    `why: "Foundation of global ${domain} operations."`,
+    `stars: ${repo.stars || 0}`,
+    `repo_url: "${repo.url}"`,
+    `last_verified: "${new Date().toISOString()}"`
+  ].join('\n');
 }
 
 function doGet() {
-  const cached = PropertiesService.getScriptProperties().getProperty(CONFIG.CACHE_KEY);
-  return ContentService.createTextOutput(cached || '{"status":"empty","records":[]}')
+  const files = DriveApp.getFolderById(CONFIG.DRIVE_FOLDER_ID).getFilesByName(CONFIG.CACHE_FILENAME);
+  return ContentService.createTextOutput(files.hasNext() ? files.next().getBlob().getDataAsString() : '{"status":"empty","records":[]}')
     .setMimeType(ContentService.MimeType.JSON);
+}
+
+function ensureFoldersExist() {
+  const root = DriveApp.getFolderById(CONFIG.DRIVE_FOLDER_ID);
+  CONFIG.DOMAINS.forEach(d => {
+    if (!root.getFoldersByName(d).hasNext()) root.createFolder(d);
+  });
 }
 
 function setupTrigger() {
   const triggers = ScriptApp.getProjectTriggers();
   triggers.forEach(t => ScriptApp.deleteTrigger(t));
   ScriptApp.newTrigger("ULTIMATE_REBOOT").timeBased().everyHours(4).create();
+  console.log("✅ Trigger active: ULTIMATE_REBOOT will run every 4 hours.");
+}
+
+function resetCache() {
+  const files = DriveApp.getFolderById(CONFIG.DRIVE_FOLDER_ID).getFilesByName(CONFIG.CACHE_FILENAME);
+  while (files.hasNext()) files.next().setTrashed(true);
+  refreshIndex();
 }

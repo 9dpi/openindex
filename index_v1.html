@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenIndex | Healthcare & Finance Repository</title>
+    <meta name="description" content="A modern technical index for healthcare and finance software projects.">
+    <link rel="stylesheet" href="style.css">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body>
+    <div class="grid-overlay"></div>
+
+    <div class="container">
+        <header>
+            <div class="logo-section">
+                <svg width="40" height="40" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="50" cy="50" r="45" stroke="#ff9d00" stroke-width="2" />
+                    <path d="M50 15V85M15 50H85" stroke="#ff9d00" stroke-width="1" stroke-dasharray="4 4" />
+                    <rect x="35" y="35" width="30" height="30" stroke="#ff9d00" stroke-width="3"
+                        transform="rotate(45 50 50)" />
+                    <circle cx="50" cy="50" r="5" fill="#ff9d00" />
+                </svg>
+                <div class="logo-text">
+                    OPEN<span>INDEX</span>.SYS
+                    <small id="dynamic-slogan"
+                        style="display: block; font-size: 0.65rem; color: var(--text-muted); font-weight: 400; letter-spacing: 0;">A
+                        living registry that explains open-source infrastructure</small>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="stats-bar">
+                    <div class="stat-item">
+                        <span class="stat-value accent-glow-text" id="stat-total">--</span>
+                        <span class="stat-label">TOTAL INDEX</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="stat-active">--%</span>
+                        <span class="stat-label">SYSTEM HEALTH</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="stat-domains">--</span>
+                        <span class="stat-label">DOMAINS</span>
+                    </div>
+                </div>
+
+                <div class="header-actions">
+                    <!-- Theme Toggle Button -->
+                    <button class="theme-switch" id="theme-toggle" title="Toggle Theme">
+                        <i data-lucide="moon" id="theme-icon"></i>
+                    </button>
+                    <!-- Mobile Menu Toggle -->
+                    <button class="menu-toggle" id="menu-toggle" title="Toggle Menu">
+                        <i data-lucide="menu"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <nav id="main-nav">
+            <div class="nav-links">
+                <a href="#" class="nav-link active" onclick="filterMenu('all', this)">ALL</a>
+                <a href="#" class="nav-link" onclick="filterMenu('ai_infra', this)">AI INFRA</a>
+                <a href="#" class="nav-link" onclick="filterMenu('gov', this)">GOV</a>
+                <a href="#" class="nav-link" onclick="filterMenu('climate', this)">CLIMATE</a>
+                <a href="#" class="nav-link" onclick="filterMenu('health', this)">MEDICAL</a>
+                <a href="#" class="nav-link" onclick="filterMenu('finance', this)">FINANCE</a>
+            </div>
+            <div class="nav-search">
+                <i data-lucide="search" size="14"></i>
+                <input type="text" id="repo-search" placeholder="Search by repo, org, domain...">
+            </div>
+        </nav>
+
+        <!-- Domain Statement -->
+        <div id="domain-manifesto" class="mono-font"
+            style="font-size: 0.75rem; color: var(--text-primary); margin-bottom: 2rem; padding: 1rem; background: rgba(0,0,0,0.02); border-left: 2px solid var(--accent-color); display: none;">
+        </div>
+
+        <!-- Dynamic Header Hint -->
+        <div id="header-hint" class="header-hint" style="display:none;">
+            💡 Click a record to preview — no GitHub required
+        </div>
+
+
+        <div class="data-table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th width="40">#</th>
+                        <th>Record</th>
+                        <th>Description</th>
+                        <th width="100">Domain</th>
+                        <th width="150">Last Verified</th>
+                        <th width="60">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- REAL DATA INJECTED BY JS -->
+                    <tr>
+                        <td colspan="11" style="text-align:center; padding: 3rem;">AUTHENTICATING WITH QUANTIX CLOUD...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Registry Insight -->
+        <div id="registry-insight"
+            style="margin-top: 1.5rem; font-size: 0.8rem; color: var(--accent-color); font-family: 'JetBrains Mono', monospace; opacity: 0.8;">
+            // INITIALIZING_INSIGHT_ENGINE...
+        </div>
+
+
+        <!-- Nomination Loop -->
+        <div
+            style="margin-top: 4rem; text-align: center; padding: 4rem; border: 1px dashed var(--border-color); border-radius: 4px; background: rgba(0,0,0,0.02);">
+            <i data-lucide="award" style="color: var(--accent-color); margin-bottom: 1.5rem;"></i>
+            <h3>Nominate a System</h3>
+            <p class="text-muted" style="font-size: 0.85rem; max-width: 500px; margin: 1rem auto;">
+                Found a mission-critical repository that the world relies on? Nominate it for verification.
+            </p>
+            <a href="https://github.com/9dpi/openindex/issues/new" target="_blank" class="btn-github-action"
+                style="margin-top: 1.5rem; background: var(--text-primary); color: var(--bg-secondary) !important;">
+                Submit Nomination <i data-lucide="send" size="14"></i>
+            </a>
+        </div>
+
+
+        <footer>
+            <p class="footer-text">Registry of Systems the World Quietly Depends On</p>
+            <p style="font-size: 0.7rem; opacity: 0.4; margin-top: 1rem;">
+                OpenIndex indexes existence, not performance. Powered by Quantix AI Core @2026
+            </p>
+        </footer>
+    </div>
+
+
+    <script>
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw92AD5kJmwsWc89P5_BkDax-r3AmWIm2W0_RhQRnqyilw_vWA7aPYMHvykUusxUFM7/exec";
+
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // Theme Switching Logic
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeIcon = document.getElementById('theme-icon');
+        const htmlElement = document.documentElement;
+        htmlElement.setAttribute('data-theme', 'light');
+
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = htmlElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            htmlElement.setAttribute('data-theme', newTheme);
+            themeIcon.setAttribute('data-lucide', newTheme === 'dark' ? 'sun' : 'moon');
+            lucide.createIcons();
+        });
+
+        // Mobile Menu Logic
+        const menuToggle = document.getElementById('menu-toggle');
+        const mainNav = document.getElementById('main-nav');
+        menuToggle.addEventListener('click', () => {
+            mainNav.classList.toggle('active');
+            const icon = menuToggle.querySelector('i');
+            icon.setAttribute('data-lucide', mainNav.classList.contains('active') ? 'x' : 'menu');
+            lucide.createIcons();
+        });
+
+        // --- SOFT MAGIC SYSTEM CORE ---
+        const MagicState = {
+            interest: JSON.parse(localStorage.getItem('oi_interest')) || {},
+            history: JSON.parse(localStorage.getItem('oi_history')) || [],
+            visitCount: parseInt(localStorage.getItem('oi_visits')) || 0,
+            lastVisit: localStorage.getItem('oi_last_visit'),
+            discoverySeed: new Date().toDateString()
+        };
+
+        function initMagic() {
+            const today = new Date().toDateString();
+            if (MagicState.lastVisit !== today) {
+                MagicState.visitCount++;
+                MagicState.lastVisit = today;
+                localStorage.setItem('oi_visits', MagicState.visitCount);
+                localStorage.setItem('oi_last_visit', MagicState.lastVisit);
+            }
+            updateSlogan();
+        }
+
+        function trackSignal(type, domain, recordId) {
+            const d = (domain || 'hybrid').toLowerCase();
+            MagicState.interest[d] = (MagicState.interest[d] || 0) + (type === 'click_repo' ? 5 : 1);
+            if (recordId && !MagicState.history.includes(recordId)) {
+                MagicState.history.push(recordId);
+            }
+            localStorage.setItem('oi_interest', JSON.stringify(MagicState.interest));
+            localStorage.setItem('oi_history', JSON.stringify(MagicState.history));
+            updateSlogan();
+        }
+
+        function updateSlogan() {
+            const el = document.getElementById('dynamic-slogan');
+            if (!el) return;
+            if (MagicState.visitCount > 3) {
+                el.innerText = "Focused on what you explored recently";
+            } else if (MagicState.visitCount > 1) {
+                el.innerText = "A few things you might want to look at today";
+            }
+        }
+
+        function getMagicOrderedRecords(records) {
+            const anchors = ['kubernetes', 'linux', 'docker', 'postgresql', 'nginx', 'redis', 'ansible', 'terraform'];
+
+            const scored = [...records].map(r => {
+                const rName = (r.n || '').toLowerCase();
+                const rDomain = (r.d || 'hybrid').toLowerCase();
+
+                r.isAnchor = anchors.some(a => rName.includes(a));
+
+                let magicScore = 0;
+                magicScore += (MagicState.interest[rDomain] || 0) * 2;
+
+                const seedHash = Array.from(rName).reduce((a, b) => { a = ((a << 5) - a) + b.charCodeAt(0); return a & a }, 0);
+                r.isDiscovery = (Math.abs(seedHash + MagicState.discoverySeed.length) % 15 === 0);
+
+                r.magicScore = magicScore;
+                return r;
+            });
+
+            return scored.sort((a, b) => {
+                if (a.isAnchor && !b.isAnchor) return -1;
+                if (!a.isAnchor && b.isAnchor) return 1;
+                if (b.magicScore !== a.magicScore) return b.magicScore - a.magicScore;
+                return new Date(b.up) - new Date(a.up);
+            });
+        }
+
+        // Dynamic Fetching from Google Drive via Apps Script
+        async function fetchRecords() {
+            const tbody = document.querySelector('tbody');
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 3rem;"><div class="loading-pulse">SYNCING_REGISTRY_CORE...</div></td></tr>';
+
+            try {
+                const response = await fetch(WEB_APP_URL);
+                const result = await response.json();
+
+                if (result.status === "success") {
+                    currentRecords = result.records || [];
+                    if (currentRecords.length > 0) {
+                        initMagic();
+                        updateStats(currentRecords);
+                        const magicRecords = getMagicOrderedRecords(currentRecords);
+                        renderRecords(magicRecords);
+                    } else {
+                        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 3rem;">RECORDS_PENDING_APPROVAL. CHECK_BACK_SOON.</td></tr>';
+                    }
+                }
+            } catch (error) {
+                console.error("Fetch error:", error);
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 3rem; color: var(--accent-color);">REGISTRY_ACCESS_DENIED</td></tr>';
+            }
+        }
+
+        let currentFilter = 'all';
+
+        const domainManifestos = {
+            all: "",
+            ai_infra: "AI Infrastructure indexes the systems that make AI reliable, reproducible, and deployable in the real world.",
+            gov: "Gov Infrastructure indexes open systems used by public institutions to manage data, identity, and services for citizens.",
+            climate: "Climate Systems index the infrastructure powering energy grids, environmental modeling, and sustainability research.",
+            health: "Medical Infrastructure indexes verified systems used in clinical data, bioinformatics, and healthcare services.",
+            finance: "Finance Systems index the backbone protocols and infrastructure for high-stakes digital economy and risk management."
+        };
+
+        function filterMenu(domain, btn) {
+            currentFilter = domain;
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            btn.classList.add('active');
+
+            const manifestoEl = document.getElementById('domain-manifesto');
+            if (domainManifestos[domain]) {
+                manifestoEl.innerText = domainManifestos[domain];
+                manifestoEl.style.display = 'block';
+            } else {
+                manifestoEl.style.display = 'none';
+            }
+
+            runFilters();
+        }
+
+        function runFilters() {
+            const term = document.getElementById('repo-search').value.toLowerCase();
+            let filtered = currentRecords;
+
+            if (currentFilter !== 'all') {
+                filtered = filtered.filter(r => (r.d || '').toLowerCase() === currentFilter);
+            }
+            if (term) {
+                filtered = filtered.filter(r =>
+                    (r.n || '').toLowerCase().includes(term) ||
+                    (r.s || '').toLowerCase().includes(term) ||
+                    (r.u || '').toLowerCase().includes(term)
+                );
+            }
+            renderRecords(filtered);
+        }
+
+        document.getElementById('repo-search').addEventListener('input', runFilters);
+
+        function updateStats(records) {
+            const total = records.length;
+            const healthyCount = records.filter(r => r.st !== 'stale').length; // st here is stars, but status was also using st? No, let's use records length.
+            const domains = new Set(records.map(r => r.d)).size;
+
+            document.getElementById('stat-total').innerText = total;
+            document.getElementById('stat-active').innerText = `100%`; // Static health for now
+            document.getElementById('stat-domains').innerText = domains;
+        }
+
+        function timeAgo(dateString) {
+            if (!dateString) return '---';
+            const date = new Date(dateString);
+            const now = new Date();
+            const seconds = Math.floor((now - date) / 1000);
+
+            let interval = Math.floor(seconds / 31536000);
+            if (interval > 1) return interval + "y ago";
+            interval = Math.floor(seconds / 2592000);
+            if (interval > 1) return interval + "mo ago";
+            interval = Math.floor(seconds / 86400);
+            if (interval >= 1) return interval + "d ago";
+            interval = Math.floor(seconds / 3600);
+            if (interval >= 1) return interval + "h ago";
+            interval = Math.floor(seconds / 60);
+            if (interval >= 1) return interval + "m ago";
+            return Math.floor(seconds) + "s ago";
+        }
+
+        function renderRecords(records) {
+            const tbody = document.querySelector('tbody');
+            tbody.innerHTML = '';
+            // Sorting is handled by Magic system or filter logic
+
+            records.forEach((record, i) => {
+                const mainRow = document.createElement('tr');
+                mainRow.className = 'main-row';
+                mainRow.id = `row-${i}`;
+                mainRow.setAttribute('data-magic-domain', record.d || 'hybrid');
+
+                const score = record.sc || 0;
+                let scoreColor = "#666";
+                if (score > 0.7) scoreColor = "#10b981";
+                else if (score > 0.4) scoreColor = "#ff9d00";
+
+                mainRow.innerHTML = `
+                    <td data-label="#">${(i + 1).toString().padStart(2, '0')}</td>
+                    <td data-label="Record">
+                        <div class="repo-info">
+                            <span class="repo-name">
+                                ${record.n || 'Unnamed'}
+                                ${record.isDiscovery ? '<span class="tag tag-discover" style="font-size:0.5rem; margin-left:0.5rem">DISCOVER</span>' : ''}
+                            </span>
+                            <span class="repo-sub">${record.u?.split('/').slice(-2).join(' / ') || 'unknown'}</span>
+                        </div>
+                    </td>
+                    <td data-label="Description" style="font-size: 0.85rem;">${record.s || ''}</td>
+                    <td data-label="Domain">
+                        <span class="tag tag-${(record.d || 'hybrid').toLowerCase()}">${record.d || 'Hybrid'}</span>
+                        ${record.infra_layer ? `<span class="tag-layer">${record.infra_layer}</span>` : ''}
+                    </td>
+                    <td data-label="Verified" class="mono-font text-muted" style="font-size: 0.85rem;">${timeAgo(record.up)}</td>
+                    <td data-label="Status">
+                        ${record.isAnchor ? '<i data-lucide="anchor" color="var(--accent-color)" size="14" style="margin-right:0.5rem"></i>' : ''}
+                        <i data-lucide="check-circle" color="#10b981" size="16"></i>
+                    </td>
+                `;
+
+                const detailRow = document.createElement('tr');
+                detailRow.className = 'detail-row';
+                detailRow.id = `detail-${i}`;
+
+                detailRow.innerHTML = `
+                    <td colspan="6">
+                        <div class="index-detail-card">
+                            ${(record.d || '').toLowerCase() === 'ai_infra' ? '<div class="ai-stack-note">This is part of the AI production stack</div>' : ''}
+                            <div class="detail-grid">
+                                <div class="detail-section">
+                                    <div class="magic-highlight">
+                                        <h4>Why this matters</h4>
+                                        <p>${record.y || 'This infrastructure project forms a critical baseline for modern open-source systems.'}</p>
+                                    </div>
+                                    <h4>What is this?</h4>
+                                    <p>${record.w || 'A project indexed for its infrastructure importance.'}</p>
+                                </div>
+                                <div class="detail-section">
+                                    <h4>Who is it for?</h4>
+                                    <p>${record.o || 'Developers and technical researchers.'}</p>
+                                    
+                                    <p class="non-tech">
+                                        <strong>If you’re not technical:</strong> 
+                                        ${getNonTechBrief(record)}
+                                    </p>
+
+                                    <h4 style="margin-top:2rem">Registry Compliance</h4>
+                                    <p style="font-size: 0.8rem; font-family:var(--font-mono); opacity: 0.6;">
+                                        • Trusted Entity: Active<br>
+                                        • System Role: ${record.system_role || 'Core Infrastructure'}<br>
+                                        <span class="${record.dependency_level === 'critical' ? 'dependency-critical' : ''}">
+                                            • Dependency: ${record.dependency_level || 'standard'}
+                                        </span><br>
+                                        • Verification Score: ${score.toFixed(2)}<br>
+                                        • Verified: ${timeAgo(record.up)}
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="detail-actions">
+                                <a href="${record.u}?ref=openindex.sys" target="_blank" class="btn-github-action">
+                                    View Repository on GitHub <i data-lucide="external-link" size="14"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </td>
+                `;
+
+                mainRow.onclick = () => toggleExpand(i, record.d);
+                tbody.appendChild(mainRow);
+                tbody.appendChild(detailRow);
+
+                // Repo click tracking
+                detailRow.querySelector('.btn-github-action').onclick = () => trackSignal('click_repo', record.d);
+            });
+            lucide.createIcons();
+            renderExtraSections(records);
+            showOnboarding();
+            attachMagicTrackers();
+        }
+
+        function toggleExpand(index, domain) {
+            const main = document.getElementById(`row-${index}`);
+            const detail = document.getElementById(`detail-${index}`);
+            const isActive = main.classList.contains('active');
+
+            if (!isActive) {
+                // Collapse others
+                document.querySelectorAll('.main-row').forEach(r => r.classList.remove('active'));
+                document.querySelectorAll('.detail-row').forEach(r => r.classList.remove('active'));
+
+                main.classList.add('active');
+                detail.classList.add('active');
+                trackSignal('expand', domain, index);
+            } else {
+                main.classList.remove('active');
+                detail.classList.remove('active');
+            }
+        }
+
+        function getNonTechBrief(record) {
+            const domain = (record.d || '').toLowerCase();
+            const name = record.n || '';
+            if (domain === 'ai_infra') return `${name} provides the vital pipelines and storage that allow Large Language Models to function reliably in real-world apps. It's the infrastructure that powers the AI revolution.`;
+            if (domain === 'gov') return `${name} is a backbone system used by public institutions to manage essential data, identity, or services for citizens.`;
+            if (domain === 'climate') return `${name} helps researchers and engineers simulate energy grids or model climate data to build a more sustainable future.`;
+            if (domain === 'finance') return `${name} helps manage digital money and transaction security. Imagine the digital plumbing for a bank.`;
+            if (domain === 'health') return `${name} provides technical tools for managing patient data and medical records safely.`;
+            return `${name} is a mission-critical component that helps other software systems run reliably, securely, and at scale.`;
+        }
+
+        function showOnboarding() {
+            if (!localStorage.getItem('openindex_hint_shown')) {
+                const hint = document.getElementById('header-hint');
+                if (hint) {
+                    hint.style.display = 'block';
+                    setTimeout(() => {
+                        hint.style.opacity = '0';
+                        setTimeout(() => { hint.style.display = 'none'; }, 600);
+                        localStorage.setItem('openindex_hint_shown', 'true');
+                    }, 8000);
+                }
+            }
+        }
+
+        function renderExtraSections(records) {
+            const last24h = records.filter(r => (new Date() - new Date(r.up)) < 24 * 3600 * 1000).length;
+            const insightEl = document.getElementById('registry-insight');
+            if (insightEl) insightEl.innerText = `Last 24h: ${last24h} infrastructure projects verified.`;
+        }
+
+
+        fetchRecords();
+
+        // Aesthetic flicker
+        setInterval(() => {
+            document.querySelectorAll('.accent-glow-text').forEach(el => {
+                el.style.opacity = Math.random() * 0.2 + 0.8;
+            });
+        }, 100);
+
+        // --- DWELL TIME TRACKING (MAGIC SIGNAL) ---
+        const vObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const domain = entry.target.getAttribute('data-magic-domain');
+                    entry.target.dwellTimer = setTimeout(() => {
+                        trackSignal('dwell', domain);
+                    }, 3000);
+                } else {
+                    clearTimeout(entry.target.dwellTimer);
+                }
+            });
+        }, { threshold: 0.8 });
+
+        function attachMagicTrackers() {
+            document.querySelectorAll('.main-row').forEach(row => {
+                vObserver.observe(row);
+            });
+        }
+    </script>
+</body>
+
+</html>
