@@ -114,41 +114,9 @@
         </footer>
     </div>
 
-    <!-- Index Card Modal -->
-    <div class="modal-overlay" id="index-modal">
-        <div class="index-card">
-            <div class="modal-close" id="modal-close"><i data-lucide="x"></i></div>
-            <h2 id="card-name">// REPO_NAME</h2>
-
-            <div class="card-section">
-                <span class="card-label">What is this?</span>
-                <p class="card-content" id="card-desc"></p>
-            </div>
-
-            <div class="card-section">
-                <span class="card-label">Who is this for?</span>
-                <p class="card-content" id="card-audience"></p>
-            </div>
-
-            <div class="card-section">
-                <span class="card-label">Registry Status</span>
-                <div class="card-content" style="font-family: var(--font-mono); font-size: 0.85rem;">
-                    • Status: <span style="color: #10b981;">ACTIVE</span><br>
-                    • <span id="card-reason"></span><br>
-                    • Last verified: <span id="card-verified"></span>
-                </div>
-            </div>
-
-            <div class="similar-records">
-                <span class="card-label">Similar Indexed Records</span>
-                <div id="card-similar"></div>
-            </div>
-
-            <div class="card-footer">
-                <a href="#" class="btn-primary" id="card-github" target="_blank">View Repository on GitHub</a>
-                <a href="#" class="btn-secondary" onclick="closeModal()">Back to OpenIndex</a>
-            </div>
-        </div>
+    <!-- Onboarding Tooltip -->
+    <div id="onboarding-tooltip" class="onboarding-tooltip" style="display:none;">
+        Click any item to quickly see what it is before opening the repository.
     </div>
 
     <script>
@@ -219,13 +187,13 @@
             let filtered = currentRecords;
 
             if (currentFilter !== 'all') {
-                filtered = filtered.filter(r => (r.domain || '').toLowerCase() === currentFilter);
+                filtered = filtered.filter(r => (r.d || '').toLowerCase() === currentFilter);
             }
             if (term) {
                 filtered = filtered.filter(r =>
-                    (r.name || '').toLowerCase().includes(term) ||
-                    (r.summary || '').toLowerCase().includes(term) ||
-                    (r.repo_url || '').toLowerCase().includes(term)
+                    (r.n || '').toLowerCase().includes(term) ||
+                    (r.s || '').toLowerCase().includes(term) ||
+                    (r.u || '').toLowerCase().includes(term)
                 );
             }
             renderRecords(filtered);
@@ -265,24 +233,23 @@
         function renderRecords(records) {
             const tbody = document.querySelector('tbody');
             tbody.innerHTML = '';
-
             records.sort((a, b) => new Date(b.up) - new Date(a.up));
 
             records.forEach((record, i) => {
-                const row = document.createElement('tr');
-                row.style.cursor = "pointer";
-                row.onclick = () => openIndexCard(record);
+                const mainRow = document.createElement('tr');
+                mainRow.className = 'main-row';
+                mainRow.id = `row-${i}`;
 
                 const score = record.sc || 0;
                 let scoreColor = "#666";
                 if (score > 0.7) scoreColor = "#10b981";
                 else if (score > 0.4) scoreColor = "#ff9d00";
 
-                row.innerHTML = `
+                mainRow.innerHTML = `
                     <td data-label="#">${(i + 1).toString().padStart(2, '0')}</td>
                     <td data-label="Record">
                         <div class="repo-info">
-                            <span class="repo-name">${record.n || 'Unnamed'}</span>
+                            <span class="repo-name"><span class="expand-icon">▸</span>${record.n || 'Unnamed'}</span>
                             <span class="repo-sub">${record.u?.split('/').slice(-2).join(' / ') || 'unknown'}</span>
                         </div>
                     </td>
@@ -291,49 +258,87 @@
                     <td data-label="Category"><span class="tag tag-analytics">${record.c || 'N/A'}</span></td>
                     <td data-label="Score"><span class="mono-font" style="color: ${scoreColor}; font-weight: bold;">${score.toFixed(2)}</span></td>
                     <td data-label="Verified" class="mono-font text-muted" style="font-size: 0.85rem;">${timeAgo(record.up)}</td>
-                    <td data-label="Status">
-                        <i data-lucide="check-circle" color="#10b981" size="16"></i>
+                    <td data-label="Status"><i data-lucide="check-circle" color="#10b981" size="16"></i></td>
+                `;
+
+                const detailRow = document.createElement('tr');
+                detailRow.className = 'detail-row';
+                detailRow.id = `detail-${i}`;
+
+                detailRow.innerHTML = `
+                    <td colspan="8">
+                        <div class="index-detail-card">
+                            <div class="detail-grid">
+                                <div class="detail-section">
+                                    <h4>What is this?</h4>
+                                    <p>${record.w || 'A project indexed for its infrastructure importance.'}</p>
+                                    <h4 style="margin-top:2rem">Who is it for?</h4>
+                                    <p>${record.o || 'Developers and technical researchers.'}</p>
+                                </div>
+                                <div class="detail-section">
+                                    <h4>Why indexed?</h4>
+                                    <p>${record.y || 'Verified project presence on GitHub.'}</p>
+                                    <h4 style="margin-top:2rem">Registry Compliance</h4>
+                                    <p style="font-size: 0.8rem; font-family:var(--font-mono); opacity: 0.6;">
+                                        • Trusted Entity: Active<br>
+                                        • Verification Score: ${score.toFixed(2)}<br>
+                                        • Verified: ${timeAgo(record.up)}
+                                    </p>
+                                </div>
+                            </div>
+                            <div style="margin-top: 2rem;">
+                                <a href="${record.u}?ref=openindex.sys" target="_blank" class="btn-github-action">
+                                    View Repository on GitHub <i data-lucide="external-link" size="14"></i>
+                                </a>
+                                <button onclick="toggleExpand(${i})" class="btn-secondary" style="background:none; border:none; cursor:pointer; font-size: 0.85rem; color: var(--text-muted); text-decoration: underline;">Collapse</button>
+                            </div>
+                        </div>
                     </td>
                 `;
-                tbody.appendChild(row);
+
+                mainRow.onclick = () => toggleExpand(i);
+                tbody.appendChild(mainRow);
+                tbody.appendChild(detailRow);
             });
             lucide.createIcons();
             renderExtraSections(records);
+            showOnboarding();
+        }
+
+        function toggleExpand(index) {
+            const main = document.getElementById(`row-${index}`);
+            const detail = document.getElementById(`detail-${index}`);
+            const isActive = main.classList.contains('active');
+
+            // Collapse others
+            document.querySelectorAll('.main-row').forEach(r => r.classList.remove('active'));
+            document.querySelectorAll('.detail-row').forEach(r => r.classList.remove('active'));
+
+            if (!isActive) {
+                main.classList.add('active');
+                detail.classList.add('active');
+            }
+        }
+
+        function showOnboarding() {
+            if (!localStorage.getItem('openindex_onboarded')) {
+                const tip = document.getElementById('onboarding-tooltip');
+                if (tip) {
+                    tip.style.display = 'block';
+                    setTimeout(() => {
+                        tip.style.opacity = '0';
+                        setTimeout(() => { tip.style.display = 'none'; }, 600);
+                        localStorage.setItem('openindex_onboarded', 'true');
+                    }, 5000);
+                }
+            }
         }
 
         function renderExtraSections(records) {
             const last24h = records.filter(r => (new Date() - new Date(r.up)) < 24 * 3600 * 1000).length;
-            document.getElementById('registry-insight').innerText = `Last 24h: ${last24h} infrastructure records verified.`;
+            const insightEl = document.getElementById('registry-insight');
+            if (insightEl) insightEl.innerText = `Last 24h: ${last24h} infrastructure projects verified.`;
         }
-
-        function openIndexCard(record) {
-            document.getElementById('card-name').innerText = record.n;
-            document.getElementById('card-desc').innerText = record.s || 'No description available.';
-            document.getElementById('card-audience').innerText = record.a || 'Technical Teams';
-            document.getElementById('card-reason').innerText = record.sc > 0.7 ? `Verified via GitHub (Stars: ${record.st})` : 'Expert Manual Review';
-            document.getElementById('card-verified').innerText = timeAgo(record.up);
-            document.getElementById('card-github').href = `${record.u}?ref=openindex.sys`;
-
-            const similar = currentRecords.filter(r => r.n !== record.n && (r.c === record.c || r.d === record.d)).slice(0, 2);
-            document.getElementById('card-similar').innerHTML = similar.map(r =>
-                `<a href="#" class="similar-item" onclick="event.preventDefault(); openIndexCard(currentRecords.find(x => x.n === '${r.n}'))">→ ${r.n}</a>`
-            ).join('');
-
-            document.getElementById('index-modal').style.display = 'flex';
-            document.body.style.overflow = 'hidden';
-            lucide.createIcons();
-        }
-
-
-        function closeModal() {
-            document.getElementById('index-modal').style.display = 'none';
-            document.body.style.overflow = 'auto';
-        }
-
-        document.getElementById('modal-close').onclick = closeModal;
-        window.onclick = (event) => {
-            if (event.target == document.getElementById('index-modal')) closeModal();
-        };
 
 
         fetchRecords();
