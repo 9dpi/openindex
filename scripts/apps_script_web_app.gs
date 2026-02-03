@@ -125,7 +125,9 @@ function indexingAgent() {
           repo_url: p.repo_url,
           domain: domain,
           category: p.category,
+          summary: p.description,
           score: p.score || 0,
+          stars: p.stars || 0, // Bổ sung số sao
           status: p.status || "active",
           last_updated: p.last_verified || new Date().toISOString()
         });
@@ -148,25 +150,31 @@ function robustYamlParser(content) {
   const result = {};
   const lines = content.split('\n');
   
-  lines.forEach(line => {
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
     const parts = line.split(':');
-    if (parts.length < 2) return;
     
-    const key = parts[0].trim();
-    let value = parts.slice(1).join(':').trim();
-    
-    // Làm sạch quotes
-    value = value.replace(/^["']|["']$/g, '');
-    
-    if (key === 'name') result.name = value;
-    if (key === 'repo_url') result.repo_url = value;
-    if (key === 'category') result.category = value;
-    if (key === 'score') result.score = parseFloat(value);
-    if (key === 'description' || key === '>') result.description = value; // Hỗ trợ cả phím block scalar
-    if (key === 'last_verified') result.last_verified = value;
-    if (key === 'status') result.status = value;
-  });
-  
+    if (parts.length >= 2) {
+      const key = parts[0].trim();
+      let value = parts.slice(1).join(':').trim().replace(/^["']|["']$/g, '');
+      
+      if (key === 'name') result.name = value;
+      else if (key === 'repo_url') result.repo_url = value;
+      else if (key === 'category') result.category = value;
+      else if (key === 'score') result.score = parseFloat(value);
+      else if (key === 'stars') result.stars = parseInt(value); // Parse số sao
+      else if (key === 'last_verified') result.last_verified = value;
+      else if (key === 'status') result.status = value;
+      else if (key === 'description') {
+        // Nếu giá trị là ">", lấy dòng tiếp theo làm mô tả
+        if (value === '>' && i + 1 < lines.length) {
+          result.description = lines[i + 1].trim();
+        } else {
+          result.description = value;
+        }
+      }
+    }
+  }
   return result;
 }
 

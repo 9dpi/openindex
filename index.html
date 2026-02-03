@@ -24,7 +24,12 @@
                         transform="rotate(45 50 50)" />
                     <circle cx="50" cy="50" r="5" fill="#ff9d00" />
                 </svg>
-                <div class="logo-text">OPEN<span>INDEX</span>.SYS</div>
+                <div class="logo-text">
+                    OPEN<span>INDEX</span>.SYS
+                    <small
+                        style="display: block; font-size: 0.65rem; color: var(--text-muted); font-weight: 400; letter-spacing: 0;">Open
+                        registry of open-source infrastructure</small>
+                </div>
             </div>
             <div class="stats-bar">
                 <div class="stat-item">
@@ -58,7 +63,7 @@
             </div>
             <div class="nav-search">
                 <i data-lucide="search" size="14"></i>
-                <input type="text" id="repo-search" placeholder="SEARCH...">
+                <input type="text" id="repo-search" placeholder="Search by repo, org, domain...">
             </div>
         </nav>
 
@@ -73,7 +78,7 @@
                         <th width="100">Domain</th>
                         <th width="100">Category</th>
                         <th width="80">Score</th>
-                        <th width="100">Updated</th>
+                        <th width="150">Last Verified</th>
                         <th width="60">Status</th>
                     </tr>
                 </thead>
@@ -85,6 +90,29 @@
                     </tr>
                 </tbody>
             </table>
+        </div>
+
+        <!-- Registry Insight -->
+        <div id="registry-insight"
+            style="margin-top: 1.5rem; font-size: 0.8rem; color: var(--accent-color); font-family: 'JetBrains Mono', monospace; opacity: 0.8;">
+            // INITIALIZING_INSIGHT_ENGINE...
+        </div>
+
+        <!-- Recently Verified Section -->
+        <div class="recent-verification-section"
+            style="margin-top: 4rem; padding-top: 2rem; border-top: 1px solid var(--border-color);">
+            <h3 style="font-size: 0.9rem; margin-bottom: 1.5rem; letter-spacing: 0.1em; color: var(--text-muted);">
+                RECENTLY_VERIFIED_RECORDS</h3>
+            <div id="recent-list" class="mono-font" style="font-size: 0.8rem; opacity: 0.7; line-height: 1.8;">
+                <!-- Injected via JS -->
+            </div>
+        </div>
+
+        <!-- Submission Loop -->
+        <div
+            style="margin-top: 4rem; text-align: center; padding: 3rem; border: 1px dashed var(--border-color); border-radius: 4px;">
+            <p class="text-muted" style="font-size: 0.85rem;">Missing a project? <a href="#"
+                    style="color: var(--accent-color); text-decoration: none;">Submit a repository for indexing.</a></p>
         </div>
 
 
@@ -218,9 +246,13 @@
 
                 // Confidence Score Color Logic
                 const score = record.score || 0;
-                let scoreColor = "#666"; // Low
-                if (score > 0.7) scoreColor = "#10b981"; // High (Green)
-                else if (score > 0.4) scoreColor = "#ff9d00"; // Medium (Orange)
+                let scoreColor = "#666";
+                if (score > 0.7) scoreColor = "#10b981";
+                else if (score > 0.4) scoreColor = "#ff9d00";
+
+                // Tooltip Info
+                const stars = record.stars || '---';
+                const reason = score >= 0.7 ? "Auto-approved (>2000 stars)" : "Manually verified";
 
                 row.innerHTML = `
                     <td data-label="#">${(i + 1).toString().padStart(2, '0')}</td>
@@ -234,12 +266,33 @@
                     <td data-label="Domain"><span class="tag tag-${(record.domain || 'hybrid').toLowerCase()}">${record.domain || 'Hybrid'}</span></td>
                     <td data-label="Category"><span class="tag tag-analytics">${record.category || 'N/A'}</span></td>
                     <td data-label="Score"><span class="mono-font" style="color: ${scoreColor}; font-weight: bold;">${score.toFixed(2)}</span></td>
-                    <td data-label="Updated" class="mono-font text-muted">${timeAgo(record.last_updated)}</td>
-                    <td data-label="Status"><i data-lucide="check-circle" color="#10b981" size="16"></i></td>
+                    <td data-label="Verified" class="mono-font text-muted">Verified ${timeAgo(record.last_updated)}</td>
+                    <td data-label="Status" title="Indexed via GitHub\nStars: ${stars}\n${reason}">
+                        <i data-lucide="check-circle" color="#10b981" size="16"></i>
+                    </td>
                 `;
                 tbody.appendChild(row);
             });
             lucide.createIcons();
+            renderExtraSections(records);
+        }
+
+        function renderExtraSections(records) {
+            // 1. Registry Insight
+            const last24h = records.filter(r => {
+                const diff = new Date() - new Date(r.last_updated);
+                return diff < 24 * 60 * 60 * 1000;
+            }).length;
+
+            const insightEl = document.getElementById('registry-insight');
+            insightEl.innerText = `Last 24h: ${last24h} infrastructure records verified.`;
+
+            // 2. Recently Verified
+            const recentList = document.getElementById('recent-list');
+            const recent = records.slice(0, 3);
+            recentList.innerHTML = recent.map(r =>
+                `• ${r.name} – <span class="text-muted">Verified ${timeAgo(r.last_updated)}</span>`
+            ).join('<br>');
         }
 
 
