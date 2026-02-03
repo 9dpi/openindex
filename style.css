@@ -219,6 +219,12 @@ header {
     margin-bottom: 2rem;
 }
 
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 3rem;
+}
+
 .logo-section {
     display: flex;
     align-items: center;
@@ -686,6 +692,13 @@ footer {
         padding-top: 1.5rem;
     }
 
+    .header-right {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
     .header-actions {
         position: absolute;
         top: 1.5rem;
@@ -784,8 +797,18 @@ footer {
     tr.detail-row.active {
         display: block;
         margin-top: -1rem;
-        margin-bottom: 1.5rem;
+        margin-bottom: 2rem;
         border: none;
+    }
+
+    tr.detail-row td {
+        display: block;
+        padding: 0 !important;
+        border: none;
+    }
+
+    tr.detail-row td::before {
+        display: none !important;
     }
 
     .index-detail-card {
