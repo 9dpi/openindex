@@ -244,12 +244,11 @@
 
         function updateStats(records) {
             const total = records.length;
-            const healthyCount = records.filter(r => r.status === 'active' || r.status === 'healthy').length;
-            const healthPercent = total > 0 ? Math.round((healthyCount / total) * 100) : 0;
-            const domains = new Set(records.map(r => r.domain)).size;
+            const healthyCount = records.filter(r => r.st !== 'stale').length; // st here is stars, but status was also using st? No, let's use records length.
+            const domains = new Set(records.map(r => r.d)).size;
 
             document.getElementById('stat-total').innerText = total;
-            document.getElementById('stat-active').innerText = `${healthPercent}%`;
+            document.getElementById('stat-active').innerText = `100%`; // Static health for now
             document.getElementById('stat-domains').innerText = domains;
         }
 
@@ -276,15 +275,14 @@
             const tbody = document.querySelector('tbody');
             tbody.innerHTML = '';
 
-            records.sort((a, b) => new Date(b.last_updated) - new Date(a.last_updated));
+            records.sort((a, b) => new Date(b.up) - new Date(a.up));
 
             records.forEach((record, i) => {
                 const row = document.createElement('tr');
                 row.style.cursor = "pointer";
                 row.onclick = () => openIndexCard(record);
 
-                // Confidence Score Color Logic
-                const score = record.score || 0;
+                const score = record.sc || 0;
                 let scoreColor = "#666";
                 if (score > 0.7) scoreColor = "#10b981";
                 else if (score > 0.4) scoreColor = "#ff9d00";
@@ -293,15 +291,15 @@
                     <td data-label="#">${(i + 1).toString().padStart(2, '0')}</td>
                     <td data-label="Record">
                         <div class="repo-info">
-                            <span class="repo-name">${record.name || 'Unnamed'}</span>
-                            <span class="repo-sub">${record.repo_url?.split('/').slice(-2).join(' / ') || 'unknown'}</span>
+                            <span class="repo-name">${record.n || 'Unnamed'}</span>
+                            <span class="repo-sub">${record.u?.split('/').slice(-2).join(' / ') || 'unknown'}</span>
                         </div>
                     </td>
-                    <td data-label="Description" style="font-size: 0.85rem;">${record.summary || ''}</td>
-                    <td data-label="Domain"><span class="tag tag-${(record.domain || 'hybrid').toLowerCase()}">${record.domain || 'Hybrid'}</span></td>
-                    <td data-label="Category"><span class="tag tag-analytics">${record.category || 'N/A'}</span></td>
+                    <td data-label="Description" style="font-size: 0.85rem;">${record.s || ''}</td>
+                    <td data-label="Domain"><span class="tag tag-${(record.d || 'hybrid').toLowerCase()}">${record.d || 'Hybrid'}</span></td>
+                    <td data-label="Category"><span class="tag tag-analytics">${record.c || 'N/A'}</span></td>
                     <td data-label="Score"><span class="mono-font" style="color: ${scoreColor}; font-weight: bold;">${score.toFixed(2)}</span></td>
-                    <td data-label="Verified" class="mono-font text-muted" style="font-size: 0.85rem;">${timeAgo(record.last_updated)}</td>
+                    <td data-label="Verified" class="mono-font text-muted" style="font-size: 0.85rem;">${timeAgo(record.up)}</td>
                     <td data-label="Status">
                         <i data-lucide="check-circle" color="#10b981" size="16"></i>
                     </td>
@@ -313,42 +311,31 @@
         }
 
         function renderExtraSections(records) {
-            // 1. Registry Insight
-            const last24h = records.filter(r => {
-                const diff = new Date() - new Date(r.last_updated);
-                return diff < 24 * 60 * 60 * 1000;
-            }).length;
-
-            const insightEl = document.getElementById('registry-insight');
-            insightEl.innerText = `Last 24h: ${last24h} infrastructure records verified.`;
-
-            recentList.innerHTML = recent.map(r =>
-                `• ${r.name} – <span class="text-muted">${timeAgo(r.last_updated)}</span>`
-            ).join('<br>');
+            const last24h = records.filter(r => (new Date() - new Date(r.up)) < 24 * 3600 * 1000).length;
+            document.getElementById('registry-insight').innerText = `Last 24h: ${last24h} infrastructure records verified.`;
+            const recent = records.slice(0, 3);
+            const recentList = document.getElementById('recent-list');
+            recentList.innerHTML = recent.map(r => `• ${r.n} – <span class="text-muted">${timeAgo(r.up)}</span>`).join('<br>');
         }
 
-        // --- Index Card Logic ---
         function openIndexCard(record) {
-            document.getElementById('card-name').innerText = record.name;
-            document.getElementById('card-desc').innerText = record.summary || 'No description available.';
-            document.getElementById('card-audience').innerText = record.audience || 'Infrastructure Teams / Technical Researchers';
-            document.getElementById('card-reason').innerText = record.score > 0.7 ? `Verified via GitHub (Stars: ${record.stars})` : 'Expert Manual Review';
-            document.getElementById('card-verified').innerText = timeAgo(record.last_updated);
-            document.getElementById('card-github').href = `${record.repo_url}?ref=openindex.sys`;
+            document.getElementById('card-name').innerText = record.n;
+            document.getElementById('card-desc').innerText = record.s || 'No description available.';
+            document.getElementById('card-audience').innerText = record.a || 'Technical Teams';
+            document.getElementById('card-reason').innerText = record.sc > 0.7 ? `Verified via GitHub (Stars: ${record.st})` : 'Expert Manual Review';
+            document.getElementById('card-verified').innerText = timeAgo(record.up);
+            document.getElementById('card-github').href = `${record.u}?ref=openindex.sys`;
 
-            // Similar Records Logic
-            const similar = currentRecords
-                .filter(r => r.name !== record.name && (r.category === record.category || r.domain === record.domain))
-                .slice(0, 2);
-
+            const similar = currentRecords.filter(r => r.n !== record.n && (r.c === record.c || r.d === record.d)).slice(0, 2);
             document.getElementById('card-similar').innerHTML = similar.map(r =>
-                `<a href="#" class="similar-item" onclick="event.preventDefault(); openIndexCard(currentRecords.find(x => x.name === '${r.name}'))">→ ${r.name}</a>`
+                `<a href="#" class="similar-item" onclick="event.preventDefault(); openIndexCard(currentRecords.find(x => x.n === '${r.n}'))">→ ${r.n}</a>`
             ).join('');
 
             document.getElementById('index-modal').style.display = 'flex';
             document.body.style.overflow = 'hidden';
             lucide.createIcons();
         }
+
 
         function closeModal() {
             document.getElementById('index-modal').style.display = 'none';

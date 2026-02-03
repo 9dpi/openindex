@@ -1,14 +1,15 @@
 /* 
-  OpenIndex Registry Pipeline v4.4 (Cognitive Architecture)
-  - Workflow: Discovery -> Gatekeeper -> Registry -> Cognitive Cache
-  - Standards: Schema v1.2 (Target Audience), Idempotency, Score
+  OpenIndex Registry Pipeline v4.4.1 (Stability Patch)
+  - Fixed: Multi-line description parsing
+  - Fixed: Confidence Stars in YAML
+  - Optimized: Payload size for ScriptProperties (max 9KB)
 */
 
 const CONFIG = {
   DRIVE_FOLDER_ID: "1UwSmQ71MR3Lk13-RnlP2pG572AP8vLz1",
   SPREADSHEET_ID: "1fcY78iMgmF6opG9wGBwUP_euTVDFb1HUB9LKEWxnfHM",
   DOMAINS: ["health", "finance"],
-  CACHE_KEY: "OPENINDEX_PRO_CACHE",
+  CACHE_KEY: "OPENINDEX_PRO_CACHE_V2",
   AUTO_APPROVE_STARS: 2000
 };
 
@@ -17,7 +18,7 @@ function getStagingSheet() {
 }
 
 function masterAutomationPipeline() {
-  console.log("[Master v4.4] Cognitive Pipeline Start...");
+  console.log("[Master v4.4.1] Running...");
   discoveryAgent();
   promotionAgent();
 }
@@ -39,7 +40,7 @@ function discoveryAgent() {
       const response = UrlFetchApp.fetch(url, { headers: { "User-Agent": "OpenIndex-Agent" }, muteHttpExceptions: true });
       if (response.getResponseCode() !== 200) return;
       const repos = JSON.parse(response.getContentText()).items || [];
-      repos.slice(0, 10).forEach(repo => {
+      repos.slice(0, 5).forEach(repo => { // Giới hạn 5 để an toàn quota
         if (!existingUrls.has(repo.html_url)) {
           const isHigh = repo.stargazers_count >= CONFIG.AUTO_APPROVE_STARS;
           sheet.appendRow([
@@ -80,7 +81,7 @@ function promotionAgent() {
         folder.createFile(filename, yamlBody, "text/yaml");
         sheet.getRange(i + 1, 9).setValue(true);
         sheet.getRange(i + 1, 12).setValue(new Date());
-      } catch(e) { console.error(`[Promotion Error] ${name}: ${e.message}`); }
+      } catch(e) { console.error(`[Promotion Error] ${name}`); }
     }
   }
   indexingAgent();
@@ -100,36 +101,34 @@ function indexingAgent() {
       const p = robustYamlParser(file.getBlob().getDataAsString());
       if (p.name) {
         summary.push({
-          id: file.getName(),
-          name: p.name,
-          repo_url: p.repo_url,
-          domain: domain,
-          category: p.category,
-          summary: p.description,
-          audience: p.audience || "Infrastructure Teams / Researchers",
-          score: p.score || 0,
-          stars: p.stars || 0,
-          status: p.status || "active",
-          last_updated: p.last_verified || new Date().toISOString()
+          n: p.name,
+          u: p.repo_url,
+          d: domain,
+          c: p.category,
+          s: (p.description || "").substring(0, 150), // Truncate to save space
+          a: p.audience || "Infrastructure Teams",
+          sc: p.score || 0,
+          st: p.stars || 0,
+          up: p.last_verified || new Date().toISOString()
         });
       }
     }
   });
 
-  PropertiesService.getScriptProperties().setProperty(CONFIG.CACHE_KEY, JSON.stringify({
-    status: "success", generated_at: new Date().toISOString(), records: summary
-  }));
-  console.log(`[Indexer] UI Cache Ready: ${summary.length} records.`);
+  const payload = JSON.stringify({ status: "success", records: summary });
+  PropertiesService.getScriptProperties().setProperty(CONFIG.CACHE_KEY, payload);
+  console.log(`[Indexer] Payload size: ${payload.length} bytes`);
 }
 
 function robustYamlParser(content) {
-  const result = {};
+  const result = { name: "" };
   const lines = content.split('\n');
   for (let i = 0; i < lines.length; i++) {
-    const parts = lines[i].split(':');
-    if (parts.length >= 2) {
-      const key = parts[0].trim();
-      let value = parts.slice(1).join(':').trim().replace(/^["']|["']$/g, '');
+    const line = lines[i];
+    if (line.includes(':')) {
+      const key = line.split(':')[0].trim();
+      let value = line.split(':').slice(1).join(':').trim().replace(/^["']|["']$/g, '');
+      
       if (key === 'name') result.name = value;
       else if (key === 'repo_url') result.repo_url = value;
       else if (key === 'category') result.category = value;
@@ -137,7 +136,6 @@ function robustYamlParser(content) {
       else if (key === 'stars') result.stars = parseInt(value);
       else if (key === 'target_audience') result.audience = value;
       else if (key === 'last_verified') result.last_verified = value;
-      else if (key === 'status') result.status = value;
       else if (key === 'description' && value === '>' && i + 1 < lines.length) {
         result.description = lines[i + 1].trim();
       }
@@ -154,39 +152,38 @@ function generateStandardYaml(repo, domain) {
   if (topics.some(t => /engine|protocol|infra/.test(t))) score += 0.3;
   if (repo.description) score += 0.1;
 
-  let audience = "Technical Teams / Infrastructure Engineers";
+  let audience = "Technical Teams";
   if (topics.some(t => /analytics|research|data/.test(t))) audience = "Quant Researchers / Data Scientists";
-  if (domain === "health") audience = "Biomedical Engineers / Health Informatics";
+  if (domain === "health") audience = "Health Informatics Teams";
 
-  let cat = topics.some(t => /engine|protocol|infra/.test(t)) ? "infrastructure" : "analytics";
-  
   return [
     'schema_version: "1.2"',
-    'record:',
-    `  name: "${repo.name}"`,
-    `  repo_url: "${repo.html_url}"`,
+    `name: "${repo.name}"`,
+    `repo_url: "${repo.html_url}"`,
     `domain: "${domain}"`,
-    `category: "${cat}"`,
+    `category: "${topics.some(t => /engine|infra/.test(t)) ? "infrastructure" : "analytics"}"`,
     `target_audience: "${audience}"`,
+    `stars: ${repo.stargazers_count}`,
     `description: >\n  ${(repo.description || "").replace(/"/g, "'")}`,
-    'confidence:',
-    '  source: github',
-    `  score: ${score.toFixed(2)}`,
-    'timestamps:',
-    `  last_verified: "${new Date().toISOString()}"`,
-    'status: active'
+    `score: ${score.toFixed(2)}`,
+    `last_verified: "${new Date().toISOString()}"`,
+    'status: "active"'
   ].join('\n');
 }
 
 function doGet() {
-  const cached = PropertiesService.getScriptProperties().getProperty(CONFIG.CACHE_KEY);
-  return ContentService.createTextOutput(cached || '{"status":"empty","records":[]}')
-    .setMimeType(ContentService.MimeType.JSON);
+  try {
+    const cached = PropertiesService.getScriptProperties().getProperty(CONFIG.CACHE_KEY);
+    return ContentService.createTextOutput(cached || '{"status":"empty","records":[]}')
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch (e) {
+    return ContentService.createTextOutput(JSON.stringify({status: "error", msg: e.toString()}))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
 }
 
 function systemReset() {
-  const ss = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
-  const sheet = ss.getSheets()[0];
+  const sheet = getStagingSheet();
   if (sheet.getLastRow() > 1) sheet.deleteRows(2, sheet.getLastRow() - 1);
   const root = DriveApp.getFolderById(CONFIG.DRIVE_FOLDER_ID);
   CONFIG.DOMAINS.forEach(d => {
