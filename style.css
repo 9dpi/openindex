@@ -77,6 +77,33 @@ tr.detail-row.active {
     filter: brightness(1.1);
 }
 
+.detail-actions {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    margin-top: 2.5rem;
+}
+
+.btn-collapse {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.btn-collapse:hover {
+    color: var(--accent-color);
+    border-bottom-color: var(--accent-color);
+}
+
 /* First-timer Tooltip */
 .onboarding-tooltip {
     position: fixed;
@@ -822,8 +849,29 @@ footer {
         gap: 2.5rem;
     }
 
+    .detail-actions {
+        flex-direction: column;
+        gap: 0.8rem;
+        margin-top: 2rem;
+        display: flex;
+    }
+
+    .btn-collapse {
+        order: 2;
+        width: 100%;
+        text-align: center;
+        background: var(--bg-accent);
+        border: 1px solid var(--border-color);
+        padding: 1.2rem;
+        font-size: 0.7rem;
+        color: var(--text-primary);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
     .btn-github-action {
         width: 100%;
         justify-content: center;
+        order: 1;
     }
 }
