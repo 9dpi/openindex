@@ -275,11 +275,14 @@ nav {
     align-items: center;
     margin-bottom: 3rem;
     border-bottom: 1px solid var(--border-color);
+    flex-wrap: wrap;
+    gap: 1rem;
 }
 
 .nav-links {
     display: flex;
     gap: 2.5rem;
+    flex-wrap: wrap;
 }
 
 .nav-link {
@@ -863,3 +866,7 @@ footer {
     padding-top: 1rem;
     margin-top: 1.5rem;
 }
+.tag-ai_infra { background: #9d174d; color: #fbcfe8; }
+.tag-gov { background: #1e40af; color: #dbeafe; }
+.tag-climate { background: #166534; color: #dcfce7; }
+.dependency-critical { color: var(--accent-color); font-weight: 700; }

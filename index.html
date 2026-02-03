@@ -63,8 +63,11 @@
         <nav id="main-nav">
             <div class="nav-links">
                 <a href="#" class="nav-link active" onclick="filterMenu('all', this)">ALL</a>
-                <a href="#" class="nav-link" onclick="filterMenu('finance', this)">FINANCE</a>
+                <a href="#" class="nav-link" onclick="filterMenu('ai_infra', this)">AI INFRA</a>
+                <a href="#" class="nav-link" onclick="filterMenu('gov', this)">GOV</a>
+                <a href="#" class="nav-link" onclick="filterMenu('climate', this)">CLIMATE</a>
                 <a href="#" class="nav-link" onclick="filterMenu('health', this)">MEDICAL</a>
+                <a href="#" class="nav-link" onclick="filterMenu('finance', this)">FINANCE</a>
             </div>
             <div class="nav-search">
                 <i data-lucide="search" size="14"></i>
@@ -107,18 +110,26 @@
         </div>
 
 
-        <!-- Submission Loop -->
+        <!-- Nomination Loop -->
         <div
-            style="margin-top: 4rem; text-align: center; padding: 3rem; border: 1px dashed var(--border-color); border-radius: 4px;">
-            <p class="text-muted" style="font-size: 0.85rem;">Missing a project? <a href="#"
-                    style="color: var(--accent-color); text-decoration: none;">Submit a repository for indexing.</a></p>
+            style="margin-top: 4rem; text-align: center; padding: 4rem; border: 1px dashed var(--border-color); border-radius: 4px; background: rgba(0,0,0,0.02);">
+            <i data-lucide="award" style="color: var(--accent-color); margin-bottom: 1.5rem;"></i>
+            <h3>Nominate a System</h3>
+            <p class="text-muted" style="font-size: 0.85rem; max-width: 500px; margin: 1rem auto;">
+                Found a mission-critical repository that the world relies on? Nominate it for verification.
+            </p>
+            <a href="https://github.com/9dpi/openindex/issues/new" target="_blank" class="btn-github-action"
+                style="margin-top: 1.5rem; background: var(--text-primary); color: var(--bg-secondary) !important;">
+                Submit Nomination <i data-lucide="send" size="14"></i>
+            </a>
         </div>
 
 
         <footer>
-            <p class="footer-text">Powered by Quantix AI Core - Finance & Medical Analytics @2026</p>
-            <p style="font-size: 0.7rem; opacity: 0.4; margin-top: 1rem;">OpenIndex does not host code. It records
-                existence.</p>
+            <p class="footer-text">Registry of Systems the World Quietly Depends On</p>
+            <p style="font-size: 0.7rem; opacity: 0.4; margin-top: 1rem;">
+                OpenIndex indexes existence, not performance. Powered by Quantix AI Core @2026
+            </p>
         </footer>
     </div>
 
@@ -368,6 +379,10 @@
                                     <h4 style="margin-top:2rem">Registry Compliance</h4>
                                     <p style="font-size: 0.8rem; font-family:var(--font-mono); opacity: 0.6;">
                                         • Trusted Entity: Active<br>
+                                        • System Role: ${record.system_role || 'Core Infrastructure'}<br>
+                                        <span class="${record.dependency_level === 'critical' ? 'dependency-critical' : ''}">
+                                            • Dependency: ${record.dependency_level || 'standard'}
+                                        </span><br>
                                         • Verification Score: ${score.toFixed(2)}<br>
                                         • Verified: ${timeAgo(record.up)}
                                     </p>
@@ -417,10 +432,12 @@
         function getNonTechBrief(record) {
             const domain = (record.d || '').toLowerCase();
             const name = record.n || '';
+            if (domain === 'ai_infra') return `${name} provides the vital pipelines and storage that allow Large Language Models to function reliably in real-world apps. It's the infrastructure that powers the AI revolution.`;
+            if (domain === 'gov') return `${name} is a backbone system used by public institutions to manage essential data, identity, or services for citizens.`;
+            if (domain === 'climate') return `${name} helps researchers and engineers simulate energy grids or model climate data to build a more sustainable future.`;
             if (domain === 'finance') return `${name} helps manage digital money and transaction security. Imagine the digital plumbing for a bank.`;
             if (domain === 'health') return `${name} provides technical tools for managing patient data and medical records safely.`;
-            if (domain === 'app') return `${name} is a high-level tool used to build the interface and logic of modern software.`;
-            return `${name} is a backbone component that helps other software run reliably and securely.`;
+            return `${name} is a mission-critical component that helps other software systems run reliably, securely, and at scale.`;
         }
 
         function showOnboarding() {

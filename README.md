@@ -1,11 +1,24 @@
 # OpenIndex Registry
+> We don’t list projects. We surface systems the world quietly depends on.
 
-**OpenIndex** is an evidence-first AI index for high-stakes domains.
+**OpenIndex** is a living registry of the open-source infrastructure that forms the backbone of modern society. We focus on systems that are critical, verifiable, and evidence-based.
 
-This repository contains the **canonical Index Records** used by OpenIndex. Each record represents a verifiable snapshot of an AI system, model, or research artifact.
+---
 
-> OpenIndex does not evaluate performance.  
-> It indexes verifiable, domain-specific evidence.
+## The "Soft Magic" Philosophy
+OpenIndex follows a "soft magic" approach to discovery. It isn't just an index; it's a bridge between technical depth and non-technical clarity.
+
+### 🏗️ Our Four Arms of Discovery
+1. **Institutional Gold**: Systems used by major global organizations (WHO, NIH, Microsoft) that form the baseline of trust.
+2. **Silent Infra**: Essential systems with low marketing but high reliability and deep dependencies.
+3. **Academic-to-Open**: Research-grade innovations transitioning from papers into production pipelines.
+4. **Community Curators**: Peer-nominated systems verified by our confidence layer.
+
+### 🧠 The Brain: Evaluation Criteria
+Every record in OpenIndex must answer three system-critical questions:
+1. **Existing Logic**: *Why does this exist?* (The core problem solved)
+2. **Reliance Signal**: *When do people rely on it?* (The real-world scenario)
+3. **Breakage Impact**: *Without it, what breaks?* (The systemic context)
 
 ---
 
