@@ -2,163 +2,218 @@
 <html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OpenIndex V2 | Opportunity Explorer</title>
-    <meta name="description" content="Explore code and logic as business opportunities. Technical complexity turned into clarity.">
-    <meta property="og:image" content="https://openindex.dev/preview.png">
-    <meta name="twitter:card" content="summary_large_image">
-    <!-- Manifest for PWA -->
-    <link rel="manifest" href="/manifest.json">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>OPENINDEX | Intelligence Platform</title>
+    <meta name="description" content="Strategic intelligence for code and automation opportunities">
     
-    <!-- Apple Touch Icon -->
-    <link rel="apple-touch-icon" href="/icon-192.png">
-    
-    <!-- Theme Color -->
-    <meta name="theme-color" content="#ff9d00">
-    
-    <!-- Mobile Meta -->
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@400;500;600&display=swap" rel="stylesheet">
     
     <!-- Styles -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
     <link rel="stylesheet" href="style.css">
     
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js" 
-            integrity="sha384-..." 
-            crossorigin="anonymous"></script>
-    
-    <!-- JSON-LD for SEO -->
-    <script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "WebApplication",
-        "name": "OpenIndex V2 | Opportunity Explorer",
-        "description": "Transforming complex source code and automation logic into clear business outcomes",
-        "url": "https://openindex.dev",
-        "applicationCategory": "BusinessApplication",
-        "operatingSystem": "Any"
-    }
-    </script>
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
 </head>
 <body>
-    <script src="app.js" defer></script>
-    <div class="grid-overlay"></div>
-
-    <div class="container">
-        <header class="main-header">
-            <div class="logo-section">
-                <svg width="32" height="32" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="50" cy="50" r="45" stroke="#ff9d00" stroke-width="2" />
-                    <rect x="35" y="35" width="30" height="30" stroke="#ff9d00" stroke-width="3" transform="rotate(45 50 50)" />
-                    <circle cx="50" cy="50" r="5" fill="#ff9d00" />
-                </svg>
-                <div class="logo-text">
-                    OPEN<span>INDEX</span>.V2
+    <!-- Matrix Background -->
+    <div class="matrix-bg"></div>
+    
+    <!-- Main Container -->
+    <div class="ark-container">
+        
+        <!-- Header -->
+        <header class="ark-header">
+            <div class="header-left">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <div class="logo-inner"></div>
+                    </div>
+                    <div class="logo-text">
+                        <span class="logo-primary">OPEN</span>
+                        <span class="logo-accent">INDEX</span>
+                    </div>
+                </div>
+                <div class="header-tagline">
+                    <span class="tagline-text">STRATEGIC INTELLIGENCE PLATFORM</span>
+                    <div class="tagline-pulse"></div>
                 </div>
             </div>
+            
             <div class="header-right">
-                <div class="stats-bar">
-                    <div class="stat-item">
-                        <span class="stat-value" id="stat-opps">0</span>
-                        <span class="stat-label">OPPORTUNITIES</span>
+                <div class="system-status">
+                    <div class="status-indicator active"></div>
+                    <span class="status-text">SYNC ACTIVE</span>
+                </div>
+                <div class="header-stats">
+                    <div class="stat">
+                        <div class="stat-value" id="total-opportunities">0</div>
+                        <div class="stat-label">ACTIVE OPS</div>
                     </div>
-                    <div class="stat-item">
-                        <span class="stat-value" id="stat-updated">Just now</span>
-                        <span class="stat-label">LAST SCAN</span>
+                    <div class="stat">
+                        <div class="stat-value" id="last-scan">--:--</div>
+                        <div class="stat-label">LAST SCAN</div>
                     </div>
                 </div>
             </div>
         </header>
 
-        <section class="v2-header">
-            <h1 id="hero-title">Opportunity Explorer</h1>
-            <p id="hero-desc">Transforming complex source code and automation logic into clear business outcomes.</p>
-        </section>
-
-        <div class="goldmine-switcher">
-            <button class="goldmine-tab active" 
-                    data-mine="github" 
-                    role="tab" 
-                    aria-selected="true"
-                    aria-label="Switch to GitHub goldmine"
-                    id="tab-github">
-                <i data-lucide="github"></i> GITHUB GOLDMINE
-            </button>
-            <button class="goldmine-tab" 
-                    data-mine="n8n" 
-                    role="tab" 
-                    aria-selected="false"
-                    aria-label="Switch to n8n goldmine"
-                    id="tab-n8n">
-                <i data-lucide="zap"></i> n8n GOLDMINE
-            </button>
-        </div>
-
-        <div class="filters-bar">
-            <div class="search-box">
-                <i data-lucide="search"></i>
-                <input type="search" 
-                       id="search-input" 
-                       placeholder="Search opportunities..." 
-                       aria-label="Search opportunities">
-            </div>
-            <select id="domain-filter" class="filter-select" aria-label="Filter by domain">
-                <option value="">All Domains</option>
-                <option value="ai_infra">AI Infrastructure</option>
-                <option value="gov">Government Tech</option>
-                <option value="climate">Climate Tech</option>
-                <option value="health">Health Tech</option>
-                <option value="finance">Fintech</option>
-            </select>
-        </div>
-
-        <!-- Skeleton loading -->
-        <div id="skeleton-container" class="mpv-grid">
-            <div class="mpv-card skeleton">
-                <div class="mpv-card-header">
-                    <div class="mpv-identity">
-                        <div class="loading-shimmer" style="width: 100px; height: 16px; margin-bottom: 8px;"></div>
-                        <div class="loading-shimmer" style="width: 150px; height: 12px;"></div>
+        <!-- Main Content -->
+        <main class="ark-main">
+            
+            <!-- Intelligence Dashboard -->
+            <section class="dashboard-section">
+                <div class="section-header">
+                    <h1 class="section-title">
+                        <span class="title-text">INTELLIGENCE DASHBOARD</span>
+                        <span class="title-line"></span>
+                    </h1>
+                    <div class="section-controls">
+                        <div class="control-group">
+                            <div class="control-label">DATA SOURCE</div>
+                            <div class="source-switch">
+                                <button class="source-btn active" data-source="github">
+                                    <i data-lucide="code"></i>
+                                    <span>GITHUB</span>
+                                </button>
+                                <button class="source-btn" data-source="n8n">
+                                    <i data-lucide="zap"></i>
+                                    <span>N8N</span>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="control-group">
+                            <div class="control-label">FILTER MODE</div>
+                            <div class="quick-filters">
+                                <button class="filter-chip active" data-filter="all">ALL</button>
+                                <button class="filter-chip" data-filter="ai">AI INFRA</button>
+                                <button class="filter-chip" data-filter="gov">GOV TECH</button>
+                                <button class="filter-chip" data-filter="finance">FINANCE</button>
+                                <button class="filter-chip" data-filter="health">HEALTH</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="mpv-card-body">
-                    <div class="loading-shimmer" style="width: 100%; height: 60px; margin-bottom: 16px;"></div>
-                    <div class="loading-shimmer" style="width: 100%; height: 40px; margin-bottom: 16px;"></div>
-                    <div class="loading-shimmer" style="width: 80%; height: 40px;"></div>
+
+                <!-- Intelligence Grid -->
+                <div class="intel-grid" id="intel-grid">
+                    <!-- Cards will be injected here -->
+                </div>
+
+                <!-- Empty State -->
+                <div class="empty-state" id="empty-state" style="display: none;">
+                    <div class="empty-icon">
+                        <i data-lucide="search"></i>
+                    </div>
+                    <div class="empty-title">NO INTEL FOUND</div>
+                    <div class="empty-desc">Adjust filters or try another data source</div>
+                </div>
+
+                <!-- Loading State -->
+                <div class="loading-state" id="loading-state">
+                    <div class="loading-pulse">
+                        <div class="pulse-dot"></div>
+                        <div class="pulse-dot"></div>
+                        <div class="pulse-dot"></div>
+                    </div>
+                    <div class="loading-text">LOADING INTELLIGENCE DATA</div>
+                </div>
+            </section>
+
+            <!-- Analytics Panel -->
+            <section class="analytics-section">
+                <div class="analytics-header">
+                    <h2 class="analytics-title">OPERATIONAL ANALYTICS</h2>
+                    <div class="analytics-refresh">
+                        <button class="refresh-btn" id="refresh-btn">
+                            <i data-lucide="refresh-cw"></i>
+                            <span>REFRESH</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="analytics-grid">
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <div class="metric-icon">
+                                <i data-lucide="trending-up"></i>
+                            </div>
+                            <div class="metric-title">DISCOVERY RATE</div>
+                        </div>
+                        <div class="metric-value" id="discovery-rate">0/HR</div>
+                        <div class="metric-trend">+12% this cycle</div>
+                    </div>
+                    
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <div class="metric-icon">
+                                <i data-lucide="shield"></i>
+                            </div>
+                            <div class="metric-title">CRITICAL SYSTEMS</div>
+                        </div>
+                        <div class="metric-value" id="critical-systems">0</div>
+                        <div class="metric-trend">High priority</div>
+                    </div>
+                    
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <div class="metric-icon">
+                                <i data-lucide="activity"></i>
+                            </div>
+                            <div class="metric-title">ACTIVITY INDEX</div>
+                        </div>
+                        <div class="metric-value" id="activity-index">0.0</div>
+                        <div class="metric-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="ark-footer">
+            <div class="footer-left">
+                <div class="footer-label">SYSTEM STATUS</div>
+                <div class="footer-status">
+                    <span class="status-dot online"></span>
+                    <span class="status-text">OPERATIONAL</span>
                 </div>
             </div>
-        </div>
-
-        <!-- Actual content -->
-        <div id="mpv-container" class="mpv-grid" style="display: none;"></div>
-
-        <div id="empty-state" class="empty-state" style="display: none;">
-            <i data-lucide="folder-search" size="48"></i>
-            <h3>No opportunities found</h3>
-            <p>Try adjusting your search or filters</p>
-        </div>
-
-        <footer class="main-footer">
-            <p class="footer-text">OpenIndex indexes existence, execution, and potential.</p>
-            <p class="footer-subtext">Scanning every 4 hours • Updated <span id="last-update-time">--:--</span></p>
+            <div class="footer-center">
+                <div class="footer-update">
+                    <span class="update-label">NEXT SCAN:</span>
+                    <span class="update-time" id="next-scan">--:--</span>
+                </div>
+            </div>
+            <div class="footer-right">
+                <div class="footer-version">v2.0.1 | ENDFIELD ARCH</div>
+            </div>
         </footer>
+    </div>
+
+    <!-- Intel Modal -->
+    <div class="intel-modal" id="intel-modal">
+        <div class="modal-overlay"></div>
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modal-title"></h3>
+                <button class="modal-close" id="modal-close">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <div class="modal-content" id="modal-content">
+                <!-- Modal content will be injected here -->
+            </div>
+        </div>
     </div>
 
     <!-- JavaScript -->
     <script src="app.js" defer></script>
-    
-    <!-- Service Worker Registration -->
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js').catch(error => {
-                    console.log('ServiceWorker registration failed:', error);
-                });
-            });
-        }
-    </script>
 </body>
 </html>
