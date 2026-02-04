@@ -43,20 +43,30 @@
             </div>
             
             <div class="header-right">
-                <div class="system-status">
-                    <div class="status-indicator active"></div>
-                    <span class="status-text">SYNC ACTIVE</span>
-                </div>
-                <div class="header-stats">
-                    <div class="stat">
-                        <div class="stat-value" id="total-opportunities">0</div>
-                        <div class="stat-label">ACTIVE OPS</div>
+                <!-- Compact Stats Row -->
+                <div class="compact-stats">
+                    <div class="stat-group">
+                        <div class="stat-item">
+                            <span class="stat-value" id="total-opportunities">0</span>
+                            <span class="stat-label">ACTIVE OPS</span>
+                        </div>
+                        <div class="stat-divider">•</div>
+                        <div class="stat-item">
+                            <span class="stat-value" id="last-scan">--:--</span>
+                            <span class="stat-label">LAST SCAN</span>
+                        </div>
+                        <div class="stat-divider">•</div>
+                        <div class="system-status">
+                            <div class="status-indicator active"></div>
+                            <span class="status-text">LIVE</span>
+                        </div>
                     </div>
-                    <div class="stat">
-                        <div class="stat-value" id="last-scan">--:--</div>
-                        <div class="stat-label">LAST SCAN</div>
-                    </div>
                 </div>
+                
+                <!-- Refresh Button -->
+                <button class="refresh-btn compact" id="refresh-btn" title="Refresh data">
+                    <i data-lucide="refresh-cw"></i>
+                </button>
             </div>
         </header>
 
@@ -65,14 +75,19 @@
             
             <!-- Intelligence Dashboard -->
             <section class="dashboard-section">
-                <div class="section-header">
-                    <h1 class="section-title">
-                        <span class="title-text">INTELLIGENCE DASHBOARD</span>
-                        <span class="title-line"></span>
-                    </h1>
-                    <div class="section-controls">
+                <div class="dashboard-header">
+                    <div class="dashboard-title">
+                        <h1>
+                            <span class="title-text">INTELLIGENCE DASHBOARD</span>
+                            <span class="title-line"></span>
+                        </h1>
+                        <div class="dashboard-subtitle">Real-time opportunity discovery & analysis</div>
+                    </div>
+                    
+                    <div class="dashboard-controls">
+                        <!-- Data Source Toggle -->
                         <div class="control-group">
-                            <div class="control-label">DATA SOURCE</div>
+                            <div class="control-label">SOURCE</div>
                             <div class="source-switch">
                                 <button class="source-btn active" data-source="github">
                                     <i data-lucide="code"></i>
@@ -85,14 +100,16 @@
                             </div>
                         </div>
                         
+                        <!-- Quick Filters -->
                         <div class="control-group">
-                            <div class="control-label">FILTER MODE</div>
+                            <div class="control-label">FILTER</div>
                             <div class="quick-filters">
                                 <button class="filter-chip active" data-filter="all">ALL</button>
-                                <button class="filter-chip" data-filter="ai">AI INFRA</button>
-                                <button class="filter-chip" data-filter="gov">GOV TECH</button>
+                                <button class="filter-chip" data-filter="ai">AI</button>
+                                <button class="filter-chip" data-filter="gov">GOV</button>
                                 <button class="filter-chip" data-filter="finance">FINANCE</button>
                                 <button class="filter-chip" data-filter="health">HEALTH</button>
+                                <button class="filter-chip" data-filter="climate">CLIMATE</button>
                             </div>
                         </div>
                     </div>
@@ -119,82 +136,43 @@
                         <div class="pulse-dot"></div>
                         <div class="pulse-dot"></div>
                     </div>
-                    <div class="loading-text">LOADING INTELLIGENCE DATA</div>
+                    <div class="loading-text">SYNCING INTELLIGENCE DATA</div>
                 </div>
             </section>
 
-            <!-- Analytics Panel -->
-            <section class="analytics-section">
-                <div class="analytics-header">
-                    <h2 class="analytics-title">OPERATIONAL ANALYTICS</h2>
-                    <div class="analytics-refresh">
-                        <button class="refresh-btn" id="refresh-btn">
-                            <i data-lucide="refresh-cw"></i>
-                            <span>REFRESH</span>
-                        </button>
+            <!-- Footer Status Bar -->
+            <div class="status-bar">
+                <div class="status-item">
+                    <div class="status-icon">
+                        <i data-lucide="database"></i>
+                    </div>
+                    <div class="status-content">
+                        <div class="status-label">DATA SOURCE</div>
+                        <div class="status-value" id="data-source-status">GitHub API • Live</div>
                     </div>
                 </div>
                 
-                <div class="analytics-grid">
-                    <div class="metric-card">
-                        <div class="metric-header">
-                            <div class="metric-icon">
-                                <i data-lucide="trending-up"></i>
-                            </div>
-                            <div class="metric-title">DISCOVERY RATE</div>
-                        </div>
-                        <div class="metric-value" id="discovery-rate">0/HR</div>
-                        <div class="metric-trend">+12% this cycle</div>
+                <div class="status-item">
+                    <div class="status-icon">
+                        <i data-lucide="clock"></i>
                     </div>
-                    
-                    <div class="metric-card">
-                        <div class="metric-header">
-                            <div class="metric-icon">
-                                <i data-lucide="shield"></i>
-                            </div>
-                            <div class="metric-title">CRITICAL SYSTEMS</div>
-                        </div>
-                        <div class="metric-value" id="critical-systems">0</div>
-                        <div class="metric-trend">High priority</div>
-                    </div>
-                    
-                    <div class="metric-card">
-                        <div class="metric-header">
-                            <div class="metric-icon">
-                                <i data-lucide="activity"></i>
-                            </div>
-                            <div class="metric-title">ACTIVITY INDEX</div>
-                        </div>
-                        <div class="metric-value" id="activity-index">0.0</div>
-                        <div class="metric-progress">
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 0%"></div>
-                            </div>
-                        </div>
+                    <div class="status-content">
+                        <div class="status-label">NEXT UPDATE</div>
+                        <div class="status-value" id="next-update">--:--</div>
                     </div>
                 </div>
-            </section>
+                
+                <div class="status-item">
+                    <div class="status-icon">
+                        <i data-lucide="activity"></i>
+                    </div>
+                    <div class="status-content">
+                        <div class="status-label">SYSTEM HEALTH</div>
+                        <div class="status-value health-good">OPTIMAL</div>
+                    </div>
+                </div>
+            </div>
         </main>
-
-        <!-- Footer -->
-        <footer class="ark-footer">
-            <div class="footer-left">
-                <div class="footer-label">SYSTEM STATUS</div>
-                <div class="footer-status">
-                    <span class="status-dot online"></span>
-                    <span class="status-text">OPERATIONAL</span>
-                </div>
-            </div>
-            <div class="footer-center">
-                <div class="footer-update">
-                    <span class="update-label">NEXT SCAN:</span>
-                    <span class="update-time" id="next-scan">--:--</span>
-                </div>
-            </div>
-            <div class="footer-right">
-                <div class="footer-version">v2.0.1 | ENDFIELD ARCH</div>
-            </div>
-        </footer>
     </div>
 
     <!-- Intel Modal -->
