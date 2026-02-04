@@ -1,295 +1,47 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OpenIndex V2 | Opportunity Explorer</title>
-    <meta name="description"
-        content="Explore code and logic as business opportunities. Technical complexity turned into clarity.">
+    <meta name="description" content="Explore code and logic as business opportunities. Technical complexity turned into clarity.">
+    <meta property="og:image" content="https://openindex.dev/preview.png">
+    <meta name="twitter:card" content="summary_large_image">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="v2-aesthetics.css">
+    
     <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <style>
-        /* Incremental styles for V2 fluidity */
-        :root {
-            --gold-glow: rgba(255, 184, 0, 0.4);
-            --logic-glow: rgba(0, 255, 133, 0.4);
-            --logic-color: #00ff85;
-            --premium-bg: radial-gradient(circle at 50% 0%, rgba(255, 157, 0, 0.05) 0%, transparent 70%);
-        }
-
-        body {
-            background-attachment: fixed;
-            background-image: var(--premium-bg);
-        }
-
-        .v2-header {
-            text-align: center;
-            padding: 4rem 2rem;
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        .v2-header h1 {
-            font-family: var(--font-header);
-            font-size: 3rem;
-            letter-spacing: -1px;
-            margin-bottom: 1rem;
-            background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-color) 100%);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .v2-header p {
-            font-size: 1.1rem;
-            color: var(--text-secondary);
-            opacity: 0.8;
-        }
-
-        .goldmine-switcher {
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-            padding: 1rem;
-            margin-bottom: 4rem;
-        }
-
-        .goldmine-tab {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid var(--border-color);
-            padding: 1rem 2rem;
-            border-radius: 50px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 0.8rem;
-            font-family: var(--font-header);
-            font-weight: 600;
-            color: var(--text-secondary);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            backdrop-filter: blur(20px);
-        }
-
-        .goldmine-tab.active[data-mine="github"] {
-            border-color: var(--accent-color);
-            color: var(--accent-color);
-            box-shadow: 0 0 30px var(--accent-glow);
-            background: rgba(255, 157, 0, 0.05);
-        }
-
-        .goldmine-tab.active[data-mine="n8n"] {
-            border-color: var(--logic-color);
-            color: var(--logic-color);
-            box-shadow: 0 0 30px var(--logic-glow);
-            background: rgba(0, 255, 133, 0.05);
-        }
-
-        .mpv-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
-            gap: 2rem;
-            padding: 2rem;
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        .mpv-card {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            transition: all 0.4s ease;
-            position: relative;
-        }
-
-        .mpv-card:hover {
-            transform: translateY(-5px);
-            border-color: var(--border-highlight);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-        }
-
-        .mpv-card-header {
-            padding: 2rem;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: start;
-        }
-
-        .mpv-identity h3 {
-            font-family: var(--font-header);
-            font-size: 1.4rem;
-            margin-bottom: 0.2rem;
-        }
-
-        .mpv-identity span {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            font-family: var(--font-mono);
-        }
-
-        .mpv-card-body {
-            padding: 2rem;
-            flex-grow: 1;
-        }
-
-        .mpv-section {
-            margin-bottom: 1.5rem;
-        }
-
-        .mpv-section label {
-            display: block;
-            font-size: 0.65rem;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            color: var(--text-muted);
-            margin-bottom: 0.5rem;
-            font-family: var(--font-mono);
-        }
-
-        .mpv-section p {
-            font-size: 0.95rem;
-            line-height: 1.6;
-            color: var(--text-primary);
-        }
-
-        .mpv-evidence {
-            display: flex;
-            gap: 1rem;
-            margin-top: 1rem;
-            padding-top: 1rem;
-            border-top: 1px solid var(--border-color);
-        }
-
-        .evidence-chip {
-            font-size: 0.75rem;
-            background: var(--bg-accent);
-            padding: 0.3rem 0.6rem;
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-            color: var(--text-secondary);
-        }
-
-        .mpv-sandbox {
-            background: rgba(0, 0, 0, 0.2);
-            margin: 1rem;
-            padding: 1.5rem;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-        }
-
-        .sandbox-input {
-            width: 100%;
-            background: var(--bg-main);
-            border: 1px solid var(--border-color);
-            padding: 0.8rem;
-            border-radius: 4px;
-            color: var(--text-primary);
-            font-family: var(--font-mono);
-            font-size: 0.8rem;
-            margin-bottom: 1rem;
-            outline: none;
-        }
-
-        .sandbox-input:focus {
-            border-color: var(--accent-color);
-        }
-
-        .btn-run {
-            width: 100%;
-            padding: 0.8rem;
-            background: var(--accent-color);
-            color: #000;
-            border: none;
-            border-radius: 4px;
-            font-weight: 700;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            font-size: 0.85rem;
-            transition: all 0.2s ease;
-        }
-
-        .btn-run:hover {
-            filter: brightness(1.1);
-            transform: scale(1.02);
-        }
-
-        .sandbox-output {
-            margin-top: 1.5rem;
-            padding: 1rem;
-            background: #000;
-            border-radius: 4px;
-            font-family: var(--font-mono);
-            font-size: 0.8rem;
-            color: #10b981;
-            display: none;
-            border-left: 2px solid #10b981;
-            white-space: pre-wrap;
-        }
-
-        /* Logic mining specific */
-        [data-mine="n8n"] .btn-run {
-            background: var(--logic-color);
-        }
-
-        [data-mine="n8n"] .sandbox-output {
-            color: var(--logic-color);
-            border-color: var(--logic-color);
-        }
-
-        /* Overlay for "Loading" states */
-        .loading-shimmer {
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
-            background-size: 200% 100%;
-            animation: shimmer 1.5s infinite;
-        }
-
-        @keyframes shimmer {
-            0% {
-                background-position: -200% 0;
-            }
-
-            100% {
-                background-position: 200% 0;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .mpv-grid {
-                grid-template-columns: 1fr;
-                padding: 1rem;
-            }
-
-            .v2-header h1 {
-                font-size: 2rem;
-            }
-        }
-    </style>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js" 
+            integrity="sha384-..." 
+            crossorigin="anonymous"></script>
+    
+    <!-- JSON-LD for SEO -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "OpenIndex V2 | Opportunity Explorer",
+        "description": "Transforming complex source code and automation logic into clear business outcomes",
+        "url": "https://openindex.dev",
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "Any"
+    }
+    </script>
 </head>
-
 <body>
     <div class="grid-overlay"></div>
 
-    <div class="container" style="padding: 0;">
-        <header style="padding: 1rem 2rem; border-bottom: 1px solid var(--border-color); margin-bottom: 2rem;">
+    <div class="container">
+        <header class="main-header">
             <div class="logo-section">
                 <svg width="32" height="32" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <circle cx="50" cy="50" r="45" stroke="#ff9d00" stroke-width="2" />
-                    <rect x="35" y="35" width="30" height="30" stroke="#ff9d00" stroke-width="3"
-                        transform="rotate(45 50 50)" />
+                    <rect x="35" y="35" width="30" height="30" stroke="#ff9d00" stroke-width="3" transform="rotate(45 50 50)" />
                     <circle cx="50" cy="50" r="5" fill="#ff9d00" />
                 </svg>
-                <div class="logo-text" style="font-size: 1.2rem;">
+                <div class="logo-text">
                     OPEN<span>INDEX</span>.V2
                 </div>
             </div>
@@ -298,6 +50,10 @@
                     <div class="stat-item">
                         <span class="stat-value" id="stat-opps">0</span>
                         <span class="stat-label">OPPORTUNITIES</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="stat-updated">Just now</span>
+                        <span class="stat-label">LAST SCAN</span>
                     </div>
                 </div>
             </div>
@@ -309,224 +65,86 @@
         </section>
 
         <div class="goldmine-switcher">
-            <div class="goldmine-tab active" data-mine="github" onclick="switchMine('github')">
+            <button class="goldmine-tab active" 
+                    data-mine="github" 
+                    role="tab" 
+                    aria-selected="true"
+                    aria-label="Switch to GitHub goldmine"
+                    id="tab-github">
                 <i data-lucide="github"></i> GITHUB GOLDMINE
-            </div>
-            <div class="goldmine-tab" data-mine="n8n" onclick="switchMine('n8n')">
+            </button>
+            <button class="goldmine-tab" 
+                    data-mine="n8n" 
+                    role="tab" 
+                    aria-selected="false"
+                    aria-label="Switch to n8n goldmine"
+                    id="tab-n8n">
                 <i data-lucide="zap"></i> n8n GOLDMINE
+            </button>
+        </div>
+
+        <div class="filters-bar">
+            <div class="search-box">
+                <i data-lucide="search"></i>
+                <input type="search" 
+                       id="search-input" 
+                       placeholder="Search opportunities..." 
+                       aria-label="Search opportunities">
+            </div>
+            <select id="domain-filter" class="filter-select" aria-label="Filter by domain">
+                <option value="">All Domains</option>
+                <option value="ai_infra">AI Infrastructure</option>
+                <option value="gov">Government Tech</option>
+                <option value="climate">Climate Tech</option>
+                <option value="health">Health Tech</option>
+                <option value="finance">Fintech</option>
+            </select>
+        </div>
+
+        <!-- Skeleton loading -->
+        <div id="skeleton-container" class="mpv-grid">
+            <div class="mpv-card skeleton">
+                <div class="mpv-card-header">
+                    <div class="mpv-identity">
+                        <div class="loading-shimmer" style="width: 100px; height: 16px; margin-bottom: 8px;"></div>
+                        <div class="loading-shimmer" style="width: 150px; height: 12px;"></div>
+                    </div>
+                </div>
+                <div class="mpv-card-body">
+                    <div class="loading-shimmer" style="width: 100%; height: 60px; margin-bottom: 16px;"></div>
+                    <div class="loading-shimmer" style="width: 100%; height: 40px; margin-bottom: 16px;"></div>
+                    <div class="loading-shimmer" style="width: 80%; height: 40px;"></div>
+                </div>
             </div>
         </div>
 
-        <div id="mpv-container" class="mpv-grid">
-            <!-- CARDS INJECTED BY JS -->
+        <!-- Actual content -->
+        <div id="mpv-container" class="mpv-grid" style="display: none;"></div>
+
+        <div id="empty-state" class="empty-state" style="display: none;">
+            <i data-lucide="folder-search" size="48"></i>
+            <h3>No opportunities found</h3>
+            <p>Try adjusting your search or filters</p>
         </div>
 
-        <footer style="margin-top: 8rem; opacity: 0.5;">
+        <footer class="main-footer">
             <p class="footer-text">OpenIndex indexes existence, execution, and potential.</p>
+            <p class="footer-subtext">Scanning every 4 hours • Updated <span id="last-update-time">--:--</span></p>
         </footer>
     </div>
 
+    <!-- JavaScript -->
+    <script src="app.js" defer></script>
+    
+    <!-- Service Worker Registration -->
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbw92AD5kJmwsWc89P5_BkDax-r3AmWIm2W0_RhQRnqyilw_vWA7aPYMHvykUusxUFM7/exec";
-        let allData = { github: [], n8n: [] };
-        let currentMine = 'github';
-
-        async function init() {
-            lucide.createIcons();
-            document.body.className = `mine-${currentMine}`;
-            await fetchData();
-            render();
-        }
-
-        async function fetchData() {
-            // Mock data for initial V2 preview if API is not fully V2 ready
-            // In a real scenario, this would fetch from the same source
-            try {
-                const res = await fetch(API_URL);
-                const json = await res.json();
-                if (json.status === "success") {
-                    // Extract GitHub records from the existing API
-                    allData.github = json.records.map(r => ({
-                        id: r.n,
-                        title: r.n,
-                        sub: r.u?.split('/').slice(-2).join(' / '),
-                        what: r.s || "Critical infrastructure component.",
-                        who: r.o || "Enterprise builders & infrastructure architects.",
-                        why: r.y || "System reliability and scalable foundations.",
-                        evidence: {
-                            stars: (Math.random() * 5000).toFixed(0),
-                            forks: (Math.random() * 500).toFixed(0),
-                            status: "Verified"
-                        },
-                        sandbox: {
-                            input_label: "Simulate Query",
-                            placeholder: "Enter a test parameter...",
-                            mock_outcome: "Outcome: Resource validated and indexed in 14ms."
-                        }
-                    }));
-
-                    // Mock n8n data for demonstration
-                    allData.n8n = [
-                        {
-                            id: 'wf-001',
-                            title: 'Automated Lead Enrichment',
-                            sub: 'Clearbit + Salesforce + n8n',
-                            what: 'Automatically fetch social data for new CRM leads.',
-                            who: 'Sales Operations & Growth Teams.',
-                            why: 'Saves 4 hours/week of manual research per rep.',
-                            evidence: {
-                                nodes: 12,
-                                sources: "CRM, API",
-                                status: "Executable"
-                            },
-                            sandbox: {
-                                input_label: "Test Email",
-                                placeholder: "jordan@example.com",
-                                mock_outcome: "Logic Result: Found LinkedIn profile & Company HQ (SF). Salesforce contact updated."
-                            }
-                        },
-                        {
-                            id: 'wf-002',
-                            title: 'Crypto Arbitrage Signal',
-                            sub: 'Binance + Twilio + n8n',
-                            what: 'Real-time delta monitoring between CEX and DEX.',
-                            who: 'Traders & Automated Arbitrageurs.',
-                            why: 'Immediate execution window discovery without manual monitoring.',
-                            evidence: {
-                                nodes: 8,
-                                sources: "Websockets, REST",
-                                status: "Live"
-                            },
-                            sandbox: {
-                                input_label: "Asset Token",
-                                placeholder: "SOL",
-                                mock_outcome: "Logic Result: Delta 0.42% detected. SMS notification sent to +1234..."
-                            }
-                        }
-                    ];
-
-                    document.getElementById('stat-opps').innerText = allData.github.length + allData.n8n.length;
-                }
-            } catch (e) {
-                console.error("Data fetch failed", e);
-            }
-        }
-
-        function switchMine(mine) {
-            currentMine = mine;
-            document.body.className = `mine-${mine}`;
-
-            document.querySelectorAll('.goldmine-tab').forEach(t => {
-                t.classList.toggle('active', t.dataset.mine === mine);
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').catch(error => {
+                    console.log('ServiceWorker registration failed:', error);
+                });
             });
-
-            const title = document.getElementById('hero-title');
-            const desc = document.getElementById('hero-desc');
-
-            if (mine === 'github') {
-                title.innerText = "GitHub Goldmine";
-                desc.innerText = "Transforming complex source code into clear business outcomes.";
-            } else {
-                title.innerText = "n8n Goldmine";
-                desc.innerText = "Actionable automation logic that generates value immediately.";
-            }
-
-            render();
         }
-
-        function render() {
-            const container = document.getElementById('mpv-container');
-            container.innerHTML = '';
-
-            const data = allData[currentMine];
-
-            data.forEach(item => {
-                const card = document.createElement('div');
-                card.className = 'mpv-card';
-
-                const evidenceHtml = currentMine === 'github' ? `
-                    <div class="evidence-chip"><i data-lucide="star" size="12"></i> ${item.evidence.stars}</div>
-                    <div class="evidence-chip"><i data-lucide="git-fork" size="12"></i> ${item.evidence.forks}</div>
-                    <div class="evidence-chip" style="color:#10b981"><i data-lucide="check-circle" size="12"></i> ${item.evidence.status}</div>
-                ` : `
-                    <div class="evidence-chip"><i data-lucide="box" size="12"></i> ${item.evidence.nodes} Nodes</div>
-                    <div class="evidence-chip"><i data-lucide="database" size="12"></i> ${item.evidence.sources}</div>
-                    <div class="evidence-chip" style="color:var(--logic-color)"><i data-lucide="play" size="12"></i> ${item.evidence.status}</div>
-                `;
-
-                const insightBadge = currentMine === 'github' ?
-                    '<div class="insight-badge builder"><i data-lucide="hammer" size="10"></i> FOR BUILDERS: "CAN BUILD THIS"</div>' :
-                    '<div class="insight-badge operator"><i data-lucide="zap" size="10"></i> FOR OPERATORS: "USE IMMEDIATELY"</div>';
-
-                card.innerHTML = `
-                    <div class="mpv-card-header">
-                        <div class="mpv-identity">
-                            ${insightBadge}
-                            <h3>${item.title}</h3>
-                            <span>${item.sub}</span>
-                        </div>
-                        <i data-lucide="${currentMine === 'github' ? 'code' : 'zap'}" 
-                           color="${currentMine === 'github' ? 'var(--accent-color)' : 'var(--logic-color)'}"></i>
-                    </div>
-                    <div class="mpv-card-body">
-                        <div class="mpv-section">
-                            <label>What it does</label>
-                            <p>${item.what}</p>
-                        </div>
-                        <div class="mpv-section">
-                            <label>Who should care</label>
-                            <p>${item.who}</p>
-                        </div>
-                        <div class="mpv-section">
-                            <label>Why it matters</label>
-                            <p>${item.why}</p>
-                        </div>
-                        <div class="mpv-evidence">
-                            ${evidenceHtml}
-                        </div>
-                    </div>
-                    <div class="mpv-sandbox">
-                        <label>${item.sandbox.input_label}</label>
-                        <input type="text" class="sandbox-input" placeholder="${item.sandbox.placeholder}">
-                        <button class="btn-run" onclick="runSandbox(this, '${item.id}')">
-                            <i data-lucide="play" size="14"></i> RUN TEST
-                        </button>
-                        <div class="sandbox-output"></div>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
-            lucide.createIcons();
-        }
-
-        function runSandbox(btn, id) {
-            const output = btn.nextElementSibling;
-            const input = btn.previousElementSibling;
-
-            if (!input.value) {
-                alert("Please enter a test value first.");
-                return;
-            }
-
-            const originalBtnContent = btn.innerHTML;
-            btn.innerHTML = '<div class="loading-shimmer" style="width:100%; height:20px; background: rgba(0,0,0,0.2);"></div>';
-            btn.disabled = true;
-
-            const mineData = allData[currentMine].find(i => i.id === id);
-
-            setTimeout(() => {
-                output.innerText = `> INITIALIZING V2_SANDBOX...\n> INJECTING MOCK_DATA: "${input.value}"\n> PROCESSING_LOGIC...\n\n${mineData.sandbox.mock_outcome}`;
-                output.style.display = 'block';
-                btn.innerHTML = '<i data-lucide="check" size="14"></i> TEST COMPLETED';
-                btn.style.opacity = '1';
-                btn.style.background = '#10b981';
-                btn.style.color = '#fff';
-                lucide.createIcons();
-            }, 1500);
-        }
-
-        init();
     </script>
 </body>
-
 </html>
