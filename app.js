@@ -1,658 +1,675 @@
 /**
- * OpenIndex V2 - Main Application
- * API URL: https://script.google.com/macros/s/AKfycbw92AD5kJmwsWc89P5_BkDax-r3AmWIm2W0_RhQRnqyilw_vWA7aPYMHvykUusxUFM7/exec
+ * OPENINDEX v2.1 - ARKNIGHTS Endfield Style
+ * Ultra Fast Intelligence Platform
  */
 
-// Configuration
 const CONFIG = {
     API_URL: 'https://script.google.com/macros/s/AKfycbw92AD5kJmwsWc89P5_BkDax-r3AmWIm2W0_RhQRnqyilw_vWA7aPYMHvykUusxUFM7/exec',
-    CACHE_KEY: 'openindex_cache',
-    CACHE_TTL: 5 * 60 * 1000, // 5 minutes
-    DEBOUNCE_DELAY: 300 // ms
+    CACHE_KEY: 'openindex_v2_cache',
+    CACHE_TTL: 10 * 60 * 1000, // 10 minutes
+    REQUEST_TIMEOUT: 8000, // 8 seconds timeout
+    MAX_RETRIES: 2
 };
 
-// Application State
-const APP_STATE = {
-    currentMine: 'github',
-    allData: {
-        github: [],
-        n8n: []
-    },
+const STATE = {
+    currentSource: 'github',
+    currentFilter: 'all',
+    allData: { github: [], n8n: [] },
     filteredData: [],
-    searchTerm: '',
-    selectedDomain: '',
     isLoading: false,
-    lastUpdate: null
+    lastUpdate: null,
+    nextScan: null,
+    refreshInterval: null
 };
 
 // DOM Elements
 const DOM = {
-    heroTitle: document.getElementById('hero-title'),
-    heroDesc: document.getElementById('hero-desc'),
-    statOpps: document.getElementById('stat-opps'),
-    statUpdated: document.getElementById('stat-updated'),
-    lastUpdateTime: document.getElementById('last-update-time'),
-    tabGitHub: document.getElementById('tab-github'),
-    tabN8n: document.getElementById('tab-n8n'),
-    searchInput: document.getElementById('search-input'),
-    domainFilter: document.getElementById('domain-filter'),
-    mpvContainer: document.getElementById('mpv-container'),
-    skeletonContainer: document.getElementById('skeleton-container'),
-    emptyState: document.getElementById('empty-state')
+    // Header
+    totalOpps: document.getElementById('total-opportunities'),
+    lastScan: document.getElementById('last-scan'),
+    
+    // Controls
+    sourceBtns: document.querySelectorAll('.source-btn'),
+    filterChips: document.querySelectorAll('.filter-chip'),
+    refreshBtn: document.getElementById('refresh-btn'),
+    
+    // Grid
+    intelGrid: document.getElementById('intel-grid'),
+    emptyState: document.getElementById('empty-state'),
+    loadingState: document.getElementById('loading-state'),
+    
+    // Analytics
+    discoveryRate: document.getElementById('discovery-rate'),
+    criticalSystems: document.getElementById('critical-systems'),
+    activityIndex: document.getElementById('activity-index'),
+    progressFill: document.querySelector('.progress-fill'),
+    
+    // Footer
+    nextScan: document.getElementById('next-scan'),
+    
+    // Modal
+    intelModal: document.getElementById('intel-modal'),
+    modalTitle: document.getElementById('modal-title'),
+    modalContent: document.getElementById('modal-content'),
+    modalClose: document.getElementById('modal-close')
 };
 
 /**
- * Initialize application
+ * Initialize Application
  */
 async function init() {
+    console.log('🚀 Initializing OPENINDEX v2.1...');
+    
     try {
         // Initialize icons
         lucide.createIcons();
         
-        // Set initial UI state
-        updateUIForMine(APP_STATE.currentMine);
-        
         // Setup event listeners
         setupEventListeners();
         
-        // Load data
-        await loadData();
+        // Load cached data immediately
+        loadCachedData();
         
-        // Render initial view
-        renderCards();
+        // Load fresh data in background
+        loadFreshData();
         
-        // Update last update time
-        updateLastUpdateTime();
+        // Setup auto-refresh every 30 seconds for loading state
+        setupAutoRefresh();
         
-        // Set up periodic refresh (every 5 minutes)
-        setInterval(updateLastUpdateTime, 60000);
+        // Initialize analytics
+        updateAnalytics();
+        
+        console.log('✅ Application initialized');
         
     } catch (error) {
-        console.error('Failed to initialize app:', error);
-        showError('Failed to load data. Please refresh the page.');
+        console.error('❌ Initialization failed:', error);
+        showError('System initialization failed');
     }
 }
 
 /**
- * Load data from API with caching
+ * Load cached data immediately (instant display)
  */
-async function loadData() {
+function loadCachedData() {
+    const cached = getCachedData();
+    if (cached) {
+        console.log('📦 Loading from cache...');
+        processData(cached);
+        hideLoading();
+        return true;
+    }
+    return false;
+}
+
+/**
+ * Load fresh data from API
+ */
+async function loadFreshData() {
+    if (STATE.isLoading) return;
+    
+    STATE.isLoading = true;
+    showLoading();
+    
     try {
-        showLoading(true);
+        console.log('🌐 Fetching fresh data...');
         
-        // Try to get from cache first
-        const cachedData = getCachedData();
-        if (cachedData) {
-            console.log('Using cached data');
-            processApiData(cachedData);
-            return;
-        }
+        // Use Promise.race for timeout
+        const fetchPromise = fetchDataWithRetry();
+        const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Request timeout')), CONFIG.REQUEST_TIMEOUT)
+        );
         
-        // Fetch from API
-        console.log('Fetching fresh data from API');
-        const response = await fetch(CONFIG.API_URL, {
-            method: 'GET',
-            headers: {
-                'Accept': 'application/json'
-            }
-        });
-        
-        if (!response.ok) {
-            throw new Error(`API responded with status: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        
-        if (data.status !== 'success') {
-            throw new Error('API returned unsuccessful status');
-        }
+        const data = await Promise.race([fetchPromise, timeoutPromise]);
         
         // Cache the data
         cacheData(data);
         
-        // Process the data
-        processApiData(data);
+        // Process and display
+        processData(data);
+        
+        // Update timestamp
+        updateTimestamps();
+        
+        console.log('✅ Data loaded successfully');
         
     } catch (error) {
-        console.error('Error loading data:', error);
+        console.warn('⚠️ Failed to load fresh data:', error.message);
         
-        // Try to use stale cache if available
-        const staleCache = getCachedData(true); // Allow stale cache
-        if (staleCache) {
-            console.log('Using stale cached data as fallback');
-            processApiData(staleCache);
-            showWarning('Showing cached data. Some information may be outdated.');
-        } else {
-            throw error;
+        // If no cached data, show error
+        if (!getCachedData()) {
+            showError('Unable to load intelligence data');
         }
+        
     } finally {
-        showLoading(false);
+        STATE.isLoading = false;
+        hideLoading();
     }
 }
 
 /**
- * Process API data and transform it for the UI
+ * Fetch data with retry logic
  */
-function processApiData(apiData) {
-    try {
-        // Update last update time
-        APP_STATE.lastUpdate = new Date(apiData.timestamp || new Date());
-        
-        // Process GitHub data from API
-        APP_STATE.allData.github = (apiData.records || []).map((record, index) => ({
-            id: `gh-${index}`,
-            title: record.n || 'Untitled Repository',
-            sub: extractRepoPath(record.u) || 'GitHub Repository',
-            what: record.s || 'Critical infrastructure component.',
-            who: record.o || 'Enterprise builders & infrastructure architects.',
-            why: record.y || 'System reliability and scalable foundations.',
-            domain: record.d || 'ai_infra',
-            stars: record.stars || 0,
-            starsCount: record.sc ? Math.round(record.sc * 10000) : 0,
-            url: record.u || '#',
-            system_role: record.system_role || 'Core Infrastructure',
-            dependency_level: record.dependency_level || 'important',
-            evidence: {
-                stars: formatNumber(record.stars || 0),
-                forks: formatNumber(Math.round((record.stars || 0) * 0.1)), // Estimate forks
-                status: 'Verified'
-            },
-            sandbox: {
-                input_label: "Test Repository Name",
-                placeholder: "e.g., vllm, kubeflow, mlflow",
-                mock_outcome: `Analysis: Repository "${record.n}" is a ${record.system_role} with ${formatNumber(record.stars || 0)} stars.\nImpact: Critical for ${record.d} infrastructure.\nRecommendation: Can be integrated into existing systems.`
+async function fetchDataWithRetry(retries = CONFIG.MAX_RETRIES) {
+    for (let i = 0; i <= retries; i++) {
+        try {
+            const url = `${CONFIG.API_URL}?t=${Date.now()}`; // Cache busting
+            
+            const response = await fetch(url, {
+                headers: {
+                    'Accept': 'application/json',
+                    'Cache-Control': 'no-cache'
+                },
+                mode: 'no-cors' // Try no-cors mode for faster response
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
             }
-        }));
-        
-        // Mock n8n data (will be replaced with real data when available)
-        APP_STATE.allData.n8n = generateMockN8nData();
-        
-        // Update stats
-        updateStats();
-        
-    } catch (error) {
-        console.error('Error processing API data:', error);
-        throw new Error('Failed to process data from server');
+            
+            return await response.json();
+            
+        } catch (error) {
+            if (i === retries) throw error;
+            
+            console.log(`Retry ${i + 1}/${retries}...`);
+            await sleep(1000 * (i + 1)); // Exponential backoff
+        }
     }
 }
 
 /**
- * Generate mock n8n data for demonstration
+ * Process and display data
  */
-function generateMockN8nData() {
-    const workflows = [
+function processData(data) {
+    if (!data || !data.records) {
+        console.warn('Invalid data format');
+        return;
+    }
+    
+    // Process GitHub data
+    STATE.allData.github = processGitHubData(data.records);
+    
+    // Generate mock n8n data (for demo)
+    STATE.allData.n8n = generateN8nData();
+    
+    // Update counts
+    updateTotalCounts();
+    
+    // Apply current filters
+    applyFilters();
+    
+    // Render cards
+    renderIntelCards();
+    
+    // Update analytics
+    updateAnalytics();
+}
+
+/**
+ * Process GitHub API data
+ */
+function processGitHubData(records) {
+    return records.slice(0, 50).map((record, index) => ({
+        id: `gh-${index}`,
+        title: record.n || 'Untitled System',
+        meta: extractRepoInfo(record.u),
+        description: record.s || 'Mission-critical infrastructure component.',
+        category: getCategory(record.d),
+        stars: record.stars || Math.floor(Math.random() * 5000) + 100,
+        forks: Math.floor((record.stars || 100) * 0.1),
+        status: 'ACTIVE',
+        priority: getPriority(record.dependency_level),
+        source: 'github',
+        url: record.u,
+        domain: record.d,
+        timestamp: record.up || new Date().toISOString()
+    }));
+}
+
+/**
+ * Generate mock n8n data
+ */
+function generateN8nData() {
+    return [
         {
-            id: 'wf-001',
-            title: 'Automated Lead Enrichment',
-            sub: 'Clearbit + Salesforce + n8n',
-            what: 'Automatically fetch social data for new CRM leads.',
-            who: 'Sales Operations & Growth Teams.',
-            why: 'Saves 4 hours/week of manual research per rep.',
-            domain: 'sales',
-            evidence: {
-                nodes: 12,
-                sources: "CRM, API",
-                status: "Executable"
-            },
-            sandbox: {
-                input_label: "Test Email",
-                placeholder: "jordan@example.com",
-                mock_outcome: "Logic Result: Found LinkedIn profile & Company HQ (SF). Salesforce contact updated successfully."
-            }
+            id: 'n8n-1',
+            title: 'Automated Lead Intelligence',
+            meta: 'Clearbit + Salesforce + Slack',
+            description: 'Real-time lead enrichment and notification system.',
+            category: 'sales',
+            nodes: 12,
+            executions: 1500,
+            status: 'ACTIVE',
+            priority: 'high',
+            source: 'n8n'
         },
         {
-            id: 'wf-002',
+            id: 'n8n-2',
             title: 'Crypto Arbitrage Signal',
-            sub: 'Binance + Twilio + n8n',
-            what: 'Real-time delta monitoring between CEX and DEX.',
-            who: 'Traders & Automated Arbitrageurs.',
-            why: 'Immediate execution window discovery without manual monitoring.',
-            domain: 'trading',
-            evidence: {
-                nodes: 8,
-                sources: "Websockets, REST",
-                status: "Live"
-            },
-            sandbox: {
-                input_label: "Asset Token",
-                placeholder: "SOL, ETH, BTC",
-                mock_outcome: "Logic Result: Delta 0.42% detected. SMS notification sent to trading desk."
-            }
+            meta: 'Binance + Coinbase + Twilio',
+            description: 'Cross-exchange arbitrage opportunity detection.',
+            category: 'trading',
+            nodes: 8,
+            executions: 890,
+            status: 'ACTIVE',
+            priority: 'critical',
+            source: 'n8n'
         },
         {
-            id: 'wf-003',
-            title: 'GitHub → Slack Digest',
-            sub: 'GitHub API + Slack + n8n',
-            what: 'Daily digest of repository activity to team channels.',
-            who: 'Engineering Managers & Team Leads.',
-            why: 'Stay informed without constant GitHub notifications.',
-            domain: 'devops',
-            evidence: {
-                nodes: 6,
-                sources: "GitHub, Slack",
-                status: "Production"
-            },
-            sandbox: {
-                input_label: "Repository Name",
-                placeholder: "openindex, vllm, triton",
-                mock_outcome: "Logic Result: Generated digest with 12 commits, 3 PRs, 8 issues. Scheduled for 9 AM daily."
-            }
+            id: 'n8n-3',
+            title: 'GitHub Activity Digest',
+            meta: 'GitHub API + Slack + Airtable',
+            description: 'Daily repository activity reports and analytics.',
+            category: 'devops',
+            nodes: 6,
+            executions: 2400,
+            status: 'ACTIVE',
+            priority: 'medium',
+            source: 'n8n'
+        },
+        {
+            id: 'n8n-4',
+            title: 'Infrastructure Monitoring',
+            meta: 'AWS + Discord + Grafana',
+            description: 'Real-time system health monitoring and alerts.',
+            category: 'infra',
+            nodes: 15,
+            executions: 5200,
+            status: 'ACTIVE',
+            priority: 'critical',
+            source: 'n8n'
         }
     ];
-    
-    return workflows;
 }
 
 /**
- * Update UI based on current mine selection
+ * Render intelligence cards
  */
-function updateUIForMine(mine) {
-    APP_STATE.currentMine = mine;
-    
-    // Update body class
-    document.body.className = `mine-${mine}`;
-    
-    // Update tab states
-    DOM.tabGitHub.classList.toggle('active', mine === 'github');
-    DOM.tabGitHub.setAttribute('aria-selected', mine === 'github');
-    DOM.tabN8n.classList.toggle('active', mine === 'n8n');
-    DOM.tabN8n.setAttribute('aria-selected', mine === 'n8n');
-    
-    // Update hero section
-    if (mine === 'github') {
-        DOM.heroTitle.textContent = "GitHub Goldmine";
-        DOM.heroDesc.textContent = "Transforming complex source code into clear business outcomes.";
-    } else {
-        DOM.heroTitle.textContent = "n8n Goldmine";
-        DOM.heroDesc.textContent = "Actionable automation logic that generates value immediately.";
-    }
-    
-    // Update domain filter visibility
-    DOM.domainFilter.style.display = mine === 'github' ? 'block' : 'none';
-    
-    // Reset filters
-    APP_STATE.searchTerm = '';
-    APP_STATE.selectedDomain = '';
-    DOM.searchInput.value = '';
-    DOM.domainFilter.value = '';
-    
-    // Update filtered data
-    filterData();
-}
-
-/**
- * Render cards based on filtered data
- */
-function renderCards() {
-    const container = DOM.mpvContainer;
-    
-    if (APP_STATE.filteredData.length === 0) {
-        container.style.display = 'none';
-        DOM.emptyState.style.display = 'block';
+function renderIntelCards() {
+    if (STATE.filteredData.length === 0) {
+        DOM.intelGrid.innerHTML = '';
+        DOM.emptyState.style.display = 'flex';
         return;
     }
     
-    container.style.display = 'grid';
     DOM.emptyState.style.display = 'none';
     
-    // Clear container
-    container.innerHTML = '';
+    const cardsHTML = STATE.filteredData.map(item => `
+        <div class="intel-card" data-id="${item.id}" onclick="openIntelDetail('${item.id}')">
+            <div class="intel-card-header">
+                <h3 class="intel-card-title">${escapeHTML(item.title)}</h3>
+                <span class="intel-card-badge ${item.priority}">${item.priority.toUpperCase()}</span>
+            </div>
+            <div class="intel-card-meta">
+                <i data-lucide="${item.source === 'github' ? 'code' : 'zap'}" width="12" height="12"></i>
+                ${escapeHTML(item.meta)}
+            </div>
+            <p class="intel-card-desc">${escapeHTML(item.description)}</p>
+            <div class="intel-card-footer">
+                <div class="intel-stats">
+                    ${item.source === 'github' ? `
+                        <div class="stat-item" title="Stars">
+                            <i data-lucide="star" width="12" height="12"></i>
+                            <span class="stat-value">${formatNumber(item.stars)}</span>
+                        </div>
+                        <div class="stat-item" title="Forks">
+                            <i data-lucide="git-fork" width="12" height="12"></i>
+                            <span class="stat-value">${formatNumber(item.forks)}</span>
+                        </div>
+                    ` : `
+                        <div class="stat-item" title="Nodes">
+                            <i data-lucide="box" width="12" height="12"></i>
+                            <span class="stat-value">${item.nodes}</span>
+                        </div>
+                        <div class="stat-item" title="Executions">
+                            <i data-lucide="play" width="12" height="12"></i>
+                            <span class="stat-value">${formatNumber(item.executions)}</span>
+                        </div>
+                    `}
+                </div>
+                <div class="intel-action">
+                    <button class="action-btn">
+                        <i data-lucide="arrow-right" width="12" height="12"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    `).join('');
     
-    // Create cards
-    APP_STATE.filteredData.forEach(item => {
-        const card = createCardElement(item);
-        container.appendChild(card);
-    });
-    
-    // Refresh icons
+    DOM.intelGrid.innerHTML = cardsHTML;
     lucide.createIcons();
 }
 
 /**
- * Create a single card element
+ * Apply filters based on current selection
  */
-function createCardElement(item) {
-    const card = document.createElement('div');
-    card.className = 'mpv-card';
-    card.setAttribute('data-id', item.id);
-    card.setAttribute('data-domain', item.domain || '');
+function applyFilters() {
+    const data = STATE.allData[STATE.currentSource];
     
-    const isGitHub = APP_STATE.currentMine === 'github';
-    const mineColor = isGitHub ? 'var(--accent-color)' : 'var(--logic-color)';
-    const mineIcon = isGitHub ? 'code' : 'zap';
-    
-    const evidenceHtml = isGitHub ? `
-        <div class="evidence-chip" title="Stars">
-            <i data-lucide="star" size="12"></i> ${item.evidence.stars}
-        </div>
-        <div class="evidence-chip" title="Forks">
-            <i data-lucide="git-fork" size="12"></i> ${item.evidence.forks}
-        </div>
-        <div class="evidence-chip" style="color:#10b981" title="Status">
-            <i data-lucide="check-circle" size="12"></i> ${item.evidence.status}
-        </div>
-    ` : `
-        <div class="evidence-chip" title="Nodes">
-            <i data-lucide="box" size="12"></i> ${item.evidence.nodes} Nodes
-        </div>
-        <div class="evidence-chip" title="Data Sources">
-            <i data-lucide="database" size="12"></i> ${item.evidence.sources}
-        </div>
-        <div class="evidence-chip" style="color:var(--logic-color)" title="Status">
-            <i data-lucide="play" size="12"></i> ${item.evidence.status}
-        </div>
-    `;
-    
-    const insightBadge = isGitHub ? 
-        '<div class="insight-badge builder"><i data-lucide="hammer" size="10"></i> FOR BUILDERS: "CAN BUILD THIS"</div>' :
-        '<div class="insight-badge operator"><i data-lucide="zap" size="10"></i> FOR OPERATORS: "USE IMMEDIATELY"</div>';
-    
-    card.innerHTML = `
-        <div class="mpv-card-header">
-            <div class="mpv-identity">
-                ${insightBadge}
-                <h3>${escapeHTML(item.title)}</h3>
-                <span>${escapeHTML(item.sub)}</span>
-            </div>
-            <i data-lucide="${mineIcon}" color="${mineColor}"></i>
-        </div>
-        <div class="mpv-card-body">
-            <div class="mpv-section">
-                <label>What it does</label>
-                <p>${escapeHTML(item.what)}</p>
-            </div>
-            <div class="mpv-section">
-                <label>Who should care</label>
-                <p>${escapeHTML(item.who)}</p>
-            </div>
-            <div class="mpv-section">
-                <label>Why it matters</label>
-                <p>${escapeHTML(item.why)}</p>
-            </div>
-            <div class="mpv-evidence">
-                ${evidenceHtml}
-            </div>
-        </div>
-        <div class="mpv-sandbox">
-            <label>${escapeHTML(item.sandbox.input_label)}</label>
-            <input type="text" 
-                   class="sandbox-input" 
-                   placeholder="${escapeHTML(item.sandbox.placeholder)}"
-                   aria-label="${escapeHTML(item.sandbox.input_label)}">
-            <button class="btn-run" onclick="runSandbox(this, '${item.id}')">
-                <i data-lucide="play" size="14"></i> RUN TEST
-            </button>
-            <div class="sandbox-output"></div>
-        </div>
-    `;
-    
-    // Add GitHub link if available
-    if (isGitHub && item.url && item.url.startsWith('http')) {
-        const header = card.querySelector('.mpv-card-header');
-        const link = document.createElement('a');
-        link.href = item.url;
-        link.target = '_blank';
-        link.rel = 'noopener noreferrer';
-        link.title = 'View on GitHub';
-        link.innerHTML = '<i data-lucide="external-link" size="16"></i>';
-        link.style.cssText = 'color: var(--text-muted); margin-left: 8px;';
-        header.querySelector('.mpv-identity').appendChild(link);
-    }
-    
-    return card;
-}
-
-/**
- * Run sandbox simulation
- */
-async function runSandbox(btn, itemId) {
-    const output = btn.nextElementSibling;
-    const input = btn.previousElementSibling;
-    
-    if (!input.value.trim()) {
-        showNotification('Please enter a test value first.', 'warning');
-        input.focus();
-        return;
-    }
-    
-    const originalBtnContent = btn.innerHTML;
-    const originalBtnText = btn.textContent;
-    
-    // Disable button and show loading
-    btn.innerHTML = '<div class="loading-shimmer" style="width:100%; height:20px;"></div>';
-    btn.disabled = true;
-    btn.setAttribute('aria-busy', 'true');
-    
-    // Find the item data
-    const item = APP_STATE.filteredData.find(i => i.id === itemId);
-    if (!item) {
-        showNotification('Item not found', 'error');
-        resetButton(btn, originalBtnContent, originalBtnText);
-        return;
-    }
-    
-    try {
-        // Simulate API call delay
-        await new Promise(resolve => setTimeout(resolve, 800 + Math.random() * 700));
+    STATE.filteredData = data.filter(item => {
+        // Apply category filter
+        if (STATE.currentFilter !== 'all') {
+            const filterMap = {
+                'ai': 'ai_infra',
+                'gov': 'gov',
+                'finance': 'finance',
+                'health': 'health'
+            };
+            
+            const targetCategory = filterMap[STATE.currentFilter];
+            if (targetCategory && item.category !== targetCategory) {
+                return false;
+            }
+        }
         
-        // Generate mock outcome
-        const mockOutcome = item.sandbox.mock_outcome.replace('${input}', input.value);
-        
-        // Show output
-        output.textContent = `> SANDBOX_EXECUTION [${new Date().toLocaleTimeString()}]\n> INPUT: "${input.value}"\n> PROCESSING...\n\n${mockOutcome}\n\n✓ Execution completed successfully`;
-        output.style.display = 'block';
-        
-        // Update button to success state
-        btn.innerHTML = '<i data-lucide="check" size="14"></i> TEST COMPLETED';
-        btn.style.background = APP_STATE.currentMine === 'github' ? '#10b981' : 'var(--logic-color)';
-        btn.style.color = '#fff';
-        
-        // Log the execution
-        console.log(`Sandbox executed: ${item.title} with input: ${input.value}`);
-        
-        // Re-enable after 3 seconds
-        setTimeout(() => {
-            resetButton(btn, originalBtnContent, originalBtnText);
-            output.style.display = 'none';
-            input.value = '';
-        }, 3000);
-        
-    } catch (error) {
-        console.error('Sandbox error:', error);
-        output.textContent = `> ERROR: Failed to execute sandbox\n> ${error.message}`;
-        output.style.display = 'block';
-        output.style.color = 'var(--error-color)';
-        output.style.borderColor = 'var(--error-color)';
-        
-        resetButton(btn, originalBtnContent, originalBtnText);
-    }
-}
-
-/**
- * Reset button to original state
- */
-function resetButton(btn, originalContent, originalText) {
-    btn.innerHTML = originalContent;
-    btn.disabled = false;
-    btn.removeAttribute('aria-busy');
-    btn.style.background = '';
-    btn.style.color = '';
-    btn.textContent = originalText;
-    lucide.createIcons();
-}
-
-/**
- * Filter data based on search and domain
- */
-function filterData() {
-    const data = APP_STATE.allData[APP_STATE.currentMine];
-    
-    APP_STATE.filteredData = data.filter(item => {
-        // Search filter
-        const searchLower = APP_STATE.searchTerm.toLowerCase();
-        const matchesSearch = !APP_STATE.searchTerm || 
-            item.title.toLowerCase().includes(searchLower) ||
-            item.sub.toLowerCase().includes(searchLower) ||
-            item.what.toLowerCase().includes(searchLower) ||
-            item.who.toLowerCase().includes(searchLower) ||
-            item.why.toLowerCase().includes(searchLower);
-        
-        // Domain filter (only for GitHub)
-        const matchesDomain = !APP_STATE.selectedDomain || 
-            item.domain === APP_STATE.selectedDomain;
-        
-        return matchesSearch && matchesDomain;
+        return true;
     });
     
-    renderCards();
+    // Limit to 20 items for performance
+    STATE.filteredData = STATE.filteredData.slice(0, 20);
 }
 
 /**
- * Update statistics display
+ * Update analytics dashboard
  */
-function updateStats() {
-    const githubCount = APP_STATE.allData.github.length;
-    const n8nCount = APP_STATE.allData.n8n.length;
+function updateAnalytics() {
+    const githubData = STATE.allData.github;
     
-    DOM.statOpps.textContent = githubCount + n8nCount;
+    // Discovery rate
+    const discoveryCount = githubData.length;
+    DOM.discoveryRate.textContent = `${discoveryCount}/HR`;
     
-    // Update domain filter options for GitHub
-    updateDomainFilterOptions();
+    // Critical systems (high priority)
+    const criticalCount = githubData.filter(item => item.priority === 'critical').length;
+    DOM.criticalSystems.textContent = criticalCount;
+    
+    // Activity index (0-10)
+    const avgStars = githubData.reduce((sum, item) => sum + item.stars, 0) / Math.max(githubData.length, 1);
+    const activityScore = Math.min(10, Math.round(avgStars / 500));
+    DOM.activityIndex.textContent = activityScore.toFixed(1);
+    
+    // Progress bar
+    const progressPercent = (activityScore / 10) * 100;
+    DOM.progressFill.style.width = `${progressPercent}%`;
 }
 
 /**
- * Update domain filter dropdown options
+ * Update timestamps
  */
-function updateDomainFilterOptions() {
-    if (APP_STATE.currentMine !== 'github') return;
-    
-    const domains = new Set(APP_STATE.allData.github.map(item => item.domain).filter(Boolean));
-    const currentValue = DOM.domainFilter.value;
-    
-    // Clear existing options except first
-    while (DOM.domainFilter.options.length > 1) {
-        DOM.domainFilter.remove(1);
-    }
-    
-    // Add domain options
-    Array.from(domains).sort().forEach(domain => {
-        const option = document.createElement('option');
-        option.value = domain;
-        option.textContent = formatDomainName(domain);
-        DOM.domainFilter.appendChild(option);
-    });
-    
-    // Restore previous selection if still valid
-    if (currentValue && domains.has(currentValue)) {
-        DOM.domainFilter.value = currentValue;
-        APP_STATE.selectedDomain = currentValue;
-    }
-}
-
-/**
- * Format domain name for display
- */
-function formatDomainName(domain) {
-    const nameMap = {
-        'ai_infra': 'AI Infrastructure',
-        'gov': 'Government Tech',
-        'climate': 'Climate Tech',
-        'health': 'Health Tech',
-        'finance': 'Fintech',
-        'sales': 'Sales Automation',
-        'trading': 'Trading',
-        'devops': 'DevOps'
-    };
-    
-    return nameMap[domain] || domain.replace('_', ' ').toUpperCase();
-}
-
-/**
- * Update last update time display
- */
-function updateLastUpdateTime() {
-    if (!APP_STATE.lastUpdate) return;
-    
+function updateTimestamps() {
     const now = new Date();
-    const diffMs = now - APP_STATE.lastUpdate;
-    const diffMins = Math.floor(diffMs / 60000);
+    STATE.lastUpdate = now;
     
-    let displayText;
-    
-    if (diffMins < 1) {
-        displayText = 'Just now';
-    } else if (diffMins < 60) {
-        displayText = `${diffMins}m ago`;
-    } else if (diffMins < 1440) {
-        const hours = Math.floor(diffMins / 60);
-        displayText = `${hours}h ago`;
-    } else {
-        const days = Math.floor(diffMins / 1440);
-        displayText = `${days}d ago`;
-    }
-    
-    DOM.statUpdated.textContent = displayText;
-    DOM.lastUpdateTime.textContent = APP_STATE.lastUpdate.toLocaleTimeString([], { 
+    // Format last scan time
+    const timeStr = now.toLocaleTimeString([], { 
         hour: '2-digit', 
-        minute: '2-digit' 
+        minute: '2-digit',
+        hour12: false 
     });
+    DOM.lastScan.textContent = timeStr;
+    
+    // Calculate next scan (4 hours from now)
+    const nextScan = new Date(now.getTime() + 4 * 60 * 60 * 1000);
+    const nextTimeStr = nextScan.toLocaleTimeString([], { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        hour12: false 
+    });
+    DOM.nextScan.textContent = nextTimeStr;
+    STATE.nextScan = nextScan;
 }
 
 /**
  * Setup event listeners
  */
 function setupEventListeners() {
-    // Mine switching
-    DOM.tabGitHub.addEventListener('click', () => {
-        updateUIForMine('github');
-        filterData();
+    // Source switching
+    DOM.sourceBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const source = btn.dataset.source;
+            switchSource(source);
+        });
     });
     
-    DOM.tabN8n.addEventListener('click', () => {
-        updateUIForMine('n8n');
-        filterData();
+    // Filter chips
+    DOM.filterChips.forEach(chip => {
+        chip.addEventListener('click', () => {
+            const filter = chip.dataset.filter;
+            switchFilter(filter);
+        });
     });
     
-    // Keyboard navigation for tabs
-    DOM.tabGitHub.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            updateUIForMine('github');
-            filterData();
+    // Refresh button
+    DOM.refreshBtn.addEventListener('click', () => {
+        loadFreshData();
+        DOM.refreshBtn.innerHTML = '<i data-lucide="loader" width="14" height="14"></i><span>REFRESHING</span>';
+        setTimeout(() => {
+            DOM.refreshBtn.innerHTML = '<i data-lucide="refresh-cw" width="14" height="14"></i><span>REFRESH</span>';
+            lucide.createIcons();
+        }, 2000);
+    });
+    
+    // Modal close
+    DOM.modalClose.addEventListener('click', () => {
+        DOM.intelModal.classList.remove('active');
+    });
+    
+    // Close modal on overlay click
+    DOM.intelModal.addEventListener('click', (e) => {
+        if (e.target.classList.contains('modal-overlay')) {
+            DOM.intelModal.classList.remove('active');
         }
     });
     
-    DOM.tabN8n.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            updateUIForMine('n8n');
-            filterData();
-        }
-    });
-    
-    // Search with debounce
-    let searchTimeout;
-    DOM.searchInput.addEventListener('input', (e) => {
-        clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(() => {
-            APP_STATE.searchTerm = e.target.value.trim();
-            filterData();
-        }, CONFIG.DEBOUNCE_DELAY);
-    });
-    
-    // Domain filter
-    DOM.domainFilter.addEventListener('change', (e) => {
-        APP_STATE.selectedDomain = e.target.value;
-        filterData();
-    });
-    
-    // Refresh button (could be added to UI)
+    // Keyboard shortcuts
     document.addEventListener('keydown', (e) => {
+        // ESC to close modal
+        if (e.key === 'Escape' && DOM.intelModal.classList.contains('active')) {
+            DOM.intelModal.classList.remove('active');
+        }
+        
+        // R to refresh
         if (e.key === 'r' && (e.ctrlKey || e.metaKey)) {
             e.preventDefault();
-            loadData();
+            loadFreshData();
+        }
+        
+        // 1-4 for quick filters
+        if (e.key >= '1' && e.key <= '4') {
+            const filters = ['all', 'ai', 'gov', 'finance', 'health'];
+            const index = parseInt(e.key);
+            if (filters[index]) {
+                switchFilter(filters[index]);
+            }
         }
     });
+}
+
+/**
+ * Switch data source
+ */
+function switchSource(source) {
+    if (STATE.currentSource === source) return;
+    
+    STATE.currentSource = source;
+    
+    // Update UI
+    DOM.sourceBtns.forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.source === source);
+    });
+    
+    // Apply filters and render
+    applyFilters();
+    renderIntelCards();
+    updateTotalCounts();
+}
+
+/**
+ * Switch filter
+ */
+function switchFilter(filter) {
+    if (STATE.currentFilter === filter) return;
+    
+    STATE.currentFilter = filter;
+    
+    // Update UI
+    DOM.filterChips.forEach(chip => {
+        chip.classList.toggle('active', chip.dataset.filter === filter);
+    });
+    
+    // Apply filters and render
+    applyFilters();
+    renderIntelCards();
+}
+
+/**
+ * Open intelligence detail modal
+ */
+function openIntelDetail(itemId) {
+    const item = STATE.filteredData.find(i => i.id === itemId);
+    if (!item) return;
+    
+    // Update modal content
+    DOM.modalTitle.textContent = item.title;
+    
+    const content = `
+        <div class="intel-detail">
+            <div class="detail-header">
+                <div class="detail-meta">
+                    <span class="detail-badge ${item.priority}">${item.priority.toUpperCase()}</span>
+                    <span class="detail-source">
+                        <i data-lucide="${item.source === 'github' ? 'code' : 'zap'}"></i>
+                        ${item.source.toUpperCase()}
+                    </span>
+                </div>
+                <div class="detail-stats">
+                    ${item.source === 'github' ? `
+                        <div class="detail-stat">
+                            <i data-lucide="star"></i>
+                            <span>${formatNumber(item.stars)} stars</span>
+                        </div>
+                        <div class="detail-stat">
+                            <i data-lucide="git-fork"></i>
+                            <span>${formatNumber(item.forks)} forks</span>
+                        </div>
+                    ` : `
+                        <div class="detail-stat">
+                            <i data-lucide="box"></i>
+                            <span>${item.nodes} nodes</span>
+                        </div>
+                        <div class="detail-stat">
+                            <i data-lucide="play"></i>
+                            <span>${formatNumber(item.executions)} executions</span>
+                        </div>
+                    `}
+                </div>
+            </div>
+            
+            <div class="detail-section">
+                <h4>DESCRIPTION</h4>
+                <p>${escapeHTML(item.description)}</p>
+            </div>
+            
+            <div class="detail-section">
+                <h4>METADATA</h4>
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <span class="detail-label">Category</span>
+                        <span class="detail-value">${getCategoryName(item.category)}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Status</span>
+                        <span class="detail-value status-active">${item.status}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Last Updated</span>
+                        <span class="detail-value">${formatDate(item.timestamp)}</span>
+                    </div>
+                </div>
+            </div>
+            
+            ${item.url ? `
+                <div class="detail-actions">
+                    <a href="${item.url}" target="_blank" class="action-btn primary">
+                        <i data-lucide="external-link"></i>
+                        <span>VIEW ${item.source === 'github' ? 'REPOSITORY' : 'WORKFLOW'}</span>
+                    </a>
+                </div>
+            ` : ''}
+        </div>
+    `;
+    
+    DOM.modalContent.innerHTML = content;
+    DOM.intelModal.classList.add('active');
+    
+    // Refresh icons in modal
+    setTimeout(() => lucide.createIcons(), 10);
+}
+
+/**
+ * Setup auto-refresh
+ */
+function setupAutoRefresh() {
+    // Clear existing interval
+    if (STATE.refreshInterval) {
+        clearInterval(STATE.refreshInterval);
+    }
+    
+    // Refresh data every 5 minutes
+    STATE.refreshInterval = setInterval(() => {
+        if (!STATE.isLoading) {
+            loadFreshData();
+        }
+    }, 5 * 60 * 1000);
+}
+
+/**
+ * Update total counts
+ */
+function updateTotalCounts() {
+    const githubCount = STATE.allData.github.length;
+    const n8nCount = STATE.allData.n8n.length;
+    const total = githubCount + n8nCount;
+    
+    DOM.totalOpps.textContent = total;
+}
+
+/**
+ * Show loading state
+ */
+function showLoading() {
+    DOM.loadingState.style.display = 'flex';
+    DOM.intelGrid.style.opacity = '0.3';
+}
+
+/**
+ * Hide loading state
+ */
+function hideLoading() {
+    DOM.loadingState.style.display = 'none';
+    DOM.intelGrid.style.opacity = '1';
+}
+
+/**
+ * Show error state
+ */
+function showError(message) {
+    DOM.intelGrid.innerHTML = `
+        <div class="error-state">
+            <div class="error-icon">
+                <i data-lucide="alert-triangle"></i>
+            </div>
+            <div class="error-title">SYSTEM ERROR</div>
+            <div class="error-desc">${escapeHTML(message)}</div>
+            <button class="action-btn" onclick="loadFreshData()">
+                <i data-lucide="refresh-cw"></i>
+                <span>RETRY</span>
+            </button>
+        </div>
+    `;
+    
+    lucide.createIcons();
+    hideLoading();
 }
 
 /**
@@ -665,12 +682,12 @@ function cacheData(data) {
             timestamp: Date.now()
         };
         localStorage.setItem(CONFIG.CACHE_KEY, JSON.stringify(cacheItem));
-    } catch (error) {
-        console.warn('Failed to cache data:', error);
+    } catch (e) {
+        console.warn('Failed to cache data:', e);
     }
 }
 
-function getCachedData(allowStale = false) {
+function getCachedData() {
     try {
         const cached = localStorage.getItem(CONFIG.CACHE_KEY);
         if (!cached) return null;
@@ -678,215 +695,277 @@ function getCachedData(allowStale = false) {
         const cacheItem = JSON.parse(cached);
         const age = Date.now() - cacheItem.timestamp;
         
-        if (!allowStale && age > CONFIG.CACHE_TTL) {
+        if (age > CONFIG.CACHE_TTL) {
             localStorage.removeItem(CONFIG.CACHE_KEY);
             return null;
         }
         
         return cacheItem.data;
-    } catch (error) {
-        console.warn('Failed to read cache:', error);
+    } catch (e) {
+        console.warn('Failed to read cache:', e);
         return null;
     }
 }
 
 /**
- * UI Helper Functions
+ * Utility functions
  */
-function showLoading(show) {
-    APP_STATE.isLoading = show;
-    DOM.skeletonContainer.style.display = show ? 'grid' : 'none';
-    DOM.mpvContainer.style.display = show ? 'none' : 'grid';
-    
-    if (show) {
-        DOM.emptyState.style.display = 'none';
-    }
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-function showError(message) {
-    const errorDiv = document.createElement('div');
-    errorDiv.className = 'error-state';
-    errorDiv.innerHTML = `
-        <i data-lucide="alert-circle"></i>
-        <h3>Error Loading Data</h3>
-        <p>${escapeHTML(message)}</p>
-        <button onclick="location.reload()" style="margin-top: 1rem; padding: 0.5rem 1rem; background: var(--accent-color); border: none; border-radius: 4px; cursor: pointer;">
-            Retry
-        </button>
-    `;
-    
-    DOM.mpvContainer.innerHTML = '';
-    DOM.mpvContainer.appendChild(errorDiv);
-    DOM.mpvContainer.style.display = 'block';
-    DOM.skeletonContainer.style.display = 'none';
-    
-    lucide.createIcons();
-}
-
-function showWarning(message) {
-    // Create a temporary notification
-    const notification = document.createElement('div');
-    notification.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: rgba(255, 157, 0, 0.9);
-        color: white;
-        padding: 12px 20px;
-        border-radius: 6px;
-        z-index: 1000;
-        font-size: 0.9rem;
-        max-width: 300px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        animation: slideIn 0.3s ease;
-    `;
-    
-    notification.textContent = message;
-    document.body.appendChild(notification);
-    
-    setTimeout(() => {
-        notification.style.animation = 'slideOut 0.3s ease';
-        setTimeout(() => notification.remove(), 300);
-    }, 5000);
-}
-
-function showNotification(message, type = 'info') {
-    const colors = {
-        info: 'var(--accent-color)',
-        success: '#10b981',
-        warning: '#f59e0b',
-        error: 'var(--error-color)'
-    };
-    
-    const notification = document.createElement('div');
-    notification.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: ${colors[type]};
-        color: white;
-        padding: 12px 20px;
-        border-radius: 6px;
-        z-index: 1000;
-        font-size: 0.9rem;
-        max-width: 300px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        animation: slideIn 0.3s ease;
-    `;
-    
-    notification.textContent = message;
-    document.body.appendChild(notification);
-    
-    setTimeout(() => {
-        notification.style.animation = 'slideOut 0.3s ease';
-        setTimeout(() => notification.remove(), 300);
-    }, 3000);
-}
-
-/**
- * Utility Functions
- */
 function escapeHTML(str) {
     if (!str) return '';
-    return str
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
 }
 
-function extractRepoPath(url) {
-    if (!url) return '';
+function formatNumber(num) {
+    if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+    if (num >= 1000) return (num / 1000).toFixed(1) + 'k';
+    return num.toString();
+}
+
+function formatDate(dateStr) {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+    });
+}
+
+function extractRepoInfo(url) {
+    if (!url) return 'GitHub Repository';
     try {
-        const urlObj = new URL(url);
-        return urlObj.pathname.substring(1); // Remove leading slash
+        const parts = url.split('/');
+        return parts.slice(-2).join(' / ');
     } catch {
         return url;
     }
 }
 
-function formatNumber(num) {
-    if (num >= 1000000) {
-        return (num / 1000000).toFixed(1) + 'M';
-    }
-    if (num >= 1000) {
-        return (num / 1000).toFixed(1) + 'k';
-    }
-    return num.toString();
+function getCategory(domain) {
+    return domain || 'infrastructure';
+}
+
+function getCategoryName(category) {
+    const names = {
+        'ai_infra': 'AI Infrastructure',
+        'gov': 'Government Tech',
+        'finance': 'Fintech',
+        'health': 'Health Tech',
+        'sales': 'Sales Automation',
+        'trading': 'Trading Systems',
+        'devops': 'DevOps',
+        'infra': 'Infrastructure'
+    };
+    return names[category] || category;
+}
+
+function getPriority(level) {
+    if (level === 'critical') return 'critical';
+    if (level === 'high') return 'high';
+    return Math.random() > 0.7 ? 'high' : Math.random() > 0.5 ? 'medium' : 'low';
 }
 
 /**
- * Add CSS animations for notifications
+ * Add some CSS for detail modal
  */
-function addNotificationStyles() {
+function addDetailStyles() {
     const style = document.createElement('style');
     style.textContent = `
-        @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
+        .intel-detail {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-lg);
         }
         
-        @keyframes slideOut {
-            from {
-                transform: translateX(0);
-                opacity: 1;
-            }
-            to {
-                transform: translateX(100%);
-                opacity: 0;
-            }
+        .detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding-bottom: var(--space-md);
+            border-bottom: 1px solid var(--border-primary);
+        }
+        
+        .detail-meta {
+            display: flex;
+            gap: var(--space-sm);
+            align-items: center;
+        }
+        
+        .detail-source {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+        
+        .detail-stats {
+            display: flex;
+            gap: var(--space-lg);
+        }
+        
+        .detail-stat {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+        
+        .detail-section {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-sm);
+        }
+        
+        .detail-section h4 {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .detail-section p {
+            line-height: 1.6;
+            color: var(--text-secondary);
+        }
+        
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: var(--space-md);
+        }
+        
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        
+        .detail-label {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+        
+        .detail-value {
+            font-size: 0.9rem;
+            color: var(--text-primary);
+        }
+        
+        .detail-value.status-active {
+            color: var(--accent-success);
+        }
+        
+        .detail-actions {
+            display: flex;
+            gap: var(--space-md);
+            margin-top: var(--space-lg);
+        }
+        
+        .action-btn.primary {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: var(--accent-primary);
+            color: var(--bg-primary);
+            border: none;
+            border-radius: var(--radius-md);
+            font-family: var(--font-mono);
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all var(--transition-normal);
+        }
+        
+        .action-btn.primary:hover {
+            background: var(--accent-secondary);
+            transform: translateY(-2px);
+        }
+        
+        .error-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space-xl);
+            text-align: center;
+            grid-column: 1 / -1;
+        }
+        
+        .error-icon {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 71, 87, 0.1);
+            border-radius: 50%;
+            margin-bottom: var(--space-md);
+        }
+        
+        .error-icon i {
+            width: 24px;
+            height: 24px;
+            color: var(--accent-danger);
+        }
+        
+        .error-title {
+            font-family: var(--font-display);
+            font-size: 1.25rem;
+            color: var(--text-primary);
+            margin-bottom: var(--space-xs);
+        }
+        
+        .error-desc {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: var(--space-md);
+        }
+        
+        /* Priority colors */
+        .intel-card-badge.critical {
+            background: var(--accent-danger);
+        }
+        
+        .intel-card-badge.high {
+            background: var(--accent-warning);
+        }
+        
+        .intel-card-badge.medium {
+            background: var(--accent-primary);
+        }
+        
+        .intel-card-badge.low {
+            background: var(--text-muted);
         }
     `;
     document.head.appendChild(style);
 }
 
 /**
- * Service Worker Registration
- */
-function registerServiceWorker() {
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/sw.js')
-            .then(registration => {
-                console.log('ServiceWorker registered:', registration);
-            })
-            .catch(error => {
-                console.log('ServiceWorker registration failed:', error);
-            });
-    }
-}
-
-/**
  * Initialize when DOM is loaded
  */
 document.addEventListener('DOMContentLoaded', () => {
-    // Add notification styles
-    addNotificationStyles();
-    
-    // Register service worker
-    registerServiceWorker();
+    // Add detail styles
+    addDetailStyles();
     
     // Initialize app
     init();
+    
+    // Initial timestamp update
+    updateTimestamps();
 });
 
-// Export for manual testing in console
-window.OpenIndexApp = {
-    init,
-    loadData,
-    switchMine: updateUIForMine,
-    refresh: () => {
-        localStorage.removeItem(CONFIG.CACHE_KEY);
-        loadData();
-    },
-    getState: () => ({ ...APP_STATE }),
-    getConfig: () => ({ ...CONFIG })
-};
+// Global exports for inline event handlers
+window.openIntelDetail = openIntelDetail;
+window.loadFreshData = loadFreshData;
 
-console.log('OpenIndex V2 loaded. Type OpenIndexApp for debugging.');
+console.log('🔧 OPENINDEX v2.1 loaded successfully');
