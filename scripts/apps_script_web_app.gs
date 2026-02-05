@@ -20,9 +20,10 @@ function TEST_RUN() {
 }
 
 function ULTIMATE_REBOOT(repoUrl) {
-  if (!repoUrl) throw new Error("repoUrl is required");
+  // Use fallback for manual testing from editor
+  const targetUrl = repoUrl || "https://github.com/langchain-ai/langchain";
 
-  const repo = parseRepo(repoUrl);
+  const repo = parseRepo(targetUrl);
   const meta = fetchRepoMeta(repo.full_name);
   const readme = fetchReadme(repo.full_name);
 
