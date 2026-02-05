@@ -22,8 +22,21 @@ function TEST_RUN() {
 function ULTIMATE_REBOOT(repoUrl) {
   // Use fallback for manual testing from editor
   const targetUrl = repoUrl || "https://github.com/langchain-ai/langchain";
-
   const repo = parseRepo(targetUrl);
+
+  // 1. CHECK DRIVE FIRST (Cache-first approach)
+  const existing = checkExistingInDrive(repo.full_name);
+  if (existing) {
+    return {
+      status: "cached",
+      repo: repo.full_name,
+      fileId: existing.getId(),
+      fileUrl: existing.getUrl(),
+      data: JSON.parse(existing.getBlob().getDataAsString())
+    };
+  }
+
+  // 2. FETCH FROM GITHUB IF NOT FOUND
   const meta = fetchRepoMeta(repo.full_name);
   const readme = fetchReadme(repo.full_name);
 
@@ -31,7 +44,7 @@ function ULTIMATE_REBOOT(repoUrl) {
   const file = writeMPVToDrive(mpv);
 
   return {
-    status: "ok",
+    status: "new",
     repo: repo.full_name,
     fileId: file.getId(),
     fileUrl: file.getUrl(),
@@ -99,16 +112,21 @@ function inferRole(readme) {
 function writeMPVToDrive(mpv) {
   const cfg = CFG();
   const folder = DriveApp.getFolderById(cfg.DRIVE_ROOT_ID);
+  const fileName = `mpv_${mpv.repo.replace("/", "_")}.json`;
 
   const json = JSON.stringify(mpv, null, 2);
-
-  const blob = Utilities.newBlob(
-    json,
-    "application/json",
-    `mpv_${mpv.repo.replace("/", "_")}.json`
-  );
+  const blob = Utilities.newBlob(json, "application/json", fileName);
 
   return folder.createFile(blob);
+}
+
+function checkExistingInDrive(fullName) {
+  const cfg = CFG();
+  const folder = DriveApp.getFolderById(cfg.DRIVE_ROOT_ID);
+  const fileName = `mpv_${fullName.replace("/", "_")}.json`;
+  
+  const files = folder.getFilesByName(fileName);
+  return files.hasNext() ? files.next() : null;
 }
 
 /***********************
