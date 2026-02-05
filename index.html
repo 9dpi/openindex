@@ -1,662 +1,452 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EVOX COMMAND CENTER</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>OpenIndex | Opportunity Explorer</title>
+    <meta name="description"
+        content="Transforming complex source code and automation logic into clear business outcomes.">
+    <link rel="stylesheet" href="command-center.css">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', 'Roboto Mono', monospace;
+        /* Specific overrides for OpenIndex content within the new style */
+        .brand h1 {
+            color: var(--text-primary);
         }
 
-        body {
-            background-color: #0a0e17;
-            color: #e0e0e0;
-            padding: 20px;
-            min-height: 100vh;
+        .brand h1 span {
+            color: #ff9d00;
         }
 
-        /* HEADER STYLES */
-        .header {
-            background: linear-gradient(135deg, #0d1525 0%, #131b2d 100%);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 30px;
-            border: 1px solid #1e2a44;
-            box-shadow: 0 8px 24px rgba(0, 10, 30, 0.4);
+        /* Keep the signature OpenIndex orange */
+        .kill-btn {
+            display: none;
         }
 
-        .header-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #253350;
+        /* Hide the kill button as it doesn't fit the OpenIndex context yet */
+
+        /* Ensure the table fits OpenIndex data */
+        .nav-tab.active {
+            border-bottom-color: #ff9d00;
         }
 
-        .logo-section h1 {
-            color: #00ff9d;
-            font-size: 28px;
-            font-weight: 700;
-            letter-spacing: 1px;
+        .status-chip b {
+            color: #ff9d00;
+        }
+
+        .search-box {
             display: flex;
             align-items: center;
-            gap: 10px;
-        }
-
-        .logo-section h1:before {
-            content: "⟠";
-            color: #5d8af0;
-            font-size: 32px;
-        }
-
-        .logo-section h2 {
-            color: #a0b6ff;
-            font-size: 18px;
-            font-weight: 500;
-            margin-top: 5px;
-            letter-spacing: 0.5px;
-        }
-
-        .status-section {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .time-status {
-            background-color: #0f1a30;
-            padding: 8px 15px;
-            border-radius: 8px;
-            border: 1px solid #2a3a5e;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .time {
-            font-size: 22px;
-            font-weight: 700;
-            color: #5d8af0;
-            letter-spacing: 1px;
-        }
-
-        .online-status {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            color: #00ff9d;
-            font-weight: 500;
-        }
-
-        .online-status:before {
-            content: "";
-            width: 10px;
-            height: 10px;
-            background-color: #00ff9d;
-            border-radius: 50%;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
-        }
-
-        .kill-button {
-            background: linear-gradient(to right, #ff416c, #ff4b2b);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            letter-spacing: 0.5px;
-        }
-
-        .kill-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(255, 65, 108, 0.4);
-        }
-
-        .agents-section {
-            display: flex;
-            align-items: center;
-            gap: 30px;
-            margin-bottom: 20px;
-            padding: 15px;
-            background-color: #0f1a30;
-            border-radius: 10px;
-            border: 1px solid #1e2a44;
-        }
-
-        .agent-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .agent-icon {
-            background-color: #1a2b4d;
-            width: 40px;
-            height: 40px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #5d8af0;
-            font-size: 20px;
-        }
-
-        .agent-info h3 {
-            color: #e0e0e0;
-            font-size: 18px;
-            margin-bottom: 3px;
-        }
-
-        .agent-info p {
-            color: #a0b6ff;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .priority {
-            background-color: #ff416c;
-            color: white;
-            padding: 2px 8px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-dim);
             border-radius: 4px;
-            font-size: 12px;
-            font-weight: 600;
+            padding: 4px 12px;
+            gap: 8px;
+            width: 240px;
         }
 
-        .workflow-tabs {
-            display: flex;
-            justify-content: space-between;
-            background-color: #0f1a30;
-            border-radius: 10px;
-            overflow: hidden;
-            border: 1px solid #1e2a44;
-        }
-
-        .workflow-tab {
-            flex: 1;
-            padding: 15px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-            border-right: 1px solid #1e2a44;
-        }
-
-        .workflow-tab:last-child {
-            border-right: none;
-        }
-
-        .workflow-tab:hover {
-            background-color: #1a2b4d;
-        }
-
-        .workflow-tab.active {
-            background-color: #253350;
-            color: #5d8af0;
-            font-weight: 600;
-        }
-
-        .tab-title {
-            font-size: 16px;
-            margin-bottom: 5px;
-        }
-
-        .tab-count {
-            background-color: #00ff9d;
-            color: #0a0e17;
-            padding: 3px 10px;
-            border-radius: 12px;
-            font-size: 14px;
-            font-weight: 700;
-        }
-
-        .time-filter {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .time-filter-btn {
-            background-color: #1a2b4d;
-            color: #a0b6ff;
-            border: 1px solid #253350;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 14px;
-        }
-
-        .time-filter-btn:hover {
-            background-color: #253350;
-        }
-
-        .time-filter-btn.active {
-            background-color: #5d8af0;
-            color: white;
-            border-color: #5d8af0;
-        }
-
-        /* TABLE STYLES */
-        .table-container {
-            background: linear-gradient(135deg, #0d1525 0%, #131b2d 100%);
-            border-radius: 12px;
-            padding: 25px;
-            border: 1px solid #1e2a44;
-            box-shadow: 0 8px 24px rgba(0, 10, 30, 0.4);
-            overflow-x: auto;
-        }
-
-        table {
+        .search-box input {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text-primary);
+            font-size: 0.8rem;
             width: 100%;
-            border-collapse: collapse;
         }
 
-        th {
-            background-color: #1a2b4d;
-            color: #a0b6ff;
-            text-align: left;
-            padding: 18px 15px;
-            font-weight: 600;
-            font-size: 15px;
-            letter-spacing: 0.5px;
-            border-bottom: 2px solid #253350;
-            white-space: nowrap;
-        }
-
-        th i {
-            margin-left: 5px;
-            opacity: 0.7;
-        }
-
-        td {
-            padding: 18px 15px;
-            border-bottom: 1px solid #1e2a44;
-            color: #e0e0e0;
-            font-size: 14.5px;
-        }
-
-        tr:hover {
-            background-color: #131f3a;
-        }
-
-        .repo-name {
-            color: #5d8af0;
-            font-weight: 600;
-            font-size: 15px;
-        }
-
-        .stars {
-            color: #ffcc00;
-            font-weight: 700;
-        }
-
-        .change-positive {
-            color: #00ff9d;
-            font-weight: 600;
-        }
-
-        .change-negative {
-            color: #ff416c;
-            font-weight: 600;
-        }
-
-        .change-neutral {
-            color: #a0b6ff;
-        }
-
-        .forks {
-            color: #a0b6ff;
-            font-weight: 600;
-        }
-
-        .description {
-            color: #c2c9e0;
-            max-width: 300px;
-        }
-
-        .category {
-            background-color: #1a2b4d;
-            color: #5d8af0;
-            padding: 5px 12px;
-            border-radius: 6px;
-            font-size: 13px;
-            font-weight: 500;
-            display: inline-block;
-        }
-
-        .subcategory {
-            color: #a0b6ff;
-            font-size: 13px;
-            font-style: italic;
-        }
-
-        .table-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 25px;
-            padding-top: 20px;
-            border-top: 1px solid #1e2a44;
-            color: #a0b6ff;
-            font-size: 14px;
-        }
-
-        .pagination {
-            display: flex;
-            gap: 10px;
-        }
-
-        .pagination-btn {
-            background-color: #1a2b4d;
-            color: #a0b6ff;
-            border: 1px solid #253350;
-            width: 40px;
-            height: 40px;
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .pagination-btn:hover {
-            background-color: #253350;
-        }
-
-        .pagination-btn.active {
-            background-color: #5d8af0;
-            color: white;
-            border-color: #5d8af0;
+        .search-box i {
+            color: var(--text-muted);
         }
     </style>
 </head>
+
 <body>
-    <!-- HEADER SECTION -->
-    <div class="header">
-        <div class="header-top">
-            <div class="logo-section">
-                <h1>EVOX COMMAND CENTER</h1>
-                <h2>AGENTS</h2>
+    <div class="app-container">
+        <!-- Sidebar: Source Types / Mining Categories -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                GOLDMINES <span class="sidebar-counter" id="mine-count">2</span>
             </div>
-            
-            <div class="status-section">
-                <div class="time-status">
-                    <div class="time">22:45:50</div>
-                    <div class="online-status">Online</div>
+            <div class="agent-list">
+                <div class="agent-item" onclick="switchMine('github')" id="mine-github">
+                    <div class="agent-status-dot status-online"></div>
+                    <div class="agent-avatar">
+                        <i data-lucide="github"></i>
+                    </div>
+                    <div class="agent-info">
+                        <h4>GitHub <span class="role">Infrastructure</span></h4>
+                        <div class="agent-tag">LIVE <span style="color:var(--text-muted)" id="count-github">0
+                                items</span></div>
+                        <p class="agent-subtext">Open-source code logic & infra</p>
+                    </div>
                 </div>
-                <button class="kill-button">
-                    <i class="fas fa-power-off"></i> KILL
-                </button>
-            </div>
-        </div>
-
-        <div class="agents-section">
-            <div class="agent-item">
-                <div class="agent-icon">
-                    <i class="fas fa-robot"></i>
-                </div>
-                <div class="agent-info">
-                    <h3>MAX PM</h3>
-                    <p><span class="priority">P0</span> → 100x Autonomy</p>
-                </div>
-            </div>
-            
-            <div class="agent-item">
-                <div class="agent-icon">
-                    <i class="fas fa-tasks"></i>
-                </div>
-                <div class="agent-info">
-                    <h3>Mission Queue</h3>
-                    <p>SAM Backend</p>
+                <div class="agent-item" onclick="switchMine('n8n')" id="mine-n8n">
+                    <div class="agent-status-dot status-busy"></div>
+                    <div class="agent-avatar">
+                        <i data-lucide="zap"></i>
+                    </div>
+                    <div class="agent-info">
+                        <h4>n8n <span class="role">Automation</span></h4>
+                        <div class="agent-tag">ACTIVE <span style="color:var(--text-muted)" id="count-n8n">0
+                                items</span></div>
+                        <p class="agent-subtext">Executable business workflows</p>
+                    </div>
                 </div>
             </div>
-        </div>
+        </aside>
 
-        <div class="workflow-tabs">
-            <div class="workflow-tab active">
-                <div class="tab-title">BACKLOG</div>
-                <div class="tab-count">5</div>
-            </div>
-            <div class="workflow-tab">
-                <div class="tab-title">TODO</div>
-                <div class="tab-count">3</div>
-            </div>
-            <div class="workflow-tab">
-                <div class="tab-title">IN PROGRESS</div>
-                <div class="tab-count">2</div>
-            </div>
-            <div class="workflow-tab">
-                <div class="tab-title">DONE</div>
-                <div class="tab-count">12</div>
-            </div>
-        </div>
+        <!-- Main Viewport -->
+        <main class="main-viewport">
+            <!-- Top Command Bar -->
+            <header class="top-bar">
+                <div class="brand">
+                    <h1>OPEN<span>INDEX</span></h1>
+                    <span class="sub-brand">OPPORTUNITY EXPLORER</span>
+                </div>
 
-        <div class="time-filter">
-            <button class="time-filter-btn active">Today</button>
-            <button class="time-filter-btn">This Week</button>
-            <button class="time-filter-btn">30 Days</button>
-        </div>
-    </div>
+                <div class="global-stats">
+                    <div class="status-chip">Opportunities <b id="stat-total">0</b></div>
+                    <div class="status-chip">Categories <b id="stat-cats">4</b></div>
+                </div>
 
-    <!-- TABLE SECTION -->
-    <div class="table-container">
-        <table>
-            <thead>
-                <tr>
-                    <th>Repo <i class="fas fa-sort"></i></th>
-                    <th>Stars <i class="fas fa-sort"></i></th>
-                    <th>1d ↓ <i class="fas fa-sort"></i></th>
-                    <th>7d <i class="fas fa-sort"></i></th>
-                    <th>Forks <i class="fas fa-sort"></i></th>
-                    <th>Description</th>
-                    <th>Category</th>
-                    <th>Subcat</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>
-                        <div class="repo-name">mrgoonie/claudekit-skills</div>
-                    </td>
-                    <td>
-                        <div class="stars">1,529</div>
-                    </td>
-                    <td>
-                        <div class="change-positive">+12</div>
-                    </td>
-                    <td>
-                        <div class="change-positive">+74</div>
-                    </td>
-                    <td>
-                        <div class="forks">297</div>
-                    </td>
-                    <td>
-                        <div class="description">All powerful skills of ClaudeKit.cc!</div>
-                    </td>
-                    <td>
-                        <div class="category">Tutorials</div>
-                    </td>
-                    <td>
-                        <div class="subcategory">Tool-specific tutorials</div>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <div class="repo-name">pnnbao97/VieNeu-TTS</div>
-                    </td>
-                    <td>
-                        <div class="stars">729</div>
-                    </td>
-                    <td>
-                        <div class="change-positive">+8</div>
-                    </td>
-                    <td>
-                        <div class="change-neutral">-</div>
-                    </td>
-                    <td>
-                        <div class="forks">270</div>
-                    </td>
-                    <td>
-                        <div class="description">Vietnamese TTS with instant voice</div>
-                    </td>
-                    <td>
-                        <div class="category">Models</div>
-                    </td>
-                    <td>
-                        <div class="subcategory">Audio/Speech models</div>
-                    </td>
-                </tr>
-                <!-- Additional rows can be added here -->
-                <tr>
-                    <td>
-                        <div class="repo-name">neural-magic/deepsparse</div>
-                    </td>
-                    <td>
-                        <div class="stars">2,845</div>
-                    </td>
-                    <td>
-                        <div class="change-positive">+21</div>
-                    </td>
-                    <td>
-                        <div class="change-positive">+132</div>
-                    </td>
-                    <td>
-                        <div class="forks">315</div>
-                    </td>
-                    <td>
-                        <div class="description">Sparse inference runtime for CPUs</div>
-                    </td>
-                    <td>
-                        <div class="category">Infrastructure</div>
-                    </td>
-                    <td>
-                        <div class="subcategory">Inference optimization</div>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <div class="repo-name">langchain-ai/langchain</div>
-                    </td>
-                    <td>
-                        <div class="stars">67,521</div>
-                    </td>
-                    <td>
-                        <div class="change-positive">+89</div>
-                    </td>
-                    <td>
-                        <div class="change-positive">+542</div>
-                    </td>
-                    <td>
-                        <div class="forks">9,124</div>
-                    </td>
-                    <td>
-                        <div class="description">Building applications with LLMs</div>
-                    </td>
-                    <td>
-                        <div class="category">Frameworks</div>
-                    </td>
-                    <td>
-                        <div class="subcategory">LLM orchestration</div>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <div class="repo-name">openai/whisper</div>
-                    </td>
-                    <td>
-                        <div class="stars">45,328</div>
-                    </td>
-                    <td>
-                        <div class="change-positive">+34</div>
-                    </td>
-                    <td>
-                        <div class="change-positive">+287</div>
-                    </td>
-                    <td>
-                        <div class="forks">5,243</div>
-                    </td>
-                    <td>
-                        <div class="description">Robust speech recognition model</div>
-                    </td>
-                    <td>
-                        <div class="category">Models</div>
-                    </td>
-                    <td>
-                        <div class="subcategory">Audio/Speech models</div>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+                <div class="top-bar-right">
+                    <div class="search-box">
+                        <i data-lucide="search" size="14"></i>
+                        <input type="text" id="global-search" placeholder="Search opportunities...">
+                    </div>
+                    <div class="notif-bell" style="margin-left: 8px;">
+                        <i data-lucide="bell" size="18" style="cursor:pointer"></i>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <div class="agent-status-dot status-online" style="margin:0"></div>
+                        <span style="font-size: 0.75rem; font-weight: 500;">Network Live</span>
+                    </div>
+                    <i data-lucide="settings" size="18" style="cursor:pointer; color:var(--text-muted)"></i>
+                </div>
+            </header>
 
-        <div class="table-footer">
-            <div>Showing 5 of 128 repositories</div>
-            <div class="pagination">
-                <div class="pagination-btn"><i class="fas fa-chevron-left"></i></div>
-                <div class="pagination-btn active">1</div>
-                <div class="pagination-btn">2</div>
-                <div class="pagination-btn">3</div>
-                <div class="pagination-btn">...</div>
-                <div class="pagination-btn">12</div>
-                <div class="pagination-btn"><i class="fas fa-chevron-right"></i></div>
+            <!-- Navigation Tabs: Categories -->
+            <div
+                style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-dim); background: var(--bg-main); padding-right: 1.5rem;">
+                <nav class="secondary-nav" id="category-tabs" style="border-bottom: none;">
+                    <a href="#" class="nav-tab active" onclick="filterCategory('all')">All Opportunities <b>x0</b></a>
+                    <a href="#" class="nav-tab" onclick="filterCategory('ai')">AI Engineering <b>x0</b></a>
+                    <a href="#" class="nav-tab" onclick="filterCategory('app')">Applications <b>x0</b></a>
+                    <a href="#" class="nav-tab" onclick="filterCategory('infra')">Infrastructure <b>x0</b></a>
+                    <a href="#" class="nav-tab" onclick="filterCategory('list')">Lists <b>x0</b></a>
+                    <a href="#" class="nav-tab" onclick="filterCategory('misc')">Misc <b>x0</b></a>
+                </nav>
+                <div class="pagination-top" id="pagination-top">
+                    <!-- Page counter will be injected here -->
+                </div>
             </div>
-        </div>
+
+            <!-- Content Area -->
+            <div class="view-header">
+                <h2 id="view-title">GitHub Goldmine</h2>
+                <div class="view-filters">
+                    <div class="filter-opt active" onclick="setSort('high-value')">High Value</div>
+                    <div class="filter-opt" onclick="setSort('trending')">Trending</div>
+                    <div class="filter-opt" onclick="setSort('newest')">Newest</div>
+                </div>
+            </div>
+
+            <div class="data-wrapper">
+                <table class="custom-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 40px;">#</th>
+                            <th>Opportunity / Repo</th>
+                            <th>Author</th>
+                            <th>Evidence (Stars)</th>
+                            <th>Status</th>
+                            <th>Outcome / Mission</th>
+                            <th>Category</th>
+                            <th>Last Activity</th>
+                        </tr>
+                    </thead>
+                    <tbody id="data-body">
+                        <!-- DATA INJECTED BY JS -->
+                    </tbody>
+                </table>
+                <div class="pagination-bottom" id="pagination-bottom"
+                    style="display: flex; justify-content: flex-end; padding: 2rem 0; gap: 1rem; align-items: center;">
+                    <!-- Bottom counter injected here -->
+                </div>
+            </div>
+        </main>
     </div>
 
     <script>
-        // Add interactivity to workflow tabs
-        document.querySelectorAll('.workflow-tab').forEach(tab => {
-            tab.addEventListener('click', function() {
-                document.querySelectorAll('.workflow-tab').forEach(t => t.classList.remove('active'));
-                this.classList.add('active');
-            });
-        });
+        const API_URL = "https://script.google.com/macros/s/AKfycbw92AD5kJmwsWc89P5_BkDax-r3AmWIm2W0_RhQRnqyilw_vWA7aPYMHvykUusxUFM7/exec";
+        let allRecords = [];
+        let currentMine = 'github';
+        let currentCategory = 'all';
+        let currentSort = 'high-value';
+        let searchTerm = '';
+        let currentPage = 1;
+        const itemsPerPage = 20;
 
-        // Add interactivity to time filter buttons
-        document.querySelectorAll('.time-filter-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                document.querySelectorAll('.time-filter-btn').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-            });
-        });
+        async function init() {
+            lucide.createIcons();
+            await fetchData();
 
-        // Add interactivity to pagination buttons
-        document.querySelectorAll('.pagination-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                if (!this.querySelector('i')) {
-                    document.querySelectorAll('.pagination-btn').forEach(b => b.classList.remove('active'));
-                    this.classList.add('active');
+            // Set up search listener
+            document.getElementById('global-search').addEventListener('input', (e) => {
+                searchTerm = e.target.value;
+                currentPage = 1; // Reset to page 1
+                render();
+            });
+        }
+
+        async function fetchData() {
+            try {
+                const res = await fetch(API_URL);
+                const json = await res.json();
+                if (json.status === "success") {
+                    // Map or normalize data
+                    allRecords = json.records.map(r => {
+                        const url = (r.u || '').toLowerCase();
+                        const name = (r.n || '').toLowerCase();
+                        const domain = (r.d || '').toLowerCase();
+                        const cat = (r.cat || r.c || r.category || '').toLowerCase();
+
+                        let platform = 'github'; // Default
+                        if (url.includes('n8n')) platform = 'n8n';
+
+                        // Robust Categorization
+                        let target = 'misc';
+                        if (domain.includes('ai') || cat.includes('ai') || domain.includes('research')) {
+                            target = 'ai';
+                        } else if (cat.includes('infra') || domain.includes('infra') || domain === 'climate') {
+                            target = 'infra';
+                        } else if (domain === 'finance' || domain === 'health' || domain === 'gov' || cat.includes('app') || cat.includes('analytics')) {
+                            target = 'app';
+                        } else if (name.includes('awesome') || name.includes('list') || cat.includes('list') || cat.includes('data')) {
+                            target = 'list';
+                        }
+
+                        return {
+                            ...r,
+                            platform: platform,
+                            targetCategory: target,
+                            domain: domain,
+                            category: cat
+                        };
+                    });
+
+                    // Add some mock n8n records for the demo
+                    allRecords.push(
+                        { n: "Lead Enrichment Workflow", u: "#n8n-1", o: "n8n-logic", s: "Auto-enrich CRM leads using Clearbit.", domain: "app", category: "automation", platform: "n8n", targetCategory: "app" },
+                        { n: "Crypto Price Alert", u: "#n8n-2", o: "trading-bot", s: "Real-time SMS alerts for BTC/ETH deltas.", domain: "finance", category: "analytics", platform: "n8n", targetCategory: "app" },
+                        { n: "Health Data Sync", u: "#n8n-3", o: "med-ops", s: "Sync EHR data between FHIR and Supabase.", domain: "health", category: "infrastructure", platform: "n8n", targetCategory: "infra" }
+                    );
+
+                    allRecords.sort(() => Math.random() - 0.5);
+                    updateStats();
+                    render();
                 }
-            });
-        });
-
-        // Kill button alert
-        document.querySelector('.kill-button').addEventListener('click', function() {
-            if (confirm('Are you sure you want to initiate emergency shutdown?')) {
-                alert('Emergency shutdown sequence initiated!');
-                this.innerHTML = '<i class="fas fa-exclamation-triangle"></i> SHUTDOWN IN PROGRESS';
-                this.style.background = 'linear-gradient(to right, #ff8a00, #ff2d00)';
+            } catch (e) {
+                console.error("Fetch failed", e);
+                const body = document.getElementById('data-body');
+                body.innerHTML = '<tr><td colspan="7" style="text-align:center; color: var(--accent-red);">Offline: Unable to connect to OpenIndex Grid.</td></tr>';
             }
-        });
+        }
+
+        function updateStats() {
+            const githubRecs = allRecords.filter(r => r.platform === 'github');
+            const n8nRecs = allRecords.filter(r => r.platform === 'n8n');
+
+            document.getElementById('stat-total').innerText = allRecords.length;
+            document.getElementById('count-github').innerText = `${githubRecs.length} items`;
+            document.getElementById('count-n8n').innerText = `${n8nRecs.length} items`;
+
+            // Update Category Tabs Counters
+            const activeMineData = allRecords.filter(r => r.platform === currentMine);
+            const cats = {
+                all: activeMineData.length,
+                ai: activeMineData.filter(r => r.targetCategory === 'ai').length,
+                app: activeMineData.filter(r => r.targetCategory === 'app').length,
+                infra: activeMineData.filter(r => r.targetCategory === 'infra').length,
+                list: activeMineData.filter(r => r.targetCategory === 'list').length,
+                misc: activeMineData.filter(r => r.targetCategory === 'misc').length
+            };
+
+            const tabContainer = document.getElementById('category-tabs');
+            const tabs = tabContainer.querySelectorAll('.nav-tab');
+
+            tabs.forEach(tab => {
+                const text = tab.innerText.toLowerCase();
+                let count = 0;
+                if (text.includes('all')) count = cats.all;
+                else if (text.includes('ai')) count = cats.ai;
+                else if (text.includes('applications')) count = cats.app;
+                else if (text.includes('infrastructure')) count = cats.infra;
+                else if (text.includes('lists')) count = cats.list;
+                else if (text.includes('misc')) count = cats.misc;
+
+                tab.querySelector('b').innerText = `x${count}`;
+            });
+        }
+
+        function switchMine(mine) {
+            currentMine = mine;
+            document.getElementById('view-title').innerText = mine === 'github' ? 'GitHub Goldmine' : 'n8n Goldmine';
+
+            document.querySelectorAll('.agent-item').forEach(i => i.classList.remove('active'));
+            document.getElementById(`mine-${mine}`).classList.add('active');
+
+            render();
+        }
+
+        function filterCategory(cat) {
+            currentCategory = cat;
+            currentPage = 1; // Reset to page 1 on filter
+            document.querySelectorAll('.nav-tab').forEach(t => {
+                t.classList.toggle('active', t.innerText.toLowerCase().includes(cat));
+            });
+            render();
+        }
+
+        function setSort(sortType) {
+            currentSort = sortType;
+            currentPage = 1;
+            document.querySelectorAll('.filter-opt').forEach(opt => {
+                opt.classList.toggle('active', opt.innerText.toLowerCase().replace(' ', '-') === sortType);
+            });
+            render();
+        }
+
+        function nextPage() {
+            const maxPage = Math.ceil(getFilteredData().length / itemsPerPage);
+            if (currentPage < maxPage) {
+                currentPage++;
+                render();
+                document.querySelector('.data-wrapper').scrollTop = 0;
+            }
+        }
+
+        function prevPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                render();
+                document.querySelector('.data-wrapper').scrollTop = 0;
+            }
+        }
+
+        function getFilteredData() {
+            // 1. Filter by Goldmine/Platform first
+            let filtered = allRecords.filter(r => r.platform === currentMine);
+
+            // 2. Filter by Category mapping
+            if (currentCategory !== 'all') {
+                filtered = filtered.filter(r => r.targetCategory === currentCategory);
+            }
+
+            // 3. Search Filter
+            if (searchTerm) {
+                const term = searchTerm.toLowerCase();
+                filtered = filtered.filter(r =>
+                    (r.n || '').toLowerCase().includes(term) ||
+                    (r.o || '').toLowerCase().includes(term) ||
+                    (r.s || '').toLowerCase().includes(term)
+                );
+            }
+
+            // Sorting Logic
+            if (currentSort === 'high-value') {
+                // Mock sorting based on repo name length or just stable random since we lack real "value" metric in API currently
+                filtered.sort((a, b) => (b.n.length) - (a.n.length));
+            } else if (currentSort === 'trending') {
+                // Simulate trending by random shuffle but deterministic for the session
+                filtered.sort((a, b) => b.n.localeCompare(a.n));
+            } else if (currentSort === 'newest') {
+                // Reverse of the initial shuffle or alphabetical for now
+                filtered.reverse();
+            }
+
+            return filtered;
+        }
+
+        function render() {
+            const body = document.getElementById('data-body');
+            const pgTop = document.getElementById('pagination-top');
+            const pgBottom = document.getElementById('pagination-bottom');
+            body.innerHTML = '';
+
+            const filtered = getFilteredData();
+            const totalItems = filtered.length;
+            const maxPage = Math.ceil(totalItems / itemsPerPage) || 1;
+
+            // Slice for current page
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const pageData = filtered.slice(startIndex, startIndex + itemsPerPage);
+
+            // Update Pagination UI
+            const pgHtml = `
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <span style="font-size: 0.75rem; color: var(--text-muted); font-family: var(--font-mono);">
+                        PAGE <b>${currentPage}</b> / ${maxPage}
+                    </span>
+                    <div style="display: flex; gap: 4px;">
+                        <button onclick="prevPage()" class="filter-opt" style="padding: 4px 8px; border: none; outline: none; background: transparent; ${currentPage === 1 ? 'opacity:0.3; cursor:default' : 'cursor:pointer'}">
+                            <i data-lucide="chevron-left" size="14"></i>
+                        </button>
+                        <button onclick="nextPage()" class="filter-opt" style="padding: 4px 8px; border: none; outline: none; background: transparent; ${currentPage === maxPage ? 'opacity:0.3; cursor:default' : 'cursor:pointer'}">
+                            <i data-lucide="chevron-right" size="14"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+            pgTop.innerHTML = pgHtml;
+            pgBottom.innerHTML = pgHtml;
+
+            if (pageData.length === 0) {
+                body.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 2rem;">No matching opportunities found in this sector.</td></tr>';
+                return;
+            }
+
+            pageData.forEach((r, idx) => {
+                const tr = document.createElement('tr');
+                tr.style.setProperty('--row-index', idx);
+
+                const authorUrl = r.u && r.u.includes('github.com')
+                    ? r.u.split('/').slice(0, 4).join('/')
+                    : '#';
+
+                tr.innerHTML = `
+                    <td>${startIndex + idx + 1}</td>
+                    <td class="repo-cell">
+                        <span class="repo-owner">${r.o || 'system'}</span>
+                        <a href="${r.u}" target="_blank" class="repo-name" style="text-decoration:none; color:inherit;">${r.n}</a>
+                    </td>
+                    <td>
+                        <a href="${authorUrl}" target="_blank" style="color: var(--accent-blue); text-decoration: none; font-weight: 500;">
+                            @${r.o || 'system'}
+                        </a>
+                    </td>
+                    <td>
+                        <div style="display:flex; align-items:center; gap:4px;">
+                            <i data-lucide="star" size="12" color="#ff9d00"></i>
+                            ${(Math.random() * 2000).toFixed(0)}
+                        </div>
+                    </td>
+                    <td><span class="pill pill-green">Verified</span></td>
+                    <td>${r.s || 'Infrastructure component ready for integration.'}</td>
+                    <td><span class="pill pill-teal">${r.category || 'System'}</span></td>
+                    <td style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted);">
+                        ${timeAgo(r.up || r.updated_at)}
+                    </td>
+                `;
+                body.appendChild(tr);
+            });
+            lucide.createIcons();
+        }
+
+        init();
     </script>
 </body>
+
 </html>

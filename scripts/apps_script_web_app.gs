@@ -1,197 +1,132 @@
-/* 
-  OpenIndex Registry Pipeline v10.0 (Fully Autonomous & High Capacity)
-  - Mission: 100% Automated Discovery, Approval, and Indexing
-  - Capacity: Drive-based JSON caching (No storage limits)
-  - Integrity: Atomic resets and single-pass indexing
-*/
 
-const CONFIG = {
-  DRIVE_FOLDER_ID: "1UwSmQ71MR3Lk13-RnlP2pG572AP8vLz1",
-  SPREADSHEET_ID: "1fcY78iMgmF6opG9wGBwUP_euTVDFb1HUB9LKEWxnfHM",
-  DOMAINS: ["ai_infra", "gov", "climate", "health", "finance"],
-  CACHE_FILENAME: "openindex_registry_cache.json"
-};
 
-/**
- * MASTER PILOT: The primary engine run by triggers
- */
-function ULTIMATE_REBOOT() {
-  console.log("🚀 Starting Ultimate Reboot...");
-  ensureFoldersExist();
-  discoveryAgent();
-  autoApproveAll();
-  promotionAgent();
-  refreshIndex(); // Single-pass indexing at the end
-  console.log("✅ Reboot complete. System synchronized.");
+/***********************
+ * CONFIG
+ ***********************/
+function CFG() {
+  const p = PropertiesService.getScriptProperties();
+  return {
+    GITHUB_TOKEN: p.getProperty("GITHUB_TOKEN"),
+    DRIVE_ROOT_ID: p.getProperty("DRIVE_ROOT_ID"),
+    SHEET_ID: p.getProperty("SHEET_ID"),
+  };
 }
 
-/**
- * AUTO-APPROVE: Marks all discovered repos as approved
- */
-function autoApproveAll() {
-  const sheet = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID).getSheets()[0];
-  const lastRow = sheet.getLastRow();
-  if (lastRow < 2) return;
-  sheet.getRange(2, 8, lastRow - 1, 1).setValue(true); // Column H
+/***********************
+ * ENTRY
+ ***********************/
+function TEST_RUN() {
+  return ULTIMATE_REBOOT("https://github.com/langchain-ai/langchain");
 }
 
-/**
- * DISCOVERY: Scans GitHub for critical systems
- */
-function discoveryAgent() {
-  const sheet = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID).getSheets()[0];
-  const lastRow = sheet.getLastRow();
-  const existingUrls = lastRow > 1 ? new Set(sheet.getRange(2, 2, lastRow - 1, 1).getValues().flat()) : new Set();
+function ULTIMATE_REBOOT(repoUrl) {
+  if (!repoUrl) throw new Error("repoUrl is required");
 
-  const searchPlans = [
-    { domain: "ai_infra", q: "(vllm OR triton-inference OR kubeflow OR mlflow OR feast) stars:>500" },
-    { domain: "ai_infra", q: "(topic:mlops OR topic:llm-ops) stars:>300" },
-    { domain: "gov", q: "(topic:government OR topic:open-data OR topic:civic-tech) stars:>100" },
-    { domain: "climate", q: "(topic:climate OR topic:sustainability OR topic:energy) stars:>50" },
-    { domain: "finance", q: "(topic:fintech OR topic:finance) stars:>1000" },
-    { domain: "health", q: "(topic:medical OR topic:clinical-data) stars:>500" }
-  ];
+  const repo = parseRepo(repoUrl);
+  const meta = fetchRepoMeta(repo.full_name);
+  const readme = fetchReadme(repo.full_name);
 
-  searchPlans.forEach(plan => {
-    try {
-      const url = `https://api.github.com/search/repositories?q=${encodeURIComponent(plan.q)}&sort=stars&order=desc&per_page=30`;
-      const response = UrlFetchApp.fetch(url, { headers: { "User-Agent": "OpenIndex-Bot/10.1" }, muteHttpExceptions: true });
-      if (response.getResponseCode() !== 200) {
-        console.error(`GitHub API error (${plan.domain}): ${response.getContentText()}`);
-        return;
-      }
-      
-      const repos = JSON.parse(response.getContentText()).items || [];
-      repos.forEach(repo => {
-        if (!existingUrls.has(repo.html_url)) {
-          sheet.appendRow([
-            repo.name, repo.html_url, repo.description || "", repo.stargazers_count, 
-            (repo.topics || []).join(", "), plan.domain, plan.q, 
-            true,  // Approved
-            false, // Indexed
-            "Auto-Purged", new Date(), "Infrastructure", "important", ""
-          ]);
-          existingUrls.add(repo.html_url);
-        }
-      });
-    } catch (e) { console.error("Discovery error: " + e.message); }
-  });
+  const mpv = buildMPV(repo, meta, readme);
+  const file = writeMPVToDrive(mpv);
+
+  return {
+    status: "ok",
+    repo: repo.full_name,
+    fileId: file.getId(),
+    fileUrl: file.getUrl(),
+  };
 }
 
-/**
- * PROMOTION: Converts approved rows to YAML files
- */
-function promotionAgent() {
-  const ss = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
-  const sheet = ss.getSheets()[0];
-  const data = sheet.getDataRange().getValues();
-  const root = DriveApp.getFolderById(CONFIG.DRIVE_FOLDER_ID);
-  const folderMap = {};
-  
-  CONFIG.DOMAINS.forEach(d => {
-    const folders = root.getFoldersByName(d);
-    if (folders.hasNext()) folderMap[d] = folders.next();
-  });
+/***********************
+ * CORE LOGIC
+ ***********************/
+function parseRepo(url) {
+  const clean = url.replace("https://github.com/", "").replace(/\/$/, "");
+  const [owner, repo] = clean.split("/");
+  return { owner, repo, full_name: `${owner}/${repo}` };
+}
 
-  for (let i = 1; i < data.length; i++) {
-    const [name, url, desc, stars, , domain, , approved, indexed, , , sysRole, depLevel, infraLayer] = data[i];
-    if (approved === true && indexed === false && folderMap[domain]) {
-      const yaml = generateCognitiveYaml({name, url, desc, stars, sysRole, depLevel, infraLayer}, domain);
-      const fileName = name.toLowerCase().replace(/[^a-z0-9]/g, '_') + "_" + Math.random().toString(36).substring(7) + ".yaml";
-      folderMap[domain].createFile(fileName, yaml, "text/yaml");
-      sheet.getRange(i + 1, 9).setValue(true); // Mark as Indexed
-    }
+function fetchRepoMeta(fullName) {
+  return githubGET(`https://api.github.com/repos/${fullName}`);
+}
+
+function fetchReadme(fullName) {
+  try {
+    const r = githubGET(`https://api.github.com/repos/${fullName}/readme`);
+    return Utilities.newBlob(
+      Utilities.base64Decode(r.content)
+    ).getDataAsString();
+  } catch (e) {
+    return "";
   }
 }
 
-/**
- * INDEXING: Rebuilds the Drive-based JSON cache
- */
-function refreshIndex() {
-  const root = DriveApp.getFolderById(CONFIG.DRIVE_FOLDER_ID);
-  let allRecords = [];
-  
-  CONFIG.DOMAINS.forEach(domain => {
-    const folders = root.getFoldersByName(domain);
-    if (!folders.hasNext()) return;
-    const files = folders.next().getFiles();
-    while (files.hasNext()) {
-      const file = files.next();
-      if (file.getName().endsWith(".yaml")) {
-        try {
-          const p = parseYaml(file.getBlob().getDataAsString(), domain);
-          if (p.n) allRecords.push(p);
-        } catch (e) { console.warn(`Skipping invalid YAML: ${file.getName()}`); }
-      }
-    }
+function buildMPV(repo, meta, readme) {
+  return {
+    generated_at: new Date().toISOString(),
+    repo: repo.full_name,
+    role: inferRole(readme),
+    opportunity: "Non-tech users can test real infra logic safely",
+    evidence: {
+      stars: meta.stargazers_count,
+      forks: meta.forks_count,
+      updated_at: meta.updated_at,
+    },
+    sandbox: {
+      scenario: "High-volatility macro regime",
+      mock_input: "Fed surprise rate cut",
+      mock_output: [
+        "Risk-on rotation",
+        "Volatility compression",
+        "Liquidity expansion signals",
+      ],
+      note: "Mock MPV – safe for self-test",
+    },
+  };
+}
+
+function inferRole(readme) {
+  const t = readme.toLowerCase();
+  if (t.includes("agent")) return "Autonomous agent system";
+  if (t.includes("vector")) return "Retrieval / memory infrastructure";
+  return "Core open-source infrastructure";
+}
+
+/***********************
+ * DRIVE (FIXED)
+ ***********************/
+function writeMPVToDrive(mpv) {
+  const cfg = CFG();
+  const folder = DriveApp.getFolderById(cfg.DRIVE_ROOT_ID);
+
+  const json = JSON.stringify(mpv, null, 2);
+
+  const blob = Utilities.newBlob(
+    json,
+    "application/json",
+    `mpv_${mpv.repo.replace("/", "_")}.json`
+  );
+
+  return folder.createFile(blob);
+}
+
+/***********************
+ * GITHUB
+ ***********************/
+function githubGET(url) {
+  const token = CFG().GITHUB_TOKEN;
+  const res = UrlFetchApp.fetch(url, {
+    headers: {
+      Authorization: `token ${token}`,
+      "User-Agent": "OpenIndex",
+    },
+    muteHttpExceptions: true,
   });
 
-  const payload = JSON.stringify({ status: "success", timestamp: new Date().toISOString(), records: allRecords });
-  const existingFiles = root.getFilesByName(CONFIG.CACHE_FILENAME);
-  if (existingFiles.hasNext()) {
-    existingFiles.next().setContent(payload);
-  } else {
-    root.createFile(CONFIG.CACHE_FILENAME, payload, "application/json");
+  if (res.getResponseCode() >= 300) {
+    throw new Error(res.getContentText());
   }
+
+  return JSON.parse(res.getContentText());
 }
 
-function parseYaml(content, domain) {
-  const res = { n: "", s: "", w: "", o: "", y: "", u: "", up: "", d: domain, system_role: "", dependency_level: "", infra_layer: "", sc: 0.5 };
-  content.split('\n').forEach(line => {
-    const colonPos = line.indexOf(':');
-    if (colonPos === -1) return;
-    const k = line.substring(0, colonPos).trim();
-    const v = line.substring(colonPos + 1).trim().replace(/^["']|["']$/g, '');
-    if (k === 'title') res.n = v;
-    else if (k === 'short_desc') res.s = v;
-    else if (k === 'repo_url') res.u = v;
-    else if (k === 'last_verified') res.up = v;
-    else if (k === 'system_role') res.system_role = v;
-    else if (k === 'dependency_level') res.dependency_level = v;
-    else if (k === 'infra_layer') res.infra_layer = v;
-    else if (k === 'stars') res.sc = Math.min(1.0, parseInt(v) / 10000);
-  });
-  return res;
-}
-
-function generateCognitiveYaml(repo, domain) {
-  return [
-    `title: "${repo.name}"`,
-    `short_desc: "${(repo.desc || "").substring(0, 150).replace(/"/g, "'")}"`,
-    `system_role: "${repo.sysRole || "Core Infrastructure"}"`,
-    `dependency_level: "${repo.depLevel || "important"}"`,
-    `infra_layer: "${repo.infraLayer || ""}"`,
-    `what: "A mission-critical system for ${domain}."`,
-    `who: "Engineers and Decision Makers."`,
-    `why: "Foundation of global ${domain} operations."`,
-    `stars: ${repo.stars || 0}`,
-    `repo_url: "${repo.url}"`,
-    `last_verified: "${new Date().toISOString()}"`
-  ].join('\n');
-}
-
-function doGet() {
-  const files = DriveApp.getFolderById(CONFIG.DRIVE_FOLDER_ID).getFilesByName(CONFIG.CACHE_FILENAME);
-  return ContentService.createTextOutput(files.hasNext() ? files.next().getBlob().getDataAsString() : '{"status":"empty","records":[]}')
-    .setMimeType(ContentService.MimeType.JSON);
-}
-
-function ensureFoldersExist() {
-  const root = DriveApp.getFolderById(CONFIG.DRIVE_FOLDER_ID);
-  CONFIG.DOMAINS.forEach(d => {
-    if (!root.getFoldersByName(d).hasNext()) root.createFolder(d);
-  });
-}
-
-function setupTrigger() {
-  const triggers = ScriptApp.getProjectTriggers();
-  triggers.forEach(t => ScriptApp.deleteTrigger(t));
-  ScriptApp.newTrigger("ULTIMATE_REBOOT").timeBased().everyHours(4).create();
-  console.log("✅ Trigger active: ULTIMATE_REBOOT will run every 4 hours.");
-}
-
-function resetCache() {
-  const files = DriveApp.getFolderById(CONFIG.DRIVE_FOLDER_ID).getFilesByName(CONFIG.CACHE_FILENAME);
-  while (files.hasNext()) files.next().setTrashed(true);
-  refreshIndex();
-}
