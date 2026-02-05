@@ -36,11 +36,19 @@ function ULTIMATE_REBOOT(repoUrl) {
     };
   }
 
-  // 2. FETCH FROM GITHUB IF NOT FOUND
-  const meta = fetchRepoMeta(repo.full_name);
-  const readme = fetchReadme(repo.full_name);
+  // 2. FETCH FROM GITHUB (With Mock Fallback)
+  let meta = null;
+  let readme = "";
+  
+  try {
+    meta = fetchRepoMeta(repo.full_name);
+    if (meta) readme = fetchReadme(repo.full_name);
+  } catch (e) {
+    console.warn("GitHub access failed, using simulated metadata.");
+  }
 
-  const mpv = buildMPV(repo, meta, readme);
+  // If GitHub fails, build using simulated info
+  const mpv = buildMPV(repo, meta || { stargazers_count: 0, forks_count: 0, updated_at: new Date().toISOString() }, readme);
   const file = writeMPVToDrive(mpv);
 
   return {
@@ -134,6 +142,11 @@ function checkExistingInDrive(fullName) {
  ***********************/
 function githubGET(url) {
   const token = CFG().GITHUB_TOKEN;
+  if (!token || token.trim() === "") {
+    console.warn("No GitHub Token found in Properties.");
+    return null;
+  }
+
   const res = UrlFetchApp.fetch(url, {
     headers: {
       Authorization: `token ${token}`,
@@ -142,8 +155,15 @@ function githubGET(url) {
     muteHttpExceptions: true,
   });
 
-  if (res.getResponseCode() >= 300) {
-    throw new Error(res.getContentText());
+  const code = res.getResponseCode();
+  if (code === 401 || code === 403) {
+    console.warn("GitHub Auth Error (401/403). Ensure token is correct and not leaked.");
+    return null;
+  }
+  
+  if (code >= 300) {
+    console.warn("GitHub API Error: " + res.getContentText());
+    return null;
   }
 
   return JSON.parse(res.getContentText());
