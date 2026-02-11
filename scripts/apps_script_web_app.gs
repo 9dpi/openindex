@@ -112,21 +112,54 @@ function setupDailyTrigger() {
 function generateAllRecords() {
   const cfg = CFG();
   const folder = DriveApp.getFolderById(cfg.DRIVE_ROOT_ID);
-  const files = folder.getFilesByType(MimeType.PLAIN_TEXT);
+  
+  // Get all files
+  const files = folder.getFiles();
   
   const records = [];
   
   while (files.hasNext()) {
     const file = files.next();
     const name = file.getName();
-    
-    // Only process YAML files
-    if (!name.endsWith('.yaml') && !name.endsWith('.yml')) continue;
+    const mime = file.getMimeType();
     
     try {
       const content = file.getBlob().getDataAsString();
-      const record = parseYAMLRecord(content, name);
+      let record = null;
+
+      // 1. Handle JSON files (Legacy MPV format)
+      if (name.endsWith('.json') || mime === MimeType.JSON) {
+        // Skip API cache file itself to avoid loop
+        if (name.includes('api_cache') || content.includes('total_records')) continue;
+
+        try {
+          const json = JSON.parse(content);
+          // Map MPV fields to API format
+          if (json.repo) {
+             const repoParts = json.repo.split('/');
+             record = {
+               n: repoParts[1] || json.repo,
+               u: "https://github.com/" + json.repo,
+               s: json.opportunity || json.role || "No description",
+               o: repoParts[0] || "system",
+               d: "ai_infra", // Default domain for MPV data
+               cat: "infrastructure",
+               up: json.generated_at || new Date().toISOString(),
+               stars: json.evidence?.stars || 0,
+               sc: (json.evidence?.stars || 0) / 10000 // Score
+             };
+          }
+        } catch (jsonErr) {
+          Logger.log(`Skipping invalid JSON ${name}`);
+        }
+      } 
+      // 2. Handle YAML files (New Schema)
+      else if (name.endsWith('.yaml') || name.endsWith('.yml')) {
+        record = parseYAMLRecord(content, name);
+      }
+
       if (record) records.push(record);
+      
     } catch (e) {
       Logger.log(`Error processing ${name}: ${e}`);
     }
