@@ -124,6 +124,9 @@ function generateAllRecords() {
     const mime = file.getMimeType();
     
     try {
+      // Skip Google Docs, Sheets, Slides, Scripts, etc.
+      if (mime.includes('google-apps')) continue;
+
       const content = file.getBlob().getDataAsString();
       let record = null;
 
