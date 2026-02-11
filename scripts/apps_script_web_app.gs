@@ -113,55 +113,84 @@ function generateAllRecords() {
   const cfg = CFG();
   const folder = DriveApp.getFolderById(cfg.DRIVE_ROOT_ID);
   
-  // Get all files
-  const files = folder.getFiles();
-  
   const records = [];
+  const seenRepos = new Set(); // To prevent duplicates
+
+  // 1. Try to load Legacy Bulk Cache first (Quickest way to restore old data)
+  try {
+    const legacyFiles = folder.getFilesByName("openindex_registry_cache.json");
+    if (legacyFiles.hasNext()) {
+      const cacheFile = legacyFiles.next();
+      const content = cacheFile.getBlob().getDataAsString();
+      const json = JSON.parse(content);
+      
+      if (json.records && Array.isArray(json.records)) {
+        json.records.forEach(r => {
+          if (r.u) {
+            records.push(r);
+            seenRepos.add(r.u.toLowerCase());
+          }
+        });
+        Logger.log(`Loaded ${json.records.length} records from legacy cache.`);
+      }
+    }
+  } catch (e) {
+    Logger.log("Error loading legacy cache: " + e);
+  }
+
+  // 2. Scan for individual files (New YAML or MPV JSON)
+  const files = folder.getFiles();
   
   while (files.hasNext()) {
     const file = files.next();
     const name = file.getName();
     const mime = file.getMimeType();
     
+    // Skip Google Apps files and the legacy cache file itself
+    if (mime.includes('google-apps') || name === 'openindex_registry_cache.json') continue;
+    
     try {
-      // Skip Google Docs, Sheets, Slides, Scripts, etc.
-      if (mime.includes('google-apps')) continue;
-
       const content = file.getBlob().getDataAsString();
       let record = null;
 
-      // 1. Handle JSON files (Legacy MPV format)
+      // Handle individual JSON MPV
       if (name.endsWith('.json') || mime === MimeType.JSON) {
-        // Skip API cache file itself to avoid loop
-        if (name.includes('api_cache') || content.includes('total_records')) continue;
+        if (name.includes('api_cache')) continue; // Skip script's own cache
 
         try {
           const json = JSON.parse(content);
-          // Map MPV fields to API format
           if (json.repo) {
+             const repoUrl = "https://github.com/" + json.repo;
+             // Skip if already loaded from legacy cache
+             if (seenRepos.has(repoUrl.toLowerCase())) continue;
+
              const repoParts = json.repo.split('/');
              record = {
                n: repoParts[1] || json.repo,
-               u: "https://github.com/" + json.repo,
+               u: repoUrl,
                s: json.opportunity || json.role || "No description",
                o: repoParts[0] || "system",
-               d: "ai_infra", // Default domain for MPV data
+               d: "ai_infra",
                cat: "infrastructure",
                up: json.generated_at || new Date().toISOString(),
                stars: json.evidence?.stars || 0,
-               sc: (json.evidence?.stars || 0) / 10000 // Score
+               sc: (json.evidence?.stars || 0) / 10000
              };
           }
-        } catch (jsonErr) {
-          Logger.log(`Skipping invalid JSON ${name}`);
-        }
+        } catch (jsonErr) {}
       } 
-      // 2. Handle YAML files (New Schema)
+      // Handle YAML
       else if (name.endsWith('.yaml') || name.endsWith('.yml')) {
-        record = parseYAMLRecord(content, name);
+        const tempRecord = parseYAMLRecord(content, name);
+        if (tempRecord && tempRecord.u && !seenRepos.has(tempRecord.u.toLowerCase())) {
+          record = tempRecord;
+        }
       }
 
-      if (record) records.push(record);
+      if (record) {
+        records.push(record);
+        if (record.u) seenRepos.add(record.u.toLowerCase());
+      }
       
     } catch (e) {
       Logger.log(`Error processing ${name}: ${e}`);
