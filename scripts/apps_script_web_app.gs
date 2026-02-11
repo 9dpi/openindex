@@ -5,7 +5,6 @@
 function CFG() {
   const p = PropertiesService.getScriptProperties();
   return {
-    GITHUB_TOKEN: p.getProperty("GITHUB_TOKEN"),
     DRIVE_ROOT_ID: p.getProperty("DRIVE_ROOT_ID"),
     API_CACHE_KEY: "openindex_api_cache"
   };
@@ -172,34 +171,4 @@ function parseYAMLRecord(yamlContent, filename) {
   return record.n ? record : null;
 }
 
-/***********************
- * GITHUB API (Optional - for future enhancements)
- ***********************/
-function githubGET(url) {
-  const token = CFG().GITHUB_TOKEN;
-  if (!token || token.trim() === "") {
-    Logger.log("No GitHub Token found in Properties.");
-    return null;
-  }
-
-  const res = UrlFetchApp.fetch(url, {
-    headers: {
-      Authorization: `token ${token}`,
-      "User-Agent": "OpenIndex",
-    },
-    muteHttpExceptions: true,
-  });
-
-  const code = res.getResponseCode();
-  if (code === 401 || code === 403) {
-    Logger.log("GitHub Auth Error (401/403). Token may be expired or invalid.");
-    return null;
-  }
-  
-  if (code >= 300) {
-    Logger.log("GitHub API Error: " + res.getContentText());
-    return null;
-  }
-
-  return JSON.parse(res.getContentText());
-}
+// No external API calls needed for current functionality
