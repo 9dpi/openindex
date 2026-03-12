@@ -1,0 +1,11 @@
+title: "pi-mono"
+short_desc: "AI agent toolkit: coding agent CLI, unified LLM API, TUI & web UI libraries, Slack bot, vLLM pods"
+system_role: "Infrastructure"
+dependency_level: "important"
+infra_layer: ""
+what: "A mission-critical system for ai_infra."
+who: "Engineers and Decision Makers."
+why: "Foundation of global ai_infra operations."
+stars: 6003
+repo_url: "https://github.com/badlogic/pi-mono"
+last_verified: "2026-02-03T15:11:39.177Z"

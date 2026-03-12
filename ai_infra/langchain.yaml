@@ -1,0 +1,11 @@
+title: "langchain"
+short_desc: "🦜🔗 The standard library for building applications with LLMs."
+system_role: "Infrastructure"
+dependency_level: "critical"
+infra_layer: "Orchestration"
+what: "A comprehensive framework for connecting LLMs to external data, tools, and long-term memory."
+who: "AI engineers and software developers building agentic workflows."
+why: "It has become the de-facto industry standard for LLM orchestration; without it, thousands of enterprise AI apps would lose their connective tissue."
+repo_url: "https://github.com/langchain-ai/langchain"
+stars: 125747
+last_verified: "2026-03-13T02:30:00.000Z"

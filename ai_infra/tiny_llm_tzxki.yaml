@@ -1,0 +1,11 @@
+title: "tiny-llm"
+short_desc: "A course of learning LLM inference serving on Apple Silicon for systems engineers: build a tiny vLLM + Qwen."
+system_role: "Infrastructure"
+dependency_level: "important"
+infra_layer: ""
+what: "A mission-critical system for ai_infra."
+who: "Engineers and Decision Makers."
+why: "Foundation of global ai_infra operations."
+stars: 3755
+repo_url: "https://github.com/skyzh/tiny-llm"
+last_verified: "2026-02-03T15:11:58.321Z"

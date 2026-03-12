@@ -1,0 +1,11 @@
+title: "llm-compressor"
+short_desc: "Transformers-compatible library for applying various compression algorithms to LLMs for optimized deployment with vLLM"
+system_role: "Infrastructure"
+dependency_level: "important"
+infra_layer: ""
+what: "A mission-critical system for ai_infra."
+who: "Engineers and Decision Makers."
+why: "Foundation of global ai_infra operations."
+stars: 2675
+repo_url: "https://github.com/vllm-project/llm-compressor"
+last_verified: "2026-02-03T15:12:31.358Z"

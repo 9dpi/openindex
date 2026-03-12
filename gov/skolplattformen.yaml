@@ -1,0 +1,8 @@
+title: "skolplattformen"
+short_desc: "The source code to the civic tech project Öppna Skolplattformen."
+system_role: "Infrastructure"
+dependency_level: "critical"
+infra_layer: ""
+repo_url: "https://github.com/kolplattformen/skolplattformen"
+stars: 805
+last_verified: "2026-02-03T03:39:54.418Z"

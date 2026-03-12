@@ -1,0 +1,8 @@
+title: "qdrant"
+short_desc: "Qdrant - High-performance, massive-scale Vector Database and Vector Search Engine for the next generation of AI. Also available in the cloud https://c"
+system_role: "Infrastructure"
+dependency_level: "critical"
+infra_layer: ""
+repo_url: "https://github.com/qdrant/qdrant"
+stars: 28545
+last_verified: "2026-02-03T03:39:17.909Z"

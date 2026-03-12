@@ -1,0 +1,8 @@
+title: "open_government"
+short_desc: "Open Government, released as part of #PDFtribute"
+system_role: "Infrastructure"
+dependency_level: "critical"
+infra_layer: ""
+repo_url: "https://github.com/oreillymedia/open_government"
+stars: 1292
+last_verified: "2026-02-03T03:39:48.906Z"

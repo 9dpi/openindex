@@ -1,0 +1,8 @@
+title: "Environmental_Intelligence"
+short_desc: "Data for Environmental Intelligence: A mega list of Earth System Datasets covering earth observations, climate, water, forests, biodiversity, ecology,"
+system_role: "Infrastructure"
+dependency_level: "critical"
+infra_layer: ""
+repo_url: "https://github.com/rockita/Environmental_Intelligence"
+stars: 296
+last_verified: "2026-02-03T03:40:27.337Z"

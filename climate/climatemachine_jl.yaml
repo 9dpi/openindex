@@ -1,0 +1,8 @@
+title: "ClimateMachine.jl"
+short_desc: "Climate Machine: an Earth System Model that automatically learns from data"
+system_role: "Infrastructure"
+dependency_level: "critical"
+infra_layer: ""
+repo_url: "https://github.com/CliMA/ClimateMachine.jl"
+stars: 467
+last_verified: "2026-02-03T03:40:15.313Z"

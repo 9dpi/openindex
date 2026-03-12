@@ -1,0 +1,8 @@
+title: "ncl"
+short_desc: "The NCAR Command Language (NCL) is a scripting language for the analysis and visualization of climate and weather data."
+system_role: "Infrastructure"
+dependency_level: "critical"
+infra_layer: ""
+repo_url: "https://github.com/NCAR/ncl"
+stars: 276
+last_verified: "2026-02-03T03:40:29.036Z"

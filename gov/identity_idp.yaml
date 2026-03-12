@@ -1,0 +1,8 @@
+title: "identity-idp"
+short_desc: "Login.gov Core App: Identity Provider (IdP)"
+system_role: "Infrastructure"
+dependency_level: "critical"
+infra_layer: ""
+repo_url: "https://github.com/18F/identity-idp"
+stars: 567
+last_verified: "2026-02-03T03:40:00.336Z"

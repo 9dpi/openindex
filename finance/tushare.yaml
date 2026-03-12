@@ -1,0 +1,12 @@
+schema_version: "1.2"
+name: "tushare"
+repo_url: "https://github.com/waditu/tushare"
+domain: "finance"
+category: "analytics"
+target_audience: "Quant Researchers / Data Scientists"
+stars: 14392
+description: >
+  TuShare is a utility for crawling historical data of China stocks
+score: 0.50
+last_verified: "2026-02-03T01:52:40.628Z"
+status: "active"

@@ -1,0 +1,8 @@
+title: "boundary"
+short_desc: "Boundary enables identity-based access management for dynamic infrastructure. "
+system_role: "Infrastructure"
+dependency_level: "critical"
+infra_layer: ""
+repo_url: "https://github.com/hashicorp/boundary"
+stars: 3995
+last_verified: "2026-02-03T03:39:39.158Z"

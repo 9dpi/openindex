@@ -1,0 +1,8 @@
+title: "Smart-Table"
+short_desc: "Code source of Smart Table module: a table/grid for Angularjs"
+system_role: "Infrastructure"
+dependency_level: "critical"
+infra_layer: ""
+repo_url: "https://github.com/lorenzofox3/Smart-Table"
+stars: 1782
+last_verified: "2026-02-03T03:40:04.360Z"

@@ -1,0 +1,8 @@
+title: "deer-flow"
+short_desc: "DeerFlow is a community-driven Deep Research framework, combining language models with tools like web search, crawling, and Python execution, while co"
+system_role: "Infrastructure"
+dependency_level: "critical"
+infra_layer: ""
+repo_url: "https://github.com/bytedance/deer-flow"
+stars: 19568
+last_verified: "2026-02-03T03:39:27.172Z"

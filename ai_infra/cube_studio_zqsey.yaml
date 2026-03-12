@@ -1,0 +1,11 @@
+title: "cube-studio"
+short_desc: "cube studio开源云原生一站式机器学习/深度学习/大模型AI平台，mlops算法链路全流程，算力租赁平台，notebook在线开发，拖拉拽任务流pipeline编排，多机多卡分布式训练，超参搜索，推理服务VGPU虚拟化，边缘计算，标注平台自动化标注，deepseek等大模型sft微调/奖励模"
+system_role: "Infrastructure"
+dependency_level: "important"
+infra_layer: ""
+what: "A mission-critical system for ai_infra."
+who: "Engineers and Decision Makers."
+why: "Foundation of global ai_infra operations."
+stars: 4839
+repo_url: "https://github.com/tencentmusic/cube-studio"
+last_verified: "2026-02-03T15:11:50.391Z"

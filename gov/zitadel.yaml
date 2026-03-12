@@ -1,0 +1,8 @@
+title: "zitadel"
+short_desc: "ZITADEL - Identity infrastructure, simplified for you."
+system_role: "Infrastructure"
+dependency_level: "critical"
+infra_layer: ""
+repo_url: "https://github.com/zitadel/zitadel"
+stars: 12891
+last_verified: "2026-02-03T03:39:36.419Z"

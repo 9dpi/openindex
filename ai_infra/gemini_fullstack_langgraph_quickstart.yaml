@@ -1,0 +1,8 @@
+title: "gemini-fullstack-langgraph-quickstart"
+short_desc: "Get started with building Fullstack Agents using Gemini 2.5 and LangGraph"
+system_role: "Infrastructure"
+dependency_level: "critical"
+infra_layer: ""
+repo_url: "https://github.com/google-gemini/gemini-fullstack-langgraph-quickstart"
+stars: 17809
+last_verified: "2026-02-03T03:39:30.938Z"

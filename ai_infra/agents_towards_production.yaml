@@ -1,0 +1,8 @@
+title: "agents-towards-production"
+short_desc: " This repository delivers end-to-end, code-first tutorials covering every layer of production-grade GenAI agents, guiding you from spark to scale with"
+system_role: "Infrastructure"
+dependency_level: "critical"
+infra_layer: ""
+repo_url: "https://github.com/NirDiamant/agents-towards-production"
+stars: 17104
+last_verified: "2026-02-03T03:39:32.199Z"

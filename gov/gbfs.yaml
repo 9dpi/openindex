@@ -1,0 +1,8 @@
+title: "gbfs"
+short_desc: "Documentation for the General Bikeshare Feed Specification, a standardized data feed for shared mobility system availability.     Maintained by Mobili"
+system_role: "Infrastructure"
+dependency_level: "critical"
+infra_layer: ""
+repo_url: "https://github.com/MobilityData/gbfs"
+stars: 883
+last_verified: "2026-02-03T03:39:52.879Z"

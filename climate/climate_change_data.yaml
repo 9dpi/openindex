@@ -1,0 +1,8 @@
+title: "climate-change-data"
+short_desc: ":earth_africa: A curated list of APIs, open data and ML/AI projects on climate change "
+system_role: "Infrastructure"
+dependency_level: "critical"
+infra_layer: ""
+repo_url: "https://github.com/KKulma/climate-change-data"
+stars: 662
+last_verified: "2026-02-03T03:40:08.249Z"

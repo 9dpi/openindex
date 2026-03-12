@@ -1,0 +1,8 @@
+title: "earthaccess"
+short_desc: "Python Library for NASA Earthdata APIs"
+system_role: "Infrastructure"
+dependency_level: "critical"
+infra_layer: ""
+repo_url: "https://github.com/nsidc/earthaccess"
+stars: 577
+last_verified: "2026-02-03T03:40:10.947Z"

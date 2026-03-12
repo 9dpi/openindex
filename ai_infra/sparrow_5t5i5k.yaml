@@ -1,0 +1,11 @@
+title: "sparrow"
+short_desc: "Structured data extraction and instruction calling with ML, LLM and Vision LLM"
+system_role: "Infrastructure"
+dependency_level: "important"
+infra_layer: ""
+what: "A mission-critical system for ai_infra."
+who: "Engineers and Decision Makers."
+why: "Foundation of global ai_infra operations."
+stars: 5104
+repo_url: "https://github.com/katanaml/sparrow"
+last_verified: "2026-02-03T15:11:41.772Z"

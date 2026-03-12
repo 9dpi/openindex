@@ -1,0 +1,8 @@
+title: "aws-serverless-security-workshop"
+short_desc: "In this workshop, you will learn techniques to secure a serverless application built with AWS Lambda, Amazon API Gateway and RDS Aurora. We will cover"
+system_role: "Infrastructure"
+dependency_level: "critical"
+infra_layer: ""
+repo_url: "https://github.com/aws-samples/aws-serverless-security-workshop"
+stars: 541
+last_verified: "2026-02-03T03:40:01.860Z"

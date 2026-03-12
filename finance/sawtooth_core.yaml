@@ -1,0 +1,8 @@
+title: "sawtooth-core"
+short_desc: "Core repository for Sawtooth Distributed Ledger"
+system_role: "Infrastructure"
+dependency_level: "critical"
+infra_layer: ""
+repo_url: "https://github.com/hyperledger-archives/sawtooth-core"
+stars: 1418
+last_verified: "2026-02-03T03:40:52.002Z"

@@ -1,0 +1,8 @@
+title: "streetmix"
+short_desc: "Streetmix makes it easy for people to design public spaces together."
+system_role: "Infrastructure"
+dependency_level: "critical"
+infra_layer: ""
+repo_url: "https://github.com/streetmix/streetmix"
+stars: 725
+last_verified: "2026-02-03T03:39:56.718Z"

@@ -1,0 +1,8 @@
+title: "loglevel"
+short_desc: ":ledger: Minimal lightweight logging for JavaScript, adding reliable log level methods to wrap any available console.log methods"
+system_role: "Infrastructure"
+dependency_level: "critical"
+infra_layer: ""
+repo_url: "https://github.com/pimterry/loglevel"
+stars: 2741
+last_verified: "2026-02-03T03:40:45.364Z"

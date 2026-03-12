@@ -1,0 +1,8 @@
+title: "solana"
+short_desc: "Web-Scale Blockchain for fast, secure, scalable, decentralized apps and marketplaces."
+system_role: "Infrastructure"
+dependency_level: "critical"
+infra_layer: ""
+repo_url: "https://github.com/solana-labs/solana"
+stars: 14762
+last_verified: "2026-02-03T03:40:31.190Z"

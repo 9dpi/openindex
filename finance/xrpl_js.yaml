@@ -1,0 +1,8 @@
+title: "xrpl.js"
+short_desc: "A JavaScript/TypeScript API for interacting with the XRP Ledger in Node.js and the browser"
+system_role: "Infrastructure"
+dependency_level: "critical"
+infra_layer: ""
+repo_url: "https://github.com/XRPLF/xrpl.js"
+stars: 1309
+last_verified: "2026-02-03T03:40:53.554Z"

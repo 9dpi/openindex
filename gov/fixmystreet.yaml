@@ -1,0 +1,8 @@
+title: "fixmystreet"
+short_desc: "This is mySociety's popular map-based reporting platform: easy to install in new countries and regions"
+system_role: "Infrastructure"
+dependency_level: "critical"
+infra_layer: ""
+repo_url: "https://github.com/mysociety/fixmystreet"
+stars: 570
+last_verified: "2026-02-03T03:39:59.079Z"

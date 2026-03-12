@@ -1,0 +1,8 @@
+title: "langgraph"
+short_desc: "Build resilient language agents as graphs."
+system_role: "Infrastructure"
+dependency_level: "critical"
+infra_layer: ""
+repo_url: "https://github.com/langchain-ai/langgraph"
+stars: 24151
+last_verified: "2026-02-03T03:39:20.477Z"

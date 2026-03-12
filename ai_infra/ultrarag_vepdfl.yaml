@@ -1,0 +1,11 @@
+title: "UltraRAG"
+short_desc: "UltraRAG v3: A Low-Code MCP Framework for Building Complex and Innovative RAG Pipelines"
+system_role: "Infrastructure"
+dependency_level: "important"
+infra_layer: ""
+what: "A mission-critical system for ai_infra."
+who: "Engineers and Decision Makers."
+why: "Foundation of global ai_infra operations."
+stars: 5045
+repo_url: "https://github.com/OpenBMB/UltraRAG"
+last_verified: "2026-02-03T15:11:45.170Z"

@@ -1,0 +1,8 @@
+title: "iiab"
+short_desc: "Internet-in-a-Box - Build your own LIBRARY OF ALEXANDRIA with a Raspberry Pi !"
+system_role: "Infrastructure"
+dependency_level: "critical"
+infra_layer: ""
+repo_url: "https://github.com/iiab/iiab"
+stars: 1680
+last_verified: "2026-02-03T03:39:45.845Z"

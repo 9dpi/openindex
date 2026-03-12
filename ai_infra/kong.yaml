@@ -1,0 +1,8 @@
+title: "kong"
+short_desc: "🦍 The API and AI Gateway"
+system_role: "Infrastructure"
+dependency_level: "critical"
+infra_layer: ""
+repo_url: "https://github.com/Kong/kong"
+stars: 42658
+last_verified: "2026-02-03T03:39:14.804Z"

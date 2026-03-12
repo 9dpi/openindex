@@ -1,0 +1,11 @@
+title: "vllm"
+short_desc: "A high-throughput and memory-efficient inference and serving engine for LLMs"
+system_role: "Infrastructure"
+dependency_level: "critical"
+infra_layer: "Inference Engine"
+what: "An ultra-fast engine for serving LLMs with PagedAttention to optimize GPU memory."
+who: "Backend and ML Infra engineers deploying local or cloud inference."
+why: "It is the gold standard for high-performance open-source LLM serving; without it, most local inference deployments would be 2-4x slower."
+repo_url: "https://github.com/vllm-project/vllm"
+stars: 69310
+last_verified: "2026-03-13T02:30:00.000Z"

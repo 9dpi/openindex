@@ -1,0 +1,11 @@
+title: "Mooncake"
+short_desc: "Mooncake is the serving platform for Kimi, a leading LLM service provided by Moonshot AI."
+system_role: "Infrastructure"
+dependency_level: "important"
+infra_layer: ""
+what: "A mission-critical system for ai_infra."
+who: "Engineers and Decision Makers."
+why: "Foundation of global ai_infra operations."
+stars: 4683
+repo_url: "https://github.com/kvcache-ai/Mooncake"
+last_verified: "2026-02-03T15:11:51.942Z"

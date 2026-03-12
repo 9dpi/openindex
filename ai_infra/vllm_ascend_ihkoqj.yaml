@@ -1,0 +1,11 @@
+title: "vllm-ascend"
+short_desc: "Community maintained hardware plugin for vLLM on Ascend"
+system_role: "Infrastructure"
+dependency_level: "important"
+infra_layer: ""
+what: "A mission-critical system for ai_infra."
+who: "Engineers and Decision Makers."
+why: "Foundation of global ai_infra operations."
+stars: 1631
+repo_url: "https://github.com/vllm-project/vllm-ascend"
+last_verified: "2026-02-03T15:12:43.872Z"

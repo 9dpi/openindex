@@ -1,0 +1,11 @@
+title: "OpenRLHF"
+short_desc: "An Easy-to-use, Scalable and High-performance Agentic RL Framework based on Ray (PPO & DAPO & REINFORCE++ & TIS & vLLM & Ray & Async  RL)"
+system_role: "Infrastructure"
+dependency_level: "important"
+infra_layer: ""
+what: "A mission-critical system for ai_infra."
+who: "Engineers and Decision Makers."
+why: "Foundation of global ai_infra operations."
+stars: 8927
+repo_url: "https://github.com/OpenRLHF/OpenRLHF"
+last_verified: "2026-02-03T15:11:31.448Z"

@@ -1,0 +1,12 @@
+schema_version: "1.2"
+name: "maybe"
+repo_url: "https://github.com/maybe-finance/maybe"
+domain: "finance"
+category: "analytics"
+target_audience: "Technical Teams"
+stars: 53999
+description: >
+  The personal finance app for everyone
+score: 0.50
+last_verified: "2026-02-03T01:52:28.427Z"
+status: "active"

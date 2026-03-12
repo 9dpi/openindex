@@ -1,0 +1,8 @@
+title: "django-ledger"
+short_desc: "Django Ledger is a double entry accounting system and financial analysis engine built on the Django Web Framework."
+system_role: "Infrastructure"
+dependency_level: "critical"
+infra_layer: ""
+repo_url: "https://github.com/arrobalytics/django-ledger"
+stars: 1303
+last_verified: "2026-02-03T03:40:54.913Z"

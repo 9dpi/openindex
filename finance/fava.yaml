@@ -1,0 +1,8 @@
+title: "fava"
+short_desc: "Fava - web interface for Beancount"
+system_role: "Infrastructure"
+dependency_level: "critical"
+infra_layer: ""
+repo_url: "https://github.com/beancount/fava"
+stars: 2370
+last_verified: "2026-02-03T03:40:48.012Z"

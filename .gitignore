@@ -1,0 +1,17 @@
+# Google Drive files
+*.gsheet
+*.gscript
+*.gdoc
+*.gslides
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Scripts
+check_cache.py
+simple_check.py
+regenerate_cache.py
+
+# Internal cache
+openindex_registry_cache.json

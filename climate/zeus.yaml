@@ -1,0 +1,8 @@
+title: "zeus"
+short_desc: "Measure and optimize the energy consumption of your AI applications!"
+system_role: "Infrastructure"
+dependency_level: "critical"
+infra_layer: ""
+repo_url: "https://github.com/ml-energy/zeus"
+stars: 331
+last_verified: "2026-02-03T03:40:21.753Z"

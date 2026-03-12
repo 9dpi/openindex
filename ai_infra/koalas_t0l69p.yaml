@@ -1,0 +1,11 @@
+title: "koalas"
+short_desc: "Koalas: pandas API on Apache Spark"
+system_role: "Infrastructure"
+dependency_level: "important"
+infra_layer: ""
+what: "A mission-critical system for ai_infra."
+who: "Engineers and Decision Makers."
+why: "Foundation of global ai_infra operations."
+stars: 3370
+repo_url: "https://github.com/databricks/koalas"
+last_verified: "2026-02-03T15:12:28.797Z"

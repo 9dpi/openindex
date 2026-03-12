@@ -1,0 +1,11 @@
+title: "data-science-on-aws"
+short_desc: "AI and Machine Learning with Kubeflow, Amazon EKS, and SageMaker"
+system_role: "Infrastructure"
+dependency_level: "important"
+infra_layer: ""
+what: "A mission-critical system for ai_infra."
+who: "Engineers and Decision Makers."
+why: "Foundation of global ai_infra operations."
+stars: 3427
+repo_url: "https://github.com/data-science-on-aws/data-science-on-aws"
+last_verified: "2026-02-03T15:12:27.686Z"

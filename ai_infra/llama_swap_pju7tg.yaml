@@ -1,0 +1,11 @@
+title: "llama-swap"
+short_desc: "Reliable model swapping for any local OpenAI/Anthropic compatible server - llama.cpp, vllm, etc"
+system_role: "Infrastructure"
+dependency_level: "important"
+infra_layer: ""
+what: "A mission-critical system for ai_infra."
+who: "Engineers and Decision Makers."
+why: "Foundation of global ai_infra operations."
+stars: 2302
+repo_url: "https://github.com/mostlygeek/llama-swap"
+last_verified: "2026-02-03T15:12:34.603Z"

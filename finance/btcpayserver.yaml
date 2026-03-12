@@ -1,0 +1,8 @@
+title: "btcpayserver"
+short_desc: "Accept Bitcoin payments. Free, open-source & self-hosted, Bitcoin payment processor. "
+system_role: "Infrastructure"
+dependency_level: "critical"
+infra_layer: ""
+repo_url: "https://github.com/btcpayserver/btcpayserver"
+stars: 7375
+last_verified: "2026-02-03T03:40:32.524Z"

@@ -1,0 +1,11 @@
+title: "FastDeploy"
+short_desc: "High-performance Inference and Deployment Toolkit for LLMs and VLMs based on PaddlePaddle"
+system_role: "Infrastructure"
+dependency_level: "important"
+infra_layer: ""
+what: "A mission-critical system for ai_infra."
+who: "Engineers and Decision Makers."
+why: "Foundation of global ai_infra operations."
+stars: 3641
+repo_url: "https://github.com/PaddlePaddle/FastDeploy"
+last_verified: "2026-02-03T15:11:59.835Z"

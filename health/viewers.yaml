@@ -1,0 +1,7 @@
+title: "Viewers"
+short_desc: "OHIF zero-footprint DICOM viewer and oncology specific Lesion Tracker, plus shared extension package"
+what: "A system used to manage health data and infrastructure."
+who: "Medical Data Teams / Researchers"
+why: "Active project with significant GitHub presence."
+repo_url: "https://github.com/OHIF/Viewers"
+last_verified: "2026-02-03T02:03:25.075Z"

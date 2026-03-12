@@ -1,0 +1,8 @@
+title: "carbondoomsday"
+short_desc: "A RESTish web API for climate change related data :earth_africa:"
+system_role: "Infrastructure"
+dependency_level: "critical"
+infra_layer: ""
+repo_url: "https://github.com/giving-a-fuck-about-climate-change/carbondoomsday"
+stars: 377
+last_verified: "2026-02-03T03:40:19.496Z"

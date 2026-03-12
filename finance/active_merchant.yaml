@@ -1,0 +1,8 @@
+title: "active_merchant"
+short_desc: "Active Merchant is a simple payment abstraction library extracted from Shopify. The aim of the project is to feel natural to Ruby users and to abstrac"
+system_role: "Infrastructure"
+dependency_level: "critical"
+infra_layer: ""
+repo_url: "https://github.com/activemerchant/active_merchant"
+stars: 4598
+last_verified: "2026-02-03T03:40:39.108Z"

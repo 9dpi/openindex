@@ -1,0 +1,8 @@
+title: "pudl"
+short_desc: "The Public Utility Data Liberation Project provides analysis-ready energy system data to climate advocates, researchers, policymakers, and journalists"
+system_role: "Infrastructure"
+dependency_level: "critical"
+infra_layer: ""
+repo_url: "https://github.com/catalyst-cooperative/pudl"
+stars: 571
+last_verified: "2026-02-03T03:40:12.178Z"

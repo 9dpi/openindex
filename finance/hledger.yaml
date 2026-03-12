@@ -1,0 +1,8 @@
+title: "hledger"
+short_desc: "Robust, fast, intuitive plain text accounting tool with CLI, TUI and web interfaces."
+system_role: "Infrastructure"
+dependency_level: "critical"
+infra_layer: ""
+repo_url: "https://github.com/simonmichael/hledger"
+stars: 3749
+last_verified: "2026-02-03T03:40:40.420Z"

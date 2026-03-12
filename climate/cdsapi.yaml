@@ -1,0 +1,8 @@
+title: "cdsapi"
+short_desc: "Python API to access the Copernicus Climate Data Store (CDS) "
+system_role: "Infrastructure"
+dependency_level: "critical"
+infra_layer: ""
+repo_url: "https://github.com/ecmwf/cdsapi"
+stars: 306
+last_verified: "2026-02-03T03:40:25.842Z"

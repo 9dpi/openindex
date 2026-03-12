@@ -1,0 +1,11 @@
+title: "semantic-router"
+short_desc: "System Level Intelligent Router for Mixture-of-Models at Cloud, Data Center and Edge"
+system_role: "Infrastructure"
+dependency_level: "important"
+infra_layer: ""
+what: "A mission-critical system for ai_infra."
+who: "Engineers and Decision Makers."
+why: "Foundation of global ai_infra operations."
+stars: 3143
+repo_url: "https://github.com/vllm-project/semantic-router"
+last_verified: "2026-02-03T15:12:29.708Z"

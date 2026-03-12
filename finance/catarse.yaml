@@ -1,0 +1,8 @@
+title: "catarse"
+short_desc: "The first open source crowdfunding platform for creative projects in the world"
+system_role: "Infrastructure"
+dependency_level: "critical"
+infra_layer: ""
+repo_url: "https://github.com/catarse/catarse"
+stars: 1640
+last_verified: "2026-02-03T03:40:49.248Z"

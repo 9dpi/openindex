@@ -1,0 +1,8 @@
+title: "polis"
+short_desc: ":milky_way: Open Source AI for large scale open ended feedback"
+system_role: "Infrastructure"
+dependency_level: "critical"
+infra_layer: ""
+repo_url: "https://github.com/compdemocracy/polis"
+stars: 1035
+last_verified: "2026-02-03T03:39:51.562Z"

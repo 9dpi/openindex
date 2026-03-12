@@ -1,0 +1,8 @@
+title: "GenAI_Agents"
+short_desc: "This repository provides tutorials and implementations for various Generative AI Agent techniques, from basic to advanced. It serves as a comprehensiv"
+system_role: "Infrastructure"
+dependency_level: "critical"
+infra_layer: ""
+repo_url: "https://github.com/NirDiamant/GenAI_Agents"
+stars: 19686
+last_verified: "2026-02-03T03:39:25.845Z"

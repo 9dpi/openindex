@@ -1,0 +1,8 @@
+title: "taipy"
+short_desc: "Turns Data and AI algorithms into production-ready web applications in no time."
+system_role: "Infrastructure"
+dependency_level: "critical"
+infra_layer: ""
+repo_url: "https://github.com/Avaiga/taipy"
+stars: 19068
+last_verified: "2026-02-03T03:39:28.314Z"

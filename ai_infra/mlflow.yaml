@@ -1,0 +1,8 @@
+title: "mlflow"
+short_desc: "The open source developer platform to build AI agents and models with confidence. Enhance your AI applications with end-to-end tracking, observability"
+system_role: "Infrastructure"
+dependency_level: "critical"
+infra_layer: ""
+repo_url: "https://github.com/mlflow/mlflow"
+stars: 23947
+last_verified: "2026-02-03T03:39:21.848Z"

@@ -1,0 +1,8 @@
+title: "BlockParty"
+short_desc: "Ad Blocker App for iOS, macOS"
+system_role: "Infrastructure"
+dependency_level: "critical"
+infra_layer: ""
+repo_url: "https://github.com/krishkumar/BlockParty"
+stars: 799
+last_verified: "2026-02-03T03:39:55.399Z"

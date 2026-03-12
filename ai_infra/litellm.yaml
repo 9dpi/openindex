@@ -1,0 +1,8 @@
+title: "litellm"
+short_desc: "Python SDK, Proxy Server (AI Gateway) to call 100+ LLM APIs in OpenAI (or native) format, with cost tracking, guardrails, loadbalancing and logging. ["
+system_role: "Infrastructure"
+dependency_level: "critical"
+infra_layer: ""
+repo_url: "https://github.com/BerriAI/litellm"
+stars: 35073
+last_verified: "2026-02-03T03:39:16.259Z"

@@ -1,0 +1,8 @@
+title: "smart-grid"
+short_desc: "SmartGrid project."
+system_role: "Infrastructure"
+dependency_level: "critical"
+infra_layer: ""
+repo_url: "https://github.com/dmitry-lavrik/smart-grid"
+stars: 450
+last_verified: "2026-02-03T03:40:16.706Z"

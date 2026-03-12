@@ -1,0 +1,8 @@
+title: "tezos"
+short_desc: "Mirror of the release branches for Tezos, a self-amending cryptographic ledger"
+system_role: "Infrastructure"
+dependency_level: "critical"
+infra_layer: ""
+repo_url: "https://github.com/tezos/tezos"
+stars: 1509
+last_verified: "2026-02-03T03:40:50.488Z"

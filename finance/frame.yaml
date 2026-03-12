@@ -1,0 +1,8 @@
+title: "frame"
+short_desc: "System-wide Web3 for macOS, Windows and Linux"
+system_role: "Infrastructure"
+dependency_level: "critical"
+infra_layer: ""
+repo_url: "https://github.com/floating/frame"
+stars: 1178
+last_verified: "2026-02-03T03:40:56.249Z"

@@ -1,0 +1,8 @@
+title: "awesome-production-machine-learning"
+short_desc: "A curated list of awesome open source libraries to deploy, monitor, version and scale your machine learning"
+system_role: "Infrastructure"
+dependency_level: "critical"
+infra_layer: ""
+repo_url: "https://github.com/EthicalML/awesome-production-machine-learning"
+stars: 20083
+last_verified: "2026-02-03T03:39:24.629Z"

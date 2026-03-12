@@ -1,0 +1,8 @@
+title: "serve"
+short_desc: "☁️ Build multimodal AI applications with cloud-native stack"
+system_role: "Infrastructure"
+dependency_level: "critical"
+infra_layer: ""
+repo_url: "https://github.com/jina-ai/serve"
+stars: 21831
+last_verified: "2026-02-03T03:39:23.271Z"

@@ -1,0 +1,8 @@
+title: "consuldemocracy"
+short_desc: "Consul Democracy - Open Government and E-Participation Web Software"
+system_role: "Infrastructure"
+dependency_level: "critical"
+infra_layer: ""
+repo_url: "https://github.com/consuldemocracy/consuldemocracy"
+stars: 1514
+last_verified: "2026-02-03T03:39:47.227Z"

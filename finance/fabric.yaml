@@ -1,0 +1,8 @@
+title: "fabric"
+short_desc: "Hyperledger Fabric is an enterprise-grade permissioned distributed ledger framework for developing solutions and applications. Its modular and versati"
+system_role: "Infrastructure"
+dependency_level: "critical"
+infra_layer: ""
+repo_url: "https://github.com/hyperledger/fabric"
+stars: 16548
+last_verified: "2026-02-03T03:40:30.222Z"

@@ -1,0 +1,11 @@
+title: "production-stack"
+short_desc: "vLLM’s reference system for K8S-native cluster-wide deployment with community-driven performance optimization"
+system_role: "Infrastructure"
+dependency_level: "important"
+infra_layer: ""
+what: "A mission-critical system for ai_infra."
+who: "Engineers and Decision Makers."
+why: "Foundation of global ai_infra operations."
+stars: 2145
+repo_url: "https://github.com/vllm-project/production-stack"
+last_verified: "2026-02-03T15:12:35.529Z"

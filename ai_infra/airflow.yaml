@@ -1,0 +1,8 @@
+title: "airflow"
+short_desc: "Apache Airflow - A platform to programmatically author, schedule, and monitor workflows"
+system_role: "Infrastructure"
+dependency_level: "critical"
+infra_layer: ""
+repo_url: "https://github.com/apache/airflow"
+stars: 44112
+last_verified: "2026-02-03T03:39:13.803Z"

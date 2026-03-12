@@ -1,0 +1,8 @@
+title: "emhass"
+short_desc: "emhass: Energy Management for Home Assistant, is a Python module designed to optimize your home energy interfacing with Home Assistant."
+system_role: "Infrastructure"
+dependency_level: "critical"
+infra_layer: ""
+repo_url: "https://github.com/davidusb-geek/emhass"
+stars: 503
+last_verified: "2026-02-03T03:40:13.788Z"

@@ -1,0 +1,11 @@
+title: "argo-workflows"
+short_desc: "The cloud-native workflow engine for orchestrating parallel jobs on Kubernetes."
+system_role: "Infrastructure"
+dependency_level: "critical"
+infra_layer: "Orchestration / Scheduling"
+what: "A Kubernetes-native engine for running large-scale complex workflows as Directed Acyclic Graphs (DAGs)."
+who: "DevOps teams and ML engineers needing robust job scheduling."
+why: "It is the infrastructure spine for most enterprise Kubernetes-based CI/CD and ML pipelines."
+repo_url: "https://github.com/argoproj/argo-workflows"
+stars: 16416
+last_verified: "2026-03-13T02:30:00.000Z"

@@ -1,0 +1,12 @@
+schema_version: "1.2"
+name: "FinGPT"
+repo_url: "https://github.com/AI4Finance-Foundation/FinGPT"
+domain: "finance"
+category: "infrastructure"
+target_audience: "Technical Teams"
+stars: 18523
+description: >
+  FinGPT: Open-Source Financial Large Language Models!  Revolutionize 🔥    We release the trained model on HuggingFace.
+score: 0.80
+last_verified: "2026-02-03T01:52:37.142Z"
+status: "active"

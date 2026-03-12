@@ -1,0 +1,8 @@
+title: "llama-cookbook"
+short_desc: "Welcome to the Llama Cookbook! This is your go to guide for Building with Llama: Getting started with Inference, Fine-Tuning, RAG. We also show you ho"
+system_role: "Infrastructure"
+dependency_level: "critical"
+infra_layer: ""
+repo_url: "https://github.com/meta-llama/llama-cookbook"
+stars: 18174
+last_verified: "2026-02-03T03:39:29.610Z"

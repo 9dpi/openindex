@@ -1,0 +1,8 @@
+title: "paisa"
+short_desc: "Paisa – Personal Finance Manager. https://paisa.fyi demo: https://demo.paisa.fyi"
+system_role: "Infrastructure"
+dependency_level: "critical"
+infra_layer: ""
+repo_url: "https://github.com/ananthakumaran/paisa"
+stars: 3078
+last_verified: "2026-02-03T03:40:43.788Z"

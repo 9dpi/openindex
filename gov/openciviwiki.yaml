@@ -1,0 +1,8 @@
+title: "OpenCiviWiki"
+short_desc: "Building a Better Democracy for the Internet Age"
+system_role: "Infrastructure"
+dependency_level: "critical"
+infra_layer: ""
+repo_url: "https://github.com/CiviWiki/OpenCiviWiki"
+stars: 621
+last_verified: "2026-02-03T03:39:57.936Z"

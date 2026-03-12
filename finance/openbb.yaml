@@ -1,0 +1,12 @@
+schema_version: "1.2"
+name: "OpenBB"
+repo_url: "https://github.com/OpenBB-finance/OpenBB"
+domain: "finance"
+category: "analytics"
+target_audience: "Technical Teams"
+stars: 59765
+description: >
+  Financial data platform for analysts, quants and AI agents.
+score: 0.50
+last_verified: "2026-02-03T01:52:26.117Z"
+status: "active"

@@ -1,0 +1,8 @@
+title: "querido-diario"
+short_desc: "📰 Diários oficiais brasileiros acessíveis a todos     |     📰 Brazilian government gazettes, accessible to everyone."
+system_role: "Infrastructure"
+dependency_level: "critical"
+infra_layer: ""
+repo_url: "https://github.com/okfn-brasil/querido-diario"
+stars: 1287
+last_verified: "2026-02-03T03:39:50.229Z"

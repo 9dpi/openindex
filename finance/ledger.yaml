@@ -1,0 +1,8 @@
+title: "ledger"
+short_desc: "Double-entry accounting system with a command-line reporting interface"
+system_role: "Infrastructure"
+dependency_level: "critical"
+infra_layer: ""
+repo_url: "https://github.com/ledger/ledger"
+stars: 5784
+last_verified: "2026-02-03T03:40:35.009Z"

@@ -1,0 +1,8 @@
+title: "EOS"
+short_desc: "This repository features an Energy Optimization System (EOS) that optimizes energy distribution, usage for batteries, heat pumps& household devices. I"
+system_role: "Infrastructure"
+dependency_level: "critical"
+infra_layer: ""
+repo_url: "https://github.com/Akkudoktor-EOS/EOS"
+stars: 1542
+last_verified: "2026-02-03T03:40:05.659Z"

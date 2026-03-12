@@ -1,0 +1,11 @@
+title: "ipex-llm"
+short_desc: "Accelerate local LLM inference and finetuning (LLaMA, Mistral, ChatGLM, Qwen, DeepSeek, Mixtral, Gemma, Phi, MiniCPM, Qwen-VL, MiniCPM-V, etc.) on Int"
+system_role: "Infrastructure"
+dependency_level: "important"
+infra_layer: ""
+what: "A mission-critical system for ai_infra."
+who: "Engineers and Decision Makers."
+why: "Foundation of global ai_infra operations."
+stars: 8670
+repo_url: "https://github.com/intel/ipex-llm"
+last_verified: "2026-02-03T15:11:32.830Z"

@@ -1,0 +1,8 @@
+title: "meteostat"
+short_desc: "Access and analyze historical weather and climate data with Python."
+system_role: "Infrastructure"
+dependency_level: "critical"
+infra_layer: ""
+repo_url: "https://github.com/meteostat/meteostat"
+stars: 609
+last_verified: "2026-02-03T03:40:09.497Z"

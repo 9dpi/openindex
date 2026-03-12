@@ -1,0 +1,12 @@
+schema_version: "1.2"
+name: "vnpy"
+repo_url: "https://github.com/vnpy/vnpy"
+domain: "finance"
+category: "analytics"
+target_audience: "Technical Teams"
+stars: 36111
+description: >
+  基于Python的开源量化交易平台开发框架
+score: 0.50
+last_verified: "2026-02-03T01:52:34.527Z"
+status: "active"

@@ -1,0 +1,8 @@
+title: "Continuous-Claude-v3"
+short_desc: "Context management for Claude Code. Hooks maintain state via ledgers and handoffs. MCP execution without context pollution. Agent orchestration with i"
+system_role: "Infrastructure"
+dependency_level: "critical"
+infra_layer: ""
+repo_url: "https://github.com/parcadei/Continuous-Claude-v3"
+stars: 3462
+last_verified: "2026-02-03T03:40:41.798Z"

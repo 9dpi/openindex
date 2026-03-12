@@ -1,0 +1,11 @@
+title: "nlp-recipes"
+short_desc: "Natural Language Processing Best Practices & Examples"
+system_role: "Infrastructure"
+dependency_level: "important"
+infra_layer: ""
+what: "A mission-critical system for ai_infra."
+who: "Engineers and Decision Makers."
+why: "Foundation of global ai_infra operations."
+stars: 6444
+repo_url: "https://github.com/microsoft/nlp-recipes"
+last_verified: "2026-02-03T15:11:37.354Z"

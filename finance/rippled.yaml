@@ -1,0 +1,8 @@
+title: "rippled"
+short_desc: "Decentralized cryptocurrency blockchain daemon implementing the XRP Ledger protocol in C++"
+system_role: "Infrastructure"
+dependency_level: "critical"
+infra_layer: ""
+repo_url: "https://github.com/XRPLF/rippled"
+stars: 5080
+last_verified: "2026-02-03T03:40:36.553Z"
