@@ -1,0 +1,85 @@
+version: 1.0
+title: OpenIndex Record Schema
+description: Canonical data contract for all OpenIndex records.
+
+fields:
+  openindex_id:
+    type: string
+    required: true
+    description: Immutable unique identifier (e.g. OI-FIN-0001)
+  project_name:
+    type: string
+    required: true
+  repo_url:
+    type: string
+    required: true
+  owner:
+    type: string
+    required: true
+    description: GitHub org / user
+
+  classification:
+    domain:
+      type: enum
+      options: [health, finance, insurtech, hybrid]
+      required: true
+    category:
+      type: enum
+      options: [infrastructure, application, analytics, dataset, research]
+      required: true
+  
+  summary:
+    type: string
+    required: true
+    description: Curated, non-marketing description
+
+  intended_use:
+    scope:
+      type: enum
+      options: [research, assistive, production]
+    description:
+      type: string
+
+  evidence:
+    paper:
+      exists: boolean
+      link: string
+      peer_reviewed: boolean
+    dataset:
+      disclosed: boolean
+      name: string
+    validation:
+      type: enum
+      options: [none, internal, external]
+      notes: string
+
+  risk:
+    medical_claim: boolean
+    financial_advice_claim: boolean
+    regulated_domain: boolean
+    user_warning: string
+
+  status:
+    index_status:
+      type: enum
+      options: [indexed, flagged, under_review]
+    signal:
+      type: enum
+      options: [green, yellow, red]
+
+  metrics:
+    stars: number
+    forks: number
+    stars_24h: number
+    stars_7d: number
+
+  timestamps:
+    indexed_at: date
+    last_verified: date
+
+  maintainers:
+    type: list
+    items:
+      name: string
+      role: enum
+      options: [reviewer, contributor]

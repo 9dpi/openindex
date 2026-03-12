@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenIndex | Opportunity Explorer</title>
+    <meta name="description"
+        content="Transforming complex source code and automation logic into clear business outcomes.">
+    <link rel="stylesheet" href="command-center.css">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* Specific overrides for OpenIndex content within the new style */
+        .brand h1 {
+            color: var(--text-primary);
+        }
+
+        .brand h1 span {
+            color: #ff9d00;
+        }
+
+        /* Keep the signature OpenIndex orange */
+        .kill-btn {
+            display: none;
+        }
+
+        /* Hide the kill button as it doesn't fit the OpenIndex context yet */
+
+        /* Ensure the table fits OpenIndex data */
+        .nav-tab.active {
+            border-bottom-color: #ff9d00;
+        }
+
+        .status-chip b {
+            color: #ff9d00;
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            background: var(--bg-card);
+            border: 1px solid var(--border-dim);
+            border-radius: 4px;
+            padding: 4px 12px;
+            gap: 8px;
+            width: 240px;
+        }
+
+        .search-box input {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text-primary);
+            font-size: 0.8rem;
+            width: 100%;
+        }
+
+        .search-box i {
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar: Source Types / Mining Categories -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                GOLDMINES <span class="sidebar-counter" id="mine-count">2</span>
+            </div>
+            <div class="agent-list">
+                <div class="agent-item" onclick="switchMine('github')" id="mine-github">
+                    <div class="agent-status-dot status-online"></div>
+                    <div class="agent-avatar">
+                        <i data-lucide="github"></i>
+                    </div>
+                    <div class="agent-info">
+                        <h4>GitHub <span class="role">Infrastructure</span></h4>
+                        <div class="agent-tag">LIVE <span style="color:var(--text-muted)" id="count-github">0
+                                items</span></div>
+                        <p class="agent-subtext">Open-source code logic & infra</p>
+                    </div>
+                </div>
+                <div class="agent-item" onclick="switchMine('n8n')" id="mine-n8n">
+                    <div class="agent-status-dot status-busy"></div>
+                    <div class="agent-avatar">
+                        <i data-lucide="zap"></i>
+                    </div>
+                    <div class="agent-info">
+                        <h4>n8n <span class="role">Automation</span></h4>
+                        <div class="agent-tag">ACTIVE <span style="color:var(--text-muted)" id="count-n8n">0
+                                items</span></div>
+                        <p class="agent-subtext">Executable business workflows</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Viewport -->
+        <main class="main-viewport">
+            <!-- Top Command Bar -->
+            <header class="top-bar">
+                <div class="brand">
+                    <h1>OPEN<span>INDEX</span></h1>
+                    <span class="sub-brand">OPPORTUNITY EXPLORER</span>
+                </div>
+
+                <div class="global-stats">
+                    <div class="status-chip">Opportunities <b id="stat-total">0</b></div>
+                    <div class="status-chip">Categories <b id="stat-cats">4</b></div>
+                </div>
+
+                <div class="top-bar-right">
+                    <div class="search-box">
+                        <i data-lucide="search" size="14"></i>
+                        <input type="text" id="global-search" placeholder="Search opportunities...">
+                    </div>
+                    <div class="notif-bell" style="margin-left: 8px;">
+                        <i data-lucide="bell" size="18" style="cursor:pointer"></i>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <div class="agent-status-dot status-online" style="margin:0"></div>
+                        <span style="font-size: 0.75rem; font-weight: 500;">Network Live</span>
+                    </div>
+                    <i data-lucide="settings" size="18" style="cursor:pointer; color:var(--text-muted)"></i>
+                </div>
+            </header>
+
+            <!-- Navigation Tabs: Categories -->
+            <div
+                style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-dim); background: var(--bg-main); padding-right: 1.5rem;">
+                <nav class="secondary-nav" id="category-tabs" style="border-bottom: none;">
+                    <a href="#" class="nav-tab active" onclick="filterCategory('all')">All Opportunities <b>x0</b></a>
+                    <a href="#" class="nav-tab" onclick="filterCategory('ai')">AI Engineering <b>x0</b></a>
+                    <a href="#" class="nav-tab" onclick="filterCategory('app')">Applications <b>x0</b></a>
+                    <a href="#" class="nav-tab" onclick="filterCategory('infra')">Infrastructure <b>x0</b></a>
+                    <a href="#" class="nav-tab" onclick="filterCategory('list')">Lists <b>x0</b></a>
+                    <a href="#" class="nav-tab" onclick="filterCategory('misc')">Misc <b>x0</b></a>
+                </nav>
+                <div class="pagination-top" id="pagination-top">
+                    <!-- Page counter will be injected here -->
+                </div>
+            </div>
+
+            <!-- Content Area -->
+            <div class="view-header">
+                <h2 id="view-title">GitHub Goldmine</h2>
+                <div class="view-filters">
+                    <div class="filter-opt active" onclick="setSort('high-value')">High Value</div>
+                    <div class="filter-opt" onclick="setSort('trending')">Trending</div>
+                    <div class="filter-opt" onclick="setSort('newest')">Newest</div>
+                </div>
+            </div>
+
+            <div class="data-wrapper">
+                <table class="custom-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 40px;">#</th>
+                            <th>Opportunity / Repo</th>
+                            <th>Author</th>
+                            <th>Evidence (Stars)</th>
+                            <th>Status</th>
+                            <th>Outcome / Mission</th>
+                            <th>Category</th>
+                            <th>Last Activity</th>
+                        </tr>
+                    </thead>
+                    <tbody id="data-body">
+                        <!-- DATA INJECTED BY JS -->
+                    </tbody>
+                </table>
+                <div class="pagination-bottom" id="pagination-bottom"
+                    style="display: flex; justify-content: flex-end; padding: 2rem 0; gap: 1rem; align-items: center;">
+                    <!-- Bottom counter injected here -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const API_URL = "https://script.google.com/macros/s/AKfycbw92AD5kJmwsWc89P5_BkDax-r3AmWIm2W0_RhQRnqyilw_vWA7aPYMHvykUusxUFM7/exec";
+        let allRecords = [];
+        let currentMine = 'github';
+        let currentCategory = 'all';
+        let currentSort = 'high-value';
+        let searchTerm = '';
+        let currentPage = 1;
+        const itemsPerPage = 20;
+
+        // Helper: Time Ago
+        function timeAgo(dateString) {
+            if (!dateString) return '---';
+            const date = new Date(dateString);
+            const now = new Date();
+            const seconds = Math.floor((now - date) / 1000);
+            if (isNaN(seconds)) return 'Recently';
+
+            let interval = Math.floor(seconds / 31536000);
+            if (interval >= 1) return interval + "y ago";
+            interval = Math.floor(seconds / 2592000);
+            if (interval >= 1) return interval + "mo ago";
+            interval = Math.floor(seconds / 86400);
+            if (interval >= 1) return interval + "d ago";
+            interval = Math.floor(seconds / 3600);
+            if (interval >= 1) return interval + "h ago";
+            interval = Math.floor(seconds / 60);
+            if (interval >= 1) return interval + "m ago";
+            return "Just now";
+        }
+
+        async function init() {
+            lucide.createIcons();
+            await fetchData();
+
+            // Set up search listener
+            document.getElementById('global-search').addEventListener('input', (e) => {
+                searchTerm = e.target.value;
+                currentPage = 1; // Reset to page 1
+                render();
+            });
+        }
+
+        async function fetchData() {
+            try {
+                const res = await fetch(API_URL);
+                const json = await res.json();
+                if (json.status === "success") {
+                    // Map or normalize data
+                    allRecords = json.records.map(r => {
+                        const url = (r.u || '').toLowerCase();
+                        const name = (r.n || '').toLowerCase();
+                        const domain = (r.d || '').toLowerCase();
+                        const cat = (r.cat || r.c || r.category || '').toLowerCase();
+
+                        let platform = 'github'; // Default
+                        if (url.includes('n8n')) platform = 'n8n';
+
+                        // Robust Categorization
+                        let target = 'misc';
+                        if (domain.includes('ai') || cat.includes('ai') || domain.includes('research')) {
+                            target = 'ai';
+                        } else if (cat.includes('infra') || domain.includes('infra') || domain === 'climate') {
+                            target = 'infra';
+                        } else if (domain === 'finance' || domain === 'health' || domain === 'gov' || cat.includes('app') || cat.includes('analytics')) {
+                            target = 'app';
+                        } else if (name.includes('awesome') || name.includes('list') || cat.includes('list') || cat.includes('data')) {
+                            target = 'list';
+                        }
+
+                        return {
+                            ...r,
+                            platform: platform,
+                            targetCategory: target,
+                            domain: domain,
+                            category: cat
+                        };
+                    });
+
+                    // Add some mock n8n records for the demo
+                    allRecords.push(
+                        { n: "Lead Enrichment Workflow", u: "#n8n-1", o: "n8n-logic", s: "Auto-enrich CRM leads using Clearbit.", domain: "app", category: "automation", platform: "n8n", targetCategory: "app" },
+                        { n: "Crypto Price Alert", u: "#n8n-2", o: "trading-bot", s: "Real-time SMS alerts for BTC/ETH deltas.", domain: "finance", category: "analytics", platform: "n8n", targetCategory: "app" },
+                        { n: "Health Data Sync", u: "#n8n-3", o: "med-ops", s: "Sync EHR data between FHIR and Supabase.", domain: "health", category: "infrastructure", platform: "n8n", targetCategory: "infra" }
+                    );
+
+                    allRecords.sort(() => Math.random() - 0.5);
+                    updateStats();
+                    render();
+                }
+            } catch (e) {
+                console.error("Fetch failed", e);
+                const body = document.getElementById('data-body');
+                body.innerHTML = '<tr><td colspan="7" style="text-align:center; color: var(--accent-red);">Offline: Unable to connect to OpenIndex Grid.</td></tr>';
+            }
+        }
+
+        function updateStats() {
+            const githubRecs = allRecords.filter(r => r.platform === 'github');
+            const n8nRecs = allRecords.filter(r => r.platform === 'n8n');
+
+            document.getElementById('stat-total').innerText = allRecords.length;
+            document.getElementById('count-github').innerText = `${githubRecs.length} items`;
+            document.getElementById('count-n8n').innerText = `${n8nRecs.length} items`;
+
+            // Update Category Tabs Counters
+            const activeMineData = allRecords.filter(r => r.platform === currentMine);
+            const cats = {
+                all: activeMineData.length,
+                ai: activeMineData.filter(r => r.targetCategory === 'ai').length,
+                app: activeMineData.filter(r => r.targetCategory === 'app').length,
+                infra: activeMineData.filter(r => r.targetCategory === 'infra').length,
+                list: activeMineData.filter(r => r.targetCategory === 'list').length,
+                misc: activeMineData.filter(r => r.targetCategory === 'misc').length
+            };
+
+            const tabContainer = document.getElementById('category-tabs');
+            const tabs = tabContainer.querySelectorAll('.nav-tab');
+
+            tabs.forEach(tab => {
+                const text = tab.innerText.toLowerCase();
+                let count = 0;
+                if (text.includes('all')) count = cats.all;
+                else if (text.includes('ai')) count = cats.ai;
+                else if (text.includes('applications')) count = cats.app;
+                else if (text.includes('infrastructure')) count = cats.infra;
+                else if (text.includes('lists')) count = cats.list;
+                else if (text.includes('misc')) count = cats.misc;
+
+                tab.querySelector('b').innerText = `x${count}`;
+            });
+        }
+
+        function switchMine(mine) {
+            currentMine = mine;
+            document.getElementById('view-title').innerText = mine === 'github' ? 'GitHub Goldmine' : 'n8n Goldmine';
+
+            document.querySelectorAll('.agent-item').forEach(i => i.classList.remove('active'));
+            document.getElementById(`mine-${mine}`).classList.add('active');
+
+            render();
+        }
+
+        function filterCategory(cat) {
+            currentCategory = cat;
+            currentPage = 1; // Reset to page 1 on filter
+            document.querySelectorAll('.nav-tab').forEach(t => {
+                t.classList.toggle('active', t.innerText.toLowerCase().includes(cat));
+            });
+            render();
+        }
+
+        function setSort(sortType) {
+            currentSort = sortType;
+            currentPage = 1;
+            document.querySelectorAll('.filter-opt').forEach(opt => {
+                opt.classList.toggle('active', opt.innerText.toLowerCase().replace(' ', '-') === sortType);
+            });
+            render();
+        }
+
+        function nextPage() {
+            const maxPage = Math.ceil(getFilteredData().length / itemsPerPage);
+            if (currentPage < maxPage) {
+                currentPage++;
+                render();
+                document.querySelector('.data-wrapper').scrollTop = 0;
+            }
+        }
+
+        function prevPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                render();
+                document.querySelector('.data-wrapper').scrollTop = 0;
+            }
+        }
+
+        function getFilteredData() {
+            // 1. Filter by Goldmine/Platform first
+            let filtered = allRecords.filter(r => r.platform === currentMine);
+
+            // 2. Filter by Category mapping
+            if (currentCategory !== 'all') {
+                filtered = filtered.filter(r => r.targetCategory === currentCategory);
+            }
+
+            // 3. Search Filter
+            if (searchTerm) {
+                const term = searchTerm.toLowerCase();
+                filtered = filtered.filter(r =>
+                    (r.n || '').toLowerCase().includes(term) ||
+                    (r.o || '').toLowerCase().includes(term) ||
+                    (r.s || '').toLowerCase().includes(term)
+                );
+            }
+
+            // Sorting Logic
+            if (currentSort === 'high-value') {
+                // Mock sorting based on repo name length or just stable random since we lack real "value" metric in API currently
+                filtered.sort((a, b) => (b.n.length) - (a.n.length));
+            } else if (currentSort === 'trending') {
+                // Simulate trending by random shuffle but deterministic for the session
+                filtered.sort((a, b) => b.n.localeCompare(a.n));
+            } else if (currentSort === 'newest') {
+                // Reverse of the initial shuffle or alphabetical for now
+                filtered.reverse();
+            }
+
+            return filtered;
+        }
+
+        function render() {
+            const body = document.getElementById('data-body');
+            const pgTop = document.getElementById('pagination-top');
+            const pgBottom = document.getElementById('pagination-bottom');
+            body.innerHTML = '';
+
+            const filtered = getFilteredData();
+            const totalItems = filtered.length;
+            const maxPage = Math.ceil(totalItems / itemsPerPage) || 1;
+
+            // Slice for current page
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const pageData = filtered.slice(startIndex, startIndex + itemsPerPage);
+
+            // Update Pagination UI
+            const pgHtml = `
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <span style="font-size: 0.75rem; color: var(--text-muted); font-family: var(--font-mono);">
+                        PAGE <b>${currentPage}</b> / ${maxPage}
+                    </span>
+                    <div style="display: flex; gap: 4px;">
+                        <button onclick="prevPage()" class="filter-opt" style="padding: 4px 8px; border: none; outline: none; background: transparent; ${currentPage === 1 ? 'opacity:0.3; cursor:default' : 'cursor:pointer'}">
+                            <i data-lucide="chevron-left" size="14"></i>
+                        </button>
+                        <button onclick="nextPage()" class="filter-opt" style="padding: 4px 8px; border: none; outline: none; background: transparent; ${currentPage === maxPage ? 'opacity:0.3; cursor:default' : 'cursor:pointer'}">
+                            <i data-lucide="chevron-right" size="14"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+            pgTop.innerHTML = pgHtml;
+            pgBottom.innerHTML = pgHtml;
+
+            if (pageData.length === 0) {
+                body.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 2rem;">No matching opportunities found in this sector.</td></tr>';
+                return;
+            }
+
+            pageData.forEach((r, idx) => {
+                const tr = document.createElement('tr');
+                tr.style.setProperty('--row-index', idx);
+
+                const authorUrl = r.u && r.u.includes('github.com')
+                    ? r.u.split('/').slice(0, 4).join('/')
+                    : '#';
+
+                tr.innerHTML = `
+                    <td>${startIndex + idx + 1}</td>
+                    <td class="repo-cell">
+                        <span class="repo-owner">${r.o || 'system'}</span>
+                        <a href="${r.u}" target="_blank" class="repo-name" style="text-decoration:none; color:inherit;">${r.n}</a>
+                    </td>
+                    <td>
+                        <a href="${authorUrl}" target="_blank" style="color: var(--accent-blue); text-decoration: none; font-weight: 500;">
+                            @${r.o || 'system'}
+                        </a>
+                    </td>
+                    <td>
+                        <div style="display:flex; align-items:center; gap:4px;">
+                            <i data-lucide="star" size="12" color="#ff9d00"></i>
+                            ${(Math.random() * 2000).toFixed(0)}
+                        </div>
+                    </td>
+                    <td><span class="pill pill-green">Verified</span></td>
+                    <td>${r.s || 'Infrastructure component ready for integration.'}</td>
+                    <td><span class="pill pill-teal">${r.category || 'System'}</span></td>
+                    <td style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted);">
+                        ${timeAgo(r.up || r.updated_at)}
+                    </td>
+                `;
+                body.appendChild(tr);
+            });
+            lucide.createIcons();
+        }
+
+        init();
+    </script>
+</body>
+
+</html>

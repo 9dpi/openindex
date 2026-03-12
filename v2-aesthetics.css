@@ -1,0 +1,167 @@
+/* V2 Premium Aesthetics for OpenIndex */
+
+@keyframes slideUpFade {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.mpv-card {
+    animation: slideUpFade 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    opacity: 0;
+}
+
+.mpv-grid .mpv-card:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.mpv-grid .mpv-card:nth-child(2) {
+    animation-delay: 0.15s;
+}
+
+.mpv-grid .mpv-card:nth-child(3) {
+    animation-delay: 0.2s;
+}
+
+.mpv-grid .mpv-card:nth-child(4) {
+    animation-delay: 0.25s;
+}
+
+.mpv-grid .mpv-card:nth-child(5) {
+    animation-delay: 0.3s;
+}
+
+.mpv-grid .mpv-card:nth-child(6) {
+    animation-delay: 0.35s;
+}
+
+.goldmine-tab {
+    position: relative;
+    overflow: hidden;
+}
+
+.goldmine-tab::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.6s ease, height 0.6s ease;
+}
+
+.goldmine-tab:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.mpv-section label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.mpv-section label::after {
+    content: '';
+    height: 1px;
+    background: var(--border-color);
+    flex-grow: 1;
+}
+
+/* Glass UI Elements */
+.mpv-sandbox {
+    backdrop-filter: blur(5px);
+    background: rgba(255, 255, 255, 0.02) !important;
+}
+
+.evidence-chip {
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.3s ease;
+}
+
+.evidence-chip:hover {
+    background: var(--bg-accent);
+    transform: scale(1.05);
+}
+
+/* Insight Badges */
+.insight-badge {
+    font-size: 0.6rem;
+    font-weight: 800;
+    padding: 0.2rem 0.6rem;
+    border-radius: 50px;
+    margin-bottom: 0.6rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    letter-spacing: 0.05em;
+    font-family: var(--font-mono);
+}
+
+.insight-badge.builder {
+    background: rgba(255, 157, 0, 0.1);
+    color: var(--accent-color);
+    border: 1px solid rgba(255, 157, 0, 0.2);
+}
+
+.insight-badge.operator {
+    background: rgba(0, 255, 133, 0.1);
+    color: var(--logic-color);
+    border: 1px solid rgba(0, 255, 133, 0.2);
+}
+
+/* Accent Glows for specific mines */
+body.mine-github {
+    --current-accent: var(--accent-color);
+    --current-glow: var(--accent-glow);
+}
+
+body.mine-n8n {
+    --current-accent: var(--logic-color);
+    --current-glow: var(--logic-glow);
+}
+
+.logo-text span {
+    transition: color 0.5s ease;
+}
+
+body.mine-n8n .logo-text span {
+    color: var(--logic-color);
+}
+
+/* Scrollbar and Selection logic */
+::selection {
+    background: var(--accent-color);
+    color: #000;
+}
+
+body.mine-n8n ::selection {
+    background: var(--logic-color);
+    color: #000;
+}
+
+/* Responsive adjustment for header */
+@media (max-width: 768px) {
+    .v2-header {
+        padding: 2rem 1rem;
+    }
+
+    .goldmine-switcher {
+        flex-direction: column;
+        padding: 0 1rem;
+    }
+
+    .goldmine-tab {
+        width: 100%;
+        justify-content: center;
+    }
+}
