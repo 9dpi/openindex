@@ -1,36 +1,40 @@
 
-/***********************
- * CONFIG
- ***********************/
+/***********************************************************
+ * OPENINDEX MASTER SCRIPT (v4 - Robust & Recursive)
+ ***********************************************************/
+
+/**
+ * CONFIG: Centralized settings
+ */
 function CFG() {
   const p = PropertiesService.getScriptProperties();
-  // Attempt to get root ID from script properties, otherwise use the parent folder of the script's sheet
   let rootId = p.getProperty("DRIVE_ROOT_ID");
   
+  // Auto-detect if not set
   if (!rootId) {
     try {
-      // Logic: If script is bound to a sheet, get its parent folder
       const ss = SpreadsheetApp.getActiveSpreadsheet();
       if (ss) {
         const file = DriveApp.getFileById(ss.getId());
         rootId = file.getParents().next().getId();
         p.setProperty("DRIVE_ROOT_ID", rootId);
+        Logger.log("Auto-detected Root ID: " + rootId);
       }
     } catch (e) {
-      Logger.log("Could not auto-detect root ID: " + e);
+      Logger.log("Auto-detect failed. Please set DRIVE_ROOT_ID in Script Properties.");
     }
   }
 
   return {
     DRIVE_ROOT_ID: rootId,
-    API_CACHE_KEY: "openindex_api_cache_v3",
+    API_CACHE_KEY: "openindex_api_cache_v4",
     CACHE_FILENAME: "openindex_registry_cache.json"
   };
 }
 
-/***********************
- * WEB APP ENDPOINT
- ***********************/
+/**
+ * WEB APP ENDPOINT: Main entry for index.html
+ */
 function doGet(e) {
   try {
     const cache = CacheService.getScriptCache();
@@ -57,17 +61,30 @@ function doGet(e) {
   }
 }
 
-/***********************
- * MASTER REFRESH LOGIC
- ***********************/
+/**
+ * TRIGGER ENTRY: Function called by the daily timer
+ */
 function scheduledRefresh() {
-  Logger.log("Starting master refresh...");
+  Logger.log("Starting scheduled daily refresh...");
   refreshRegistry();
 }
 
+/**
+ * REFRESH LOGIC: Scans Drive and updates all caches
+ */
 function refreshRegistry() {
   const cfg = CFG();
-  const records = generateAllRecordsRecursive(cfg.DRIVE_ROOT_ID);
+  if (!cfg.DRIVE_ROOT_ID) {
+    throw new Error("DRIVE_ROOT_ID is empty. Set it in Script Properties.");
+  }
+
+  const records = [];
+  const seenRepos = new Set();
+  
+  Logger.log("Initiating recursive scan starting from: " + cfg.DRIVE_ROOT_ID);
+  
+  // Recursively build the records array
+  generateAllRecordsRecursive(cfg.DRIVE_ROOT_ID, records, seenRepos);
   
   const response = {
     status: "success",
@@ -77,11 +94,13 @@ function refreshRegistry() {
     records: records
   };
 
-  // 1. Update Script Cache
-  const cache = CacheService.getScriptCache();
-  cache.put(cfg.API_CACHE_KEY, JSON.stringify(response), 3600);
+  const jsonOutput = JSON.stringify(response);
 
-  // 2. Persist to openindex_registry_cache.json in Drive
+  // 1. Update Script Cache (for speed)
+  const cache = CacheService.getScriptCache();
+  cache.put(cfg.API_CACHE_KEY, jsonOutput, 3600);
+
+  // 2. Update Drive File (for persistence and history)
   try {
     const folder = DriveApp.getFolderById(cfg.DRIVE_ROOT_ID);
     const files = folder.getFilesByName(cfg.CACHE_FILENAME);
@@ -90,78 +109,88 @@ function refreshRegistry() {
     } else {
       folder.createFile(cfg.CACHE_FILENAME, JSON.stringify(response, null, 2), MimeType.PLAIN_TEXT);
     }
-    Logger.log(`Successfully saved cache file to Drive. Total records: ${records.length}`);
+    Logger.log(`COMPLETED: Found ${records.length} records.`);
   } catch (e) {
-    Logger.log("Failed to save cache file to Drive: " + e);
+    Logger.log("Drive Update Warning: " + e.toString());
   }
 
   return response;
 }
 
-/***********************
- * RECURSIVE DATA GENERATION
- ***********************/
-function generateAllRecordsRecursive(folderId, records = [], seenRepos = new Set()) {
-  const folder = DriveApp.getFolderById(folderId);
-  const files = folder.getFiles();
-  const domain = folder.getName(); // folder name as domain hint
-  
-  while (files.hasNext()) {
-    const file = files.next();
-    const name = file.getName();
+/**
+ * RECURSIVE SCANNER: Safely navigates folder structures
+ */
+function generateAllRecordsRecursive(folderId, records, seenRepos) {
+  try {
+    const folder = DriveApp.getFolderById(folderId);
+    const folderName = folder.getName();
     
-    if (!name.endsWith('.yaml') && !name.endsWith('.yml')) continue;
-    
-    try {
-      const content = file.getBlob().getDataAsString();
-      const record = parseYAML(content, name, domain);
-      
-      if (record && record.u && !seenRepos.has(record.u.toLowerCase())) {
-        records.push(record);
-        seenRepos.add(record.u.toLowerCase());
-      }
-    } catch (e) {
-      Logger.log(`Error parsing ${name}: ${e}`);
+    // Skip system/temp folders
+    if (folderName.startsWith('.') || folderName === 'scripts' || folderName === 'snapshots') {
+      return;
     }
+    
+    const files = folder.getFiles();
+    while (files.hasNext()) {
+      const file = files.next();
+      const name = file.getName();
+      
+      if (!name.endsWith('.yaml') && !name.endsWith('.yml')) continue;
+      
+      try {
+        const content = file.getBlob().getDataAsString();
+        const record = parseYAML_v2(content, name, folderName);
+        
+        if (record && record.u && !seenRepos.has(record.u.toLowerCase())) {
+          records.push(record);
+          seenRepos.add(record.u.toLowerCase());
+        }
+      } catch (fileErr) {
+        Logger.log(`Skipping file [${name}] due to error: ${fileErr.toString()}`);
+      }
+    }
+    
+    // Recurse into subfolders
+    const subfolders = folder.getFolders();
+    while (subfolders.hasNext()) {
+      const sub = subfolders.next();
+      generateAllRecordsRecursive(sub.getId(), records, seenRepos);
+    }
+    
+  } catch (driveErr) {
+    Logger.log(`Skipping folder ID [${folderId}] due to error: ${driveErr.toString()}`);
   }
-  
-  // Recursion
-  const subfolders = folder.getFolders();
-  while (subfolders.hasNext()) {
-    const subfolder = subfolders.next();
-    generateAllRecordsRecursive(subfolder.getId(), records, seenRepos);
-  }
-  
-  return records;
 }
 
-/***********************
- * YAML PARSER (Schema Correct)
- ***********************/
-function parseYAML(yamlContent, filename, folderDomain) {
-  const lines = yamlContent.split('\n');
+/**
+ * YAML PARSER: Converts file content to Registry record
+ */
+function parseYAML_v2(content, filename, domain) {
+  const lines = content.split('\n');
   const kv = {};
   
   lines.forEach(line => {
     const idx = line.indexOf(':');
     if (idx > -1) {
-      const k = line.substring(0, idx).trim();
-      const v = line.substring(idx + 1).trim().replace(/^['"]|['"]$/g, '');
+      const k = line.substring(0, idx).trim().toLowerCase();
+      let v = line.substring(idx + 1).trim()
+                 .replace(/^['"]|['"]$/g, '') 
+                 .replace(/ #.*$/, ''); // Remove trailing comments
       kv[k] = v;
     }
   });
 
-  if (!kv.title && !kv.project_name) return null;
+  // Check mandatory fields
+  const title = kv.title || kv.project_name || filename.replace(/\.ya?ml$/, '');
+  if (!title || title.toUpperCase() === 'README') return null;
 
-  const now = new Date().toISOString();
-  
   return {
-    n: kv.title || kv.project_name || filename.replace('.yaml', ''),
-    s: kv.short_desc || kv.summary || "",
+    n: title,
+    s: kv.short_desc || kv.summary || "No description provided.",
     u: kv.repo_url || "",
     o: kv.who || kv.author || extractOwner(kv.repo_url) || "system",
-    up: kv.last_verified || kv.updated_at || now, // Use refresh time if missing
-    d: kv.domain || folderDomain || "misc",
+    up: kv.last_verified || kv.updated_at || new Date().toISOString(),
+    d: kv.domain || domain || "misc",
     cat: kv.category || "infrastructure",
     stars: parseInt(kv.stars) || 0,
     sc: (parseInt(kv.stars) || 0) / 200000, // Normalized score
@@ -170,16 +199,19 @@ function parseYAML(yamlContent, filename, folderDomain) {
   };
 }
 
+/**
+ * UTILS: Helper to get GitHub owner from URL
+ */
 function extractOwner(url) {
   if (!url || !url.includes('github.com/')) return null;
   const parts = url.split('github.com/')[1].split('/');
   return parts[0];
 }
 
-/***********************
- * TRIGGER SETUP
- ***********************/
-function setupDailyTrigger() {
+/**
+ * SETUP: Run this once to fix permissions and set trigger
+ */
+function setupAutomation() {
   const triggers = ScriptApp.getProjectTriggers();
   triggers.forEach(t => ScriptApp.deleteTrigger(t));
   
@@ -189,5 +221,8 @@ function setupDailyTrigger() {
     .everyDays(1)
     .create();
     
-  return "Daily trigger at 2 AM activated. Scan recursive enabled.";
+  // Force a first run to set DRIVE_ROOT_ID and Cache
+  refreshRegistry();
+  
+  return "SUCCESS: Automation active. Daily scan at 2 AM. Initial refresh complete.";
 }
