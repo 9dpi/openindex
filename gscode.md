@@ -4,18 +4,35 @@
  ***********************/
 function CFG() {
   const p = PropertiesService.getScriptProperties();
+  // Attempt to get root ID from script properties, otherwise use the parent folder of the script's sheet
+  let rootId = p.getProperty("DRIVE_ROOT_ID");
+  
+  if (!rootId) {
+    try {
+      // Logic: If script is bound to a sheet, get its parent folder
+      const ss = SpreadsheetApp.getActiveSpreadsheet();
+      if (ss) {
+        const file = DriveApp.getFileById(ss.getId());
+        rootId = file.getParents().next().getId();
+        p.setProperty("DRIVE_ROOT_ID", rootId);
+      }
+    } catch (e) {
+      Logger.log("Could not auto-detect root ID: " + e);
+    }
+  }
+
   return {
-    DRIVE_ROOT_ID: p.getProperty("1UwSmQ71MR3Lk13-RnlP2pG572AP8vLz1"),
-    API_CACHE_KEY: "openindex_api_cache"
+    DRIVE_ROOT_ID: rootId,
+    API_CACHE_KEY: "openindex_api_cache_v3",
+    CACHE_FILENAME: "openindex_registry_cache.json"
   };
 }
 
 /***********************
- * WEB APP ENDPOINT (Main Entry for Frontend)
+ * WEB APP ENDPOINT
  ***********************/
 function doGet(e) {
   try {
-    // Check cache first
     const cache = CacheService.getScriptCache();
     const cached = cache.get(CFG().API_CACHE_KEY);
     
@@ -24,19 +41,8 @@ function doGet(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
 
-    // Generate fresh data
-    const records = generateAllRecords();
-    const response = {
-      status: "success",
-      timestamp: new Date().toISOString(),
-      total_records: records.length,
-      processed_files: records.length,
-      records: records
-    };
-
+    const response = refreshRegistry();
     const jsonOutput = JSON.stringify(response);
-    
-    // Cache for 1 hour (3600 seconds)
     cache.put(CFG().API_CACHE_KEY, jsonOutput, 3600);
 
     return ContentService.createTextOutput(jsonOutput)
@@ -52,188 +58,136 @@ function doGet(e) {
 }
 
 /***********************
- * SCHEDULED TRIGGER (Auto-refresh daily at 2 AM)
+ * MASTER REFRESH LOGIC
  ***********************/
 function scheduledRefresh() {
-  try {
-    Logger.log("Starting scheduled refresh...");
-    
-    // Clear cache to force regeneration
-    const cache = CacheService.getScriptCache();
-    cache.remove(CFG().API_CACHE_KEY);
-    
-    // Regenerate data
-    const records = generateAllRecords();
-    
-    // Update cache
-    const response = {
-      status: "success",
-      timestamp: new Date().toISOString(),
-      total_records: records.length,
-      processed_files: records.length,
-      records: records
-    };
-    
-    cache.put(CFG().API_CACHE_KEY, JSON.stringify(response), 3600);
-    
-    Logger.log(`Refresh complete: ${records.length} records updated at ${new Date().toISOString()}`);
-    
-  } catch (error) {
-    Logger.log("Refresh failed: " + error.toString());
-  }
+  Logger.log("Starting master refresh...");
+  refreshRegistry();
 }
 
-/***********************
- * TRIGGER SETUP (Run once to create daily trigger)
- ***********************/
-function setupDailyTrigger() {
-  // Delete existing triggers for scheduledRefresh to avoid duplicates
-  const triggers = ScriptApp.getProjectTriggers();
-  triggers.forEach(trigger => {
-    if (trigger.getHandlerFunction() === 'scheduledRefresh') {
-      ScriptApp.deleteTrigger(trigger);
-    }
-  });
-  
-  // Create new daily trigger at 2 AM
-  ScriptApp.newTrigger('scheduledRefresh')
-    .timeBased()
-    .atHour(2)
-    .everyDays(1)
-    .create();
-  
-  Logger.log('Daily trigger created successfully. Will run at 2 AM every day.');
-  return 'Daily trigger created successfully. Will run at 2 AM every day.';
-}
-
-/***********************
- * DATA GENERATION
- ***********************/
-function generateAllRecords() {
+function refreshRegistry() {
   const cfg = CFG();
-  const folder = DriveApp.getFolderById(cfg.DRIVE_ROOT_ID);
+  const records = generateAllRecordsRecursive(cfg.DRIVE_ROOT_ID);
   
-  const records = [];
-  const seenRepos = new Set(); // To prevent duplicates
+  const response = {
+    status: "success",
+    timestamp: new Date().toISOString(),
+    total_records: records.length,
+    processed_files: records.length,
+    records: records
+  };
 
-  // 1. Try to load Legacy Bulk Cache first (Quickest way to restore old data)
+  // 1. Update Script Cache
+  const cache = CacheService.getScriptCache();
+  cache.put(cfg.API_CACHE_KEY, JSON.stringify(response), 3600);
+
+  // 2. Persist to openindex_registry_cache.json in Drive
   try {
-    const legacyFiles = folder.getFilesByName("openindex_registry_cache.json");
-    if (legacyFiles.hasNext()) {
-      const cacheFile = legacyFiles.next();
-      const content = cacheFile.getBlob().getDataAsString();
-      const json = JSON.parse(content);
-      
-      if (json.records && Array.isArray(json.records)) {
-        json.records.forEach(r => {
-          if (r.u) {
-            records.push(r);
-            seenRepos.add(r.u.toLowerCase());
-          }
-        });
-        Logger.log(`Loaded ${json.records.length} records from legacy cache.`);
-      }
+    const folder = DriveApp.getFolderById(cfg.DRIVE_ROOT_ID);
+    const files = folder.getFilesByName(cfg.CACHE_FILENAME);
+    if (files.hasNext()) {
+      files.next().setContent(JSON.stringify(response, null, 2));
+    } else {
+      folder.createFile(cfg.CACHE_FILENAME, JSON.stringify(response, null, 2), MimeType.PLAIN_TEXT);
     }
+    Logger.log(`Successfully saved cache file to Drive. Total records: ${records.length}`);
   } catch (e) {
-    Logger.log("Error loading legacy cache: " + e);
+    Logger.log("Failed to save cache file to Drive: " + e);
   }
 
-  // 2. Scan for individual files (New YAML or MPV JSON)
+  return response;
+}
+
+/***********************
+ * RECURSIVE DATA GENERATION
+ ***********************/
+function generateAllRecordsRecursive(folderId, records = [], seenRepos = new Set()) {
+  const folder = DriveApp.getFolderById(folderId);
   const files = folder.getFiles();
+  const domain = folder.getName(); // folder name as domain hint
   
   while (files.hasNext()) {
     const file = files.next();
     const name = file.getName();
-    const mime = file.getMimeType();
     
-    // Skip Google Apps files and the legacy cache file itself
-    if (mime.includes('google-apps') || name === 'openindex_registry_cache.json') continue;
+    if (!name.endsWith('.yaml') && !name.endsWith('.yml')) continue;
     
     try {
       const content = file.getBlob().getDataAsString();
-      let record = null;
-
-      // Handle individual JSON MPV
-      if (name.endsWith('.json') || mime === MimeType.JSON) {
-        if (name.includes('api_cache')) continue; // Skip script's own cache
-
-        try {
-          const json = JSON.parse(content);
-          if (json.repo) {
-             const repoUrl = "https://github.com/" + json.repo;
-             // Skip if already loaded from legacy cache
-             if (seenRepos.has(repoUrl.toLowerCase())) continue;
-
-             const repoParts = json.repo.split('/');
-             record = {
-               n: repoParts[1] || json.repo,
-               u: repoUrl,
-               s: json.opportunity || json.role || "No description",
-               o: repoParts[0] || "system",
-               d: "ai_infra",
-               cat: "infrastructure",
-               up: json.generated_at || new Date().toISOString(),
-               stars: json.evidence?.stars || 0,
-               sc: (json.evidence?.stars || 0) / 10000
-             };
-          }
-        } catch (jsonErr) {}
-      } 
-      // Handle YAML
-      else if (name.endsWith('.yaml') || name.endsWith('.yml')) {
-        const tempRecord = parseYAMLRecord(content, name);
-        if (tempRecord && tempRecord.u && !seenRepos.has(tempRecord.u.toLowerCase())) {
-          record = tempRecord;
-        }
-      }
-
-      if (record) {
-        records.push(record);
-        if (record.u) seenRepos.add(record.u.toLowerCase());
-      }
+      const record = parseYAML(content, name, domain);
       
+      if (record && record.u && !seenRepos.has(record.u.toLowerCase())) {
+        records.push(record);
+        seenRepos.add(record.u.toLowerCase());
+      }
     } catch (e) {
-      Logger.log(`Error processing ${name}: ${e}`);
+      Logger.log(`Error parsing ${name}: ${e}`);
     }
+  }
+  
+  // Recursion
+  const subfolders = folder.getFolders();
+  while (subfolders.hasNext()) {
+    const subfolder = subfolders.next();
+    generateAllRecordsRecursive(subfolder.getId(), records, seenRepos);
   }
   
   return records;
 }
 
-function parseYAMLRecord(yamlContent, filename) {
-  // Simple YAML parser for our schema
+/***********************
+ * YAML PARSER (Schema Correct)
+ ***********************/
+function parseYAML(yamlContent, filename, folderDomain) {
   const lines = yamlContent.split('\n');
-  const record = {};
+  const kv = {};
   
-  for (const line of lines) {
-    if (line.includes(':')) {
-      const [key, ...valueParts] = line.split(':');
-      const cleanKey = key.trim();
-      const value = valueParts.join(':').trim().replace(/['"]/g, '');
-      
-      // Map YAML keys to API response format
-      if (cleanKey === 'project_name') record.n = value;
-      if (cleanKey === 'repo_url') record.u = value;
-      if (cleanKey === 'summary') record.s = value;
-      if (cleanKey === 'domain') record.d = value;
-      if (cleanKey === 'category') record.cat = value;
-      if (cleanKey === 'updated_at') record.up = value;
-      if (cleanKey === 'stars') record.stars = parseInt(value) || 0;
+  lines.forEach(line => {
+    const idx = line.indexOf(':');
+    if (idx > -1) {
+      const k = line.substring(0, idx).trim();
+      const v = line.substring(idx + 1).trim().replace(/^['"]|['"]$/g, '');
+      kv[k] = v;
     }
-  }
+  });
+
+  if (!kv.title && !kv.project_name) return null;
+
+  const now = new Date().toISOString();
   
-  // Extract owner from repo URL
-  if (record.u && record.u.includes('github.com/')) {
-    const parts = record.u.split('github.com/')[1].split('/');
-    record.o = parts[0];
-  }
-  
-  // Calculate score (normalized stars)
-  if (record.stars) {
-    record.sc = Math.min(record.stars / 10000, 1);
-  }
-  
-  return record.n ? record : null;
+  return {
+    n: kv.title || kv.project_name || filename.replace('.yaml', ''),
+    s: kv.short_desc || kv.summary || "",
+    u: kv.repo_url || "",
+    o: kv.who || kv.author || extractOwner(kv.repo_url) || "system",
+    up: kv.last_verified || kv.updated_at || now, // Use refresh time if missing
+    d: kv.domain || folderDomain || "misc",
+    cat: kv.category || "infrastructure",
+    stars: parseInt(kv.stars) || 0,
+    sc: (parseInt(kv.stars) || 0) / 200000, // Normalized score
+    w: kv.what || "",
+    y: kv.why || ""
+  };
 }
 
-// No external API calls needed for current functionality
+function extractOwner(url) {
+  if (!url || !url.includes('github.com/')) return null;
+  const parts = url.split('github.com/')[1].split('/');
+  return parts[0];
+}
+
+/***********************
+ * TRIGGER SETUP
+ ***********************/
+function setupDailyTrigger() {
+  const triggers = ScriptApp.getProjectTriggers();
+  triggers.forEach(t => ScriptApp.deleteTrigger(t));
+  
+  ScriptApp.newTrigger('scheduledRefresh')
+    .timeBased()
+    .atHour(2)
+    .everyDays(1)
+    .create();
+    
+  return "Daily trigger at 2 AM activated. Scan recursive enabled.";
+}

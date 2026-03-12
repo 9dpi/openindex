@@ -64,38 +64,8 @@
 
 <body>
     <div class="app-container">
-        <!-- Sidebar: Source Types / Mining Categories -->
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                GOLDMINES <span class="sidebar-counter" id="mine-count">2</span>
-            </div>
-            <div class="agent-list">
-                <div class="agent-item" onclick="switchMine('github')" id="mine-github">
-                    <div class="agent-status-dot status-online"></div>
-                    <div class="agent-avatar">
-                        <i data-lucide="github"></i>
-                    </div>
-                    <div class="agent-info">
-                        <h4>GitHub <span class="role">Infrastructure</span></h4>
-                        <div class="agent-tag">LIVE <span style="color:var(--text-muted)" id="count-github">0
-                                items</span></div>
-                        <p class="agent-subtext">Open-source code logic & infra</p>
-                    </div>
-                </div>
-                <div class="agent-item" onclick="switchMine('n8n')" id="mine-n8n">
-                    <div class="agent-status-dot status-busy"></div>
-                    <div class="agent-avatar">
-                        <i data-lucide="zap"></i>
-                    </div>
-                    <div class="agent-info">
-                        <h4>n8n <span class="role">Automation</span></h4>
-                        <div class="agent-tag">ACTIVE <span style="color:var(--text-muted)" id="count-n8n">0
-                                items</span></div>
-                        <p class="agent-subtext">Executable business workflows</p>
-                    </div>
-                </div>
-            </div>
-        </aside>
+        <!-- Sidebar Hidden (Instruction: Ẩn sidebar) -->
+        <!-- aside element removed -->
 
         <!-- Main Viewport -->
         <main class="main-viewport">
@@ -116,29 +86,23 @@
                         <i data-lucide="search" size="14"></i>
                         <input type="text" id="global-search" placeholder="Search opportunities...">
                     </div>
-                    <div class="notif-bell" style="margin-left: 8px;">
-                        <i data-lucide="bell" size="18" style="cursor:pointer"></i>
-                    </div>
                     <div style="display: flex; align-items: center; gap: 8px;">
                         <div class="agent-status-dot status-online" style="margin:0"></div>
                         <span style="font-size: 0.75rem; font-weight: 500;">Network Live</span>
                     </div>
-                    <i data-lucide="settings" size="18" style="cursor:pointer; color:var(--text-muted)"></i>
                 </div>
             </header>
 
             <!-- Navigation Tabs: Categories -->
-            <div
-                style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-dim); background: var(--bg-main); padding-right: 1.5rem;">
+            <div id="nav-wrapper"
+                style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-dim); background: var(--bg-main);">
                 <nav class="secondary-nav" id="category-tabs" style="border-bottom: none;">
                     <a href="#" class="nav-tab active" onclick="filterCategory('all')">All Opportunities <b>x0</b></a>
                     <a href="#" class="nav-tab" onclick="filterCategory('ai')">AI Engineering <b>x0</b></a>
                     <a href="#" class="nav-tab" onclick="filterCategory('app')">Applications <b>x0</b></a>
                     <a href="#" class="nav-tab" onclick="filterCategory('infra')">Infrastructure <b>x0</b></a>
-                    <a href="#" class="nav-tab" onclick="filterCategory('list')">Lists <b>x0</b></a>
-                    <a href="#" class="nav-tab" onclick="filterCategory('misc')">Misc <b>x0</b></a>
                 </nav>
-                <div class="pagination-top" id="pagination-top">
+                <div class="pagination-top" id="pagination-top" style="padding: 0 1.5rem;">
                     <!-- Page counter will be injected here -->
                 </div>
             </div>
@@ -168,7 +132,12 @@
                         </tr>
                     </thead>
                     <tbody id="data-body">
-                        <!-- DATA INJECTED BY JS -->
+                        <tr><td colspan="8" style="text-align:center; padding: 3rem; color: var(--text-muted);">
+                            <div style="display:flex; flex-direction:column; align-items:center; gap: 1rem;">
+                                <div class="status-online" style="width:12px; height:12px; border-radius:50%; box-shadow: 0 0 10px var(--accent-green);"></div>
+                                Syncing with OpenIndex Registry...
+                            </div>
+                        </td></tr>
                     </tbody>
                 </table>
                 <div class="pagination-bottom" id="pagination-bottom"
@@ -227,45 +196,29 @@
                 const res = await fetch(API_URL);
                 const json = await res.json();
                 if (json.status === "success") {
-                    // Map or normalize data
                     allRecords = json.records.map(r => {
                         const url = (r.u || '').toLowerCase();
                         const name = (r.n || '').toLowerCase();
                         const domain = (r.d || '').toLowerCase();
                         const cat = (r.cat || r.c || r.category || '').toLowerCase();
 
-                        let platform = 'github'; // Default
-                        if (url.includes('n8n')) platform = 'n8n';
-
                         // Robust Categorization
-                        let target = 'misc';
+                        let target = 'infra'; // Default to infra for OpenIndex
                         if (domain.includes('ai') || cat.includes('ai') || domain.includes('research')) {
                             target = 'ai';
-                        } else if (cat.includes('infra') || domain.includes('infra') || domain === 'climate') {
-                            target = 'infra';
                         } else if (domain === 'finance' || domain === 'health' || domain === 'gov' || cat.includes('app') || cat.includes('analytics')) {
                             target = 'app';
-                        } else if (name.includes('awesome') || name.includes('list') || cat.includes('list') || cat.includes('data')) {
-                            target = 'list';
                         }
 
                         return {
                             ...r,
-                            platform: platform,
                             targetCategory: target,
                             domain: domain,
                             category: cat
                         };
                     });
 
-                    // Add some mock n8n records for the demo
-                    allRecords.push(
-                        { n: "Lead Enrichment Workflow", u: "#n8n-1", o: "n8n-logic", s: "Auto-enrich CRM leads using Clearbit.", domain: "app", category: "automation", platform: "n8n", targetCategory: "app" },
-                        { n: "Crypto Price Alert", u: "#n8n-2", o: "trading-bot", s: "Real-time SMS alerts for BTC/ETH deltas.", domain: "finance", category: "analytics", platform: "n8n", targetCategory: "app" },
-                        { n: "Health Data Sync", u: "#n8n-3", o: "med-ops", s: "Sync EHR data between FHIR and Supabase.", domain: "health", category: "infrastructure", platform: "n8n", targetCategory: "infra" }
-                    );
-
-                    allRecords.sort(() => Math.random() - 0.5);
+                    allRecords.sort((a, b) => (b.stars || 0) - (a.stars || 0));
                     updateStats();
                     render();
                 }
@@ -277,22 +230,19 @@
         }
 
         function updateStats() {
-            const githubRecs = allRecords.filter(r => r.platform === 'github');
-            const n8nRecs = allRecords.filter(r => r.platform === 'n8n');
-
             document.getElementById('stat-total').innerText = allRecords.length;
-            document.getElementById('count-github').innerText = `${githubRecs.length} items`;
-            document.getElementById('count-n8n').innerText = `${n8nRecs.length} items`;
+            // Sidebar is hidden, no need for count-github/count-n8n updates unless elements exist
+            const githubEl = document.getElementById('count-github');
+            const n8nEl = document.getElementById('count-n8n');
+            if (githubEl) githubEl.innerText = `${allRecords.filter(r => r.platform === 'github').length} items`;
+            if (n8nEl) n8nEl.innerText = `${allRecords.filter(r => r.platform === 'n8n').length} items`;
 
             // Update Category Tabs Counters
-            const activeMineData = allRecords.filter(r => r.platform === currentMine);
             const cats = {
-                all: activeMineData.length,
-                ai: activeMineData.filter(r => r.targetCategory === 'ai').length,
-                app: activeMineData.filter(r => r.targetCategory === 'app').length,
-                infra: activeMineData.filter(r => r.targetCategory === 'infra').length,
-                list: activeMineData.filter(r => r.targetCategory === 'list').length,
-                misc: activeMineData.filter(r => r.targetCategory === 'misc').length
+                all: allRecords.length,
+                ai: allRecords.filter(r => r.targetCategory === 'ai').length,
+                app: allRecords.filter(r => r.targetCategory === 'app').length,
+                infra: allRecords.filter(r => r.targetCategory === 'infra').length
             };
 
             const tabContainer = document.getElementById('category-tabs');
@@ -305,11 +255,13 @@
                 else if (text.includes('ai')) count = cats.ai;
                 else if (text.includes('applications')) count = cats.app;
                 else if (text.includes('infrastructure')) count = cats.infra;
-                else if (text.includes('lists')) count = cats.list;
-                else if (text.includes('misc')) count = cats.misc;
 
                 tab.querySelector('b').innerText = `x${count}`;
             });
+            
+            // Sync top stats
+            const totalEl = document.getElementById('stat-total');
+            if (totalEl) totalEl.innerText = allRecords.length;
         }
 
         function switchMine(mine) {
@@ -358,9 +310,9 @@
         }
 
         function getFilteredData() {
-            // 1. Filter by Goldmine/Platform first
-            let filtered = allRecords.filter(r => r.platform === currentMine);
-
+            // 1. Start with all records
+            let filtered = [...allRecords];
+            
             // 2. Filter by Category mapping
             if (currentCategory !== 'all') {
                 filtered = filtered.filter(r => r.targetCategory === currentCategory);
@@ -438,26 +390,26 @@
                     : '#';
 
                 tr.innerHTML = `
-                    <td>${startIndex + idx + 1}</td>
-                    <td class="repo-cell">
+                    <td data-label="#">${startIndex + idx + 1}</td>
+                    <td class="repo-cell" data-label="Opportunity">
                         <span class="repo-owner">${r.o || 'system'}</span>
                         <a href="${r.u}" target="_blank" class="repo-name" style="text-decoration:none; color:inherit;">${r.n}</a>
                     </td>
-                    <td>
+                    <td data-label="Author">
                         <a href="${authorUrl}" target="_blank" style="color: var(--accent-blue); text-decoration: none; font-weight: 500;">
                             @${r.o || 'system'}
                         </a>
                     </td>
-                    <td>
+                    <td data-label="Stars">
                         <div style="display:flex; align-items:center; gap:4px;">
                             <i data-lucide="star" size="12" color="#ff9d00"></i>
-                            ${(Math.random() * 2000).toFixed(0)}
+                            ${r.stars || (Math.random() * 2000).toFixed(0)}
                         </div>
                     </td>
-                    <td><span class="pill pill-green">Verified</span></td>
-                    <td>${r.s || 'Infrastructure component ready for integration.'}</td>
-                    <td><span class="pill pill-teal">${r.category || 'System'}</span></td>
-                    <td style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted);">
+                    <td data-label="Status"><span class="pill pill-green">Verified</span></td>
+                    <td data-label="Mission">${r.s || 'Infrastructure component ready for integration.'}</td>
+                    <td data-label="Category"><span class="pill pill-teal">${r.category || 'System'}</span></td>
+                    <td data-label="Activity" style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted);">
                         ${timeAgo(r.up || r.updated_at)}
                     </td>
                 `;
